@@ -80,7 +80,7 @@ sub section
     return evalable(qq'defined($fetch) && join "", map { $map } $array');
 }
 
-sub negative
+sub inverted
 {
     my ($name, $block) = @_;
     $name = inspect($name);

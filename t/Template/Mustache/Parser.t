@@ -126,7 +126,7 @@ testcase Template::Mustache::Parser::Test
             '<h1>{{^ condition }}{{ inside }}{{/ condition }}</h1>',
             [ block => (
                 [ text => '<h1>' ],
-                [ negative => ('condition',
+                [ inverted => ('condition',
                     [ block => (
                         [ etag => 'inside' ],
                     ) ],
@@ -175,7 +175,7 @@ testcase Template::Mustache::Parser::Test
         );
     }
 
-    test unclosed_section_after_negative_section
+    test unclosed_section_after_inverted_section
     {
         assert_dies(
             sub { parse('<h1>{{^ a }}</h1>') },

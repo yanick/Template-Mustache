@@ -154,7 +154,7 @@ testcase Template::Mustache::Template::Test
         );
     }
 
-    test negative_section_replacement_with_truthy_value
+    test inverted_section_replacement_with_truthy_value
     {
         assert_renders(
             '<h1></h1>',
@@ -163,7 +163,7 @@ testcase Template::Mustache::Template::Test
         );
     }
 
-    test negative_section_replacement_with_falsey_value
+    test inverted_section_replacement_with_falsey_value
     {
         assert_renders(
             '<h1>SURPRISE PARTY!</h1>',

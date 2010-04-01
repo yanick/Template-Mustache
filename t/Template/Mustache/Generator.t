@@ -11,7 +11,7 @@ testcase Template::Mustache::Generator::Test
     sub partial  { Template::Mustache::Generator::partial(@_)  }
     sub block    { Template::Mustache::Generator::block(@_)    }
     sub section  { Template::Mustache::Generator::section(@_)  }
-    sub negative { Template::Mustache::Generator::negative(@_) }
+    sub inverted { Template::Mustache::Generator::inverted(@_) }
 
     test text
     {
@@ -56,14 +56,14 @@ testcase Template::Mustache::Generator::Test
         );
     }
 
-    test negative
+    test inverted
     {
         my $pred = 'defined($v = $ctx->get("name"))';
         my $map  = '$ctx->push($_); $v = "content"; $ctx->pop(); $v';
         my $list = '($v ? () : ($v))';
 
         assert_equal(
-            negative('name', [ block => [ text => 'content' ] ]),
+            inverted('name', [ block => [ text => 'content' ] ]),
             qq'".($pred && join "", map { $map } $list)."',
         );
     }

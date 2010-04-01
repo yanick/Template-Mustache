@@ -58,12 +58,12 @@ sub parse
                 redo;
             };
 
-            # Begin Negative Section -- {{# tag }}
+            # Begin Inverted Section -- {{# tag }}
             (/\G \^ $tag $ctag/gcxs) && do {
                 $errors{tag_name}->($1) unless length($1);
 
                 my $block = [ 'block' ];
-                push @$results, [ 'negative', $1, $block ];
+                push @$results, [ 'inverted', $1, $block ];
                 push @$sections, [ $1, $results ];
                 $results = $block;
                 redo;
