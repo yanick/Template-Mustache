@@ -312,7 +312,7 @@ sub new
 sub context
 {
     my ($self) = @_;
-    $self->{context} ||= Context->new($self);
+    return $self->{context} ||= Context->new($self);
 }
 
 # Returns a the template string for the requested partial.
@@ -390,14 +390,18 @@ sub render
 #     default.
 #   @option %options [String,Template] template (File::Slurp::slurp($template_file))
 #     The cached template used to render this view.
+#   @return [String,Template] The new value for the option.
 sub CONFIG
 {
-    my $sentinel = "__@{[time, '__SENTINEL__', time]}__";
-    my ($receiver, $key, $val) = (@_, $sentinel, $sentinel);
+    my ($receiver, $key, $val) = @_;
 
-    return $CONFIG if $key eq $sentinel;
-    return set($receiver, $key, $val) unless ($val && $val eq $sentinel);
-    return get($receiver, $key);
+    if (@_ == 1) {
+        return $CONFIG;
+    } elsif (@_ == 2) {
+        return get($receiver, $key);
+    } elsif (@_ == 3) {
+        return set($receiver, $key, $val)
+    }
 }
 
 1;

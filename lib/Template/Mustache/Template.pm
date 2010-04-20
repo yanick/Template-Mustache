@@ -11,7 +11,6 @@ sub new
     return bless { source => ($source || '') }, __PACKAGE__;
 }
 
-my $SERIAL = 0;
 sub render
 {
     my ($self, $context) = @_;
@@ -19,7 +18,7 @@ sub render
 
     {
         no strict 'refs';
-        my $class = join('::', ref $self, '__SINGLETON__', $SERIAL++);
+        my $class = join('::', ref $self, '__SINGLETON__', $self + 0);
 
         eval qq/
             package $class;
