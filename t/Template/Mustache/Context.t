@@ -1,11 +1,16 @@
 use Test::Mini::Unit;
 
-class Person
 {
-    has name => (is => 'rw');
-    has home => (is => 'rw');
+    package Person;
 
-    sub species { 'Human' }
+    sub new {
+        my ($class, %args) = @_;
+        return bless \%args, $class;
+    }
+
+    sub name    { shift->{name} }
+    sub home    { shift->{home} }
+    sub species { 'Human'       }
 }
 
 testcase Template::Mustache::Context::Test

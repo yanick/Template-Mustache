@@ -1,8 +1,18 @@
 use Test::Mini::Unit;
 
-class Greeter {
-    has greetee => (is => 'ro', predicate => 'can_greet?');
-    sub greeting { 'Welcome' }
+{
+    package Greeter;
+
+    sub new {
+        my ($class, %args) = @_;
+        return bless \%args, $class;
+    }
+
+    sub greetee  { shift->{greetee} }
+    sub greeting { 'Welcome'        }
+
+    no strict 'refs';
+    *{"can_greet?"} = sub { exists shift->{greetee} }
 }
 
 testcase Template::Mustache::Template::Test

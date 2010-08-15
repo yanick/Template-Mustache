@@ -138,7 +138,7 @@ testcase Template::Mustache::Parser::Test
 
     test empty_tag
     {
-        assert_dies($_, 'Illegal tag content') for (
+        assert_dies(\&$_, 'Illegal tag content') for (
             sub { parse('<h1>{{     }}</h1>') },
             sub { parse('<h1>{{{   }}}</h1>') },
             sub { parse('<h1>{{&    }}</h1>') },
