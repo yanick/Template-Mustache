@@ -36,7 +36,7 @@
 #         return $self->value() - ($self->value() * 0.4)
 #     }
 #
-# Which, given the template
+# And here's the template:
 #
 #     Hello {{name}}
 #     You have just won ${{value}}!
@@ -49,7 +49,7 @@
 #
 #     Simple->render();
 #
-# Will return the string
+# will return the string
 #
 #     Hello Chris
 #     You have just won $10000!
