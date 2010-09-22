@@ -13,7 +13,7 @@ use Test::Mini::Unit;
     sub species { 'Human'       }
 }
 
-case Template::Mustache::Context::Test
+case t::Template::Mustache::Context
 {
     use aliased 'Template::Mustache::Context';
 

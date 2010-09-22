@@ -1,6 +1,6 @@
 use Test::Mini::Unit;
 
-case Template::Mustache::Parser::Test
+case t::Template::Mustache::Parser
 {
     use Template::Mustache::Parser qw/ parse /;
 

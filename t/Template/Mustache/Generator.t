@@ -1,6 +1,6 @@
 use Test::Mini::Unit;
 
-case Template::Mustache::Generator::Test
+case t::Template::Mustache::Generator
 {
     use Template::Mustache::Generator qw/ build /;
 
