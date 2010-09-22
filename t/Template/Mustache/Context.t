@@ -1,5 +1,7 @@
 use Test::Mini::Unit;
 
+use Template::Mustache::Context;
+
 {
     package Person;
 
@@ -15,75 +17,114 @@ use Test::Mini::Unit;
 
 case t::Template::Mustache::Context
 {
-    use aliased 'Template::Mustache::Context';
+    sub ctx { shift->{ctx} }
 
-    test basic_context_fetch_from_class
-    {
-        my $ctx = Context->new('Person');
-        assert_equal($ctx->get('species'), 'Human');
+    case FetchesFromClass {
+        setup {
+            $self->{ctx} = Template::Mustache::Context->new('Person');
+        }
+
+        test class_data_fetch {
+            assert_equal($self->ctx->get('species'), 'Human');
+        }
+
+        test instance_data_fetch {
+            assert_dies { $self->ctx->get('name') }
+        }
     }
 
-    test basic_context_fetch_from_instance
-    {
-        my $ctx = Context->new(Person->new(name => 'Bryan'));
-        assert_equal($ctx->get('name'), 'Bryan');
+    case FetchesFromInstance {
+        setup {
+            my $person = Person->new(name => 'Bryan');
+            $self->{ctx} = Template::Mustache::Context->new($person);
+        }
+
+        test class_data_fetch {
+            assert_equal($self->ctx->get('species'), 'Human');
+        }
+
+        test instance_data_fetch {
+            assert_equal($self->ctx->get('name'), 'Bryan');
+        }
+
+        test instance_data_miss {
+            assert_empty($self->ctx->get('home'));
+        }
     }
 
-    test basic_context_fetch_from_hash
-    {
-        my $ctx = Context->new({ name => 'Phil' });
-        assert_equal($ctx->get('name'), 'Phil');
+    case FetchesFromHash {
+        setup {
+            my $data = { name => 'Phil' };
+            $self->{ctx} = Template::Mustache::Context->new($data);
+        }
+
+        test key_fetch {
+            assert_equal($self->ctx->get('name'), 'Phil');
+        }
+
+        test key_miss {
+            assert_empty($self->ctx->get('age'));
+        }
     }
 
-    test basic_content_fetch_failure
-    {
-        my $ctx = Context->new({ name => 'Steve' });
-        assert_equal($ctx->get('age'), '');
-    }
+    case StackedContexts {
+        setup {
+            my $data = { name => 'Edgar', age => 37, town => 'Rufus' };
+            $self->{ctx} = Template::Mustache::Context->new($data);
+        }
 
-    test stacked_content_fetch_from_top
-    {
-        my $ctx = Context->new({ name => 'Edgar' });
-        $ctx->push({ name => 'Suzie' });
-        assert_equal($ctx->get('name'), 'Suzie');
-    }
+        case PushMethod {
+            setup {
+                $self->ctx->push({ name => 'Suzie', home => 'Greenbow' });
+            }
 
-    test stacked_content_fetch_from_bottom
-    {
-        my $ctx = Context->new({ name => 'Greg' });
-        $ctx->push({ age => 23 });
-        $ctx->push({ town => 'Mill End', age => 324 });
-        $ctx->push({ town => 'Astoria', color => 'red' });
-        assert_equal($ctx->get('name'), 'Greg');
-    }
+            test unique_keys_resolve {
+                assert_equal($self->ctx->get('town'), 'Rufus');
+                assert_equal($self->ctx->get('home'), 'Greenbow');
+            }
 
-    test stacked_content_fetch_after_pop
-    {
-        my $ctx = Context->new({ name => 'Will' });
-        $ctx->push({ name => 'Annie' });
-        $ctx->pop();
-        assert_equal($ctx->get('name'), 'Will');
-    }
+            test duplicated_keys_reflect_topmost {
+                assert_equal($self->ctx->get('name'), 'Suzie');
+            }
 
-    test set_content_fetch_from_top
-    {
-        my $ctx = Context->new({ name => 'Aaron' });
-        $ctx->set(name => 'Abbey', height => 63);
-        assert_equal($ctx->get('name'), 'Abbey');
-    }
+            case AfterPop {
+                setup { $self->ctx->pop() }
 
-    test set_content_fetch_from_bottom
-    {
-        my $ctx = Context->new({ name => 'Tom' });
-        $ctx->set(locale => 'EN');
-        assert_equal($ctx->get('name'), 'Tom');
-    }
+                test old_conflicts_resolve {
+                    assert_equal($self->ctx->get('name'), 'Edgar');
+                }
 
-    test set_content_fetch_after_pop
-    {
-        my $ctx = Context->new({ name => 'Jeremy' });
-        $ctx->set(name => 'Jenny');
-        $ctx->pop();
-        assert_equal($ctx->get('name'), 'Jeremy');
+                test dead_keys_vanish {
+                    assert_empty($self->ctx->get('home'));
+                }
+            }
+        }
+
+        case SetMethod {
+            setup {
+                $self->ctx->set(name => 'Suzie', home => 'Greenbow');
+            }
+
+            test unique_keys_resolve {
+                assert_equal($self->ctx->get('town'), 'Rufus');
+                assert_equal($self->ctx->get('home'), 'Greenbow');
+            }
+
+            test duplicated_keys_reflect_topmost {
+                assert_equal($self->ctx->get('name'), 'Suzie');
+            }
+
+            case AfterPop {
+                setup { $self->ctx->pop() }
+
+                test old_conflicts_resolve {
+                    assert_equal($self->ctx->get('name'), 'Edgar');
+                }
+
+                test dead_keys_vanish {
+                    assert_empty($self->ctx->get('home'));
+                }
+            }
+        }
     }
 }
