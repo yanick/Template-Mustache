@@ -3,7 +3,7 @@ use Test::Mini::Unit;
 require 'fixtures/Simple.pm';
 require 'fixtures/Namespace.pm';
 
-testcase Template::Mustache::Test
+case Template::Mustache::Test
 {
     use aliased 'Template::Mustache';
     use aliased 'Template::Mustache::Template';

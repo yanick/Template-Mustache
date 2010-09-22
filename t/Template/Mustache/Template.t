@@ -15,7 +15,7 @@ use Test::Mini::Unit;
     *{"can_greet?"} = sub { exists shift->{greetee} }
 }
 
-testcase Template::Mustache::Template::Test
+case Template::Mustache::Template::Test
 {
     use aliased 'Template::Mustache::Context';
     use aliased 'Template::Mustache::Template';

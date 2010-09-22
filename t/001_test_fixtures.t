@@ -1,6 +1,6 @@
 use Test::Mini::Unit;
 
-testcase Fixtures
+case Fixtures
 {
     test Simple
     {
