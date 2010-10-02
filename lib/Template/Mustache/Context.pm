@@ -15,8 +15,13 @@ sub get
     my ($self, $name) = @_;
 
     for my $frame (@{$self->{stack}}) {
-        return $frame->$name() if UNIVERSAL::can($frame, $name);
-        return $frame->{$name} if ref $frame eq 'HASH' && exists $frame->{$name};
+        if (UNIVERSAL::can($frame, $name)) {
+            my $result = $frame->$name();
+            return defined $result ? $result : '';
+        } elsif (ref $frame eq 'HASH' && exists $frame->{$name}) {
+            my $result = $frame->{$name};
+            return defined $result ? $result : '';
+        }
     }
 
     return '';
