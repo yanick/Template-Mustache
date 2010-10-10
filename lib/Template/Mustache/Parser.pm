@@ -95,6 +95,8 @@ sub parse
 
                 $otag = "\Q$1\E";
                 $ctag = "\Q$2\E";
+
+                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
