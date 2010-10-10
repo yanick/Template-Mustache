@@ -87,10 +87,10 @@ sub inverted
     my $content = build($block);
 
     my $fetch   = '$v = $ctx->get(' . $name . ')';
-    my $map     = '$ctx->push($_); $v = ' . $content . '; $ctx->pop(); $v';
-    my $array   = '($v ? () : ($v))';
+    my $block   = '$ctx->push($_); $v = ' . $content . '; $ctx->pop(); $v';
+    my $val     = '@{ref $v eq "ARRAY" ? $v : [$v || ()]}';
 
-    return evalable(qq'defined($fetch) && join "", map { $map } $array');
+    return evalable(qq'defined($fetch) && ($val ? "" : do { $block })');
 }
 
 sub build

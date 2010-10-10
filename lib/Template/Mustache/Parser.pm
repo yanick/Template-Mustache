@@ -58,7 +58,7 @@ sub parse
                 redo;
             };
 
-            # Begin Inverted Section -- {{# tag }}
+            # Begin Inverted Section -- {{^ tag }}
             (/\G \^ $tag $ctag/gcxs) && do {
                 $errors{tag_name}->($1) unless length($1);
 
