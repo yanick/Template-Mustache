@@ -89,7 +89,7 @@ sub parse
             (/\G ! $tag $ctag/gcxs) && do { redo; };
 
             # Set Delimiter Tag -- {{= otag ctag =}}
-            (/\G = $tag \  $tag = $ctag/gcxs) && do {
+            (/\G = $tag \  $tag =? $ctag/gcxs) && do {
                 $errors{tag_name}->($1) unless length($1);
                 $errors{tag_name}->($2) unless length($2);
 
