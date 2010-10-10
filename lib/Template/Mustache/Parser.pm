@@ -52,11 +52,12 @@ sub parse
 
             # Begin Section -- {{# tag }}
             (/\G \# $tag $ctag/gcxs) && do {
-                $errors{tag_name}->($1) unless length($1);
+                my $name = $1;
+                $errors{tag_name}->($name) unless length($name);
 
                 my $block = [ 'block' ];
-                push @$results, [ 'section', $1, $block ];
-                push @$sections, [ $1, $results ];
+                push @$results, [ 'section', $name, $block ];
+                push @$sections, [ $name, $results ];
                 $results = $block;
 
                 /\G \n/gcxs if $start_of_line;
@@ -65,11 +66,12 @@ sub parse
 
             # Begin Inverted Section -- {{^ tag }}
             (/\G \^ $tag $ctag/gcxs) && do {
-                $errors{tag_name}->($1) unless length($1);
+                my $name = $1;
+                $errors{tag_name}->($name) unless length($name);
 
                 my $block = [ 'block' ];
-                push @$results, [ 'inverted', $1, $block ];
-                push @$sections, [ $1, $results ];
+                push @$results, [ 'inverted', $name, $block ];
+                push @$sections, [ $name, $results ];
                 $results = $block;
 
                 /\G \n/gcxs if $start_of_line;
@@ -78,28 +80,30 @@ sub parse
 
             # End Section -- {{/ tag }}
             (/\G \/ $tag $ctag/gcxs) && do {
-                $errors{tag_name}->($1) unless length($1);
+                my $name = $1;
+                $errors{tag_name}->($name) unless length($name);
 
                 my ($section, $result) = @{pop @$sections || []};
                 $results = $result;
 
-                if (not defined $section) { $errors{unopened}->($1)       }
-                elsif ($section ne $1)    { $errors{unclosed}->($section) }
+                if (not defined $section) { $errors{unopened}->($name)       }
+                elsif ($section ne $name)    { $errors{unclosed}->($section) }
 
                 /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
             # Comment Tag -- {{! comment }}
-            (/\G ! $tag $ctag/gcxs) && do { redo; };
+            (/\G ! (.*?) $ctag/gmcxs) && do { redo; };
 
             # Set Delimiter Tag -- {{= otag ctag =}}
             (/\G = $tag \  $tag =? $ctag/gcxs) && do {
-                $errors{tag_name}->($1) unless length($1);
-                $errors{tag_name}->($2) unless length($2);
+                my ($open, $close) = ($1, $2);
+                $errors{tag_name}->($open) unless length($open);
+                $errors{tag_name}->($close) unless length($close);
 
-                $otag = "\Q$1\E";
-                $ctag = "\Q$2\E";
+                $otag = "\Q$open\E";
+                $ctag = "\Q$close\E";
 
                 /\G \n/gcxs if $start_of_line;
                 redo;
@@ -107,23 +111,27 @@ sub parse
 
             # Partials -- {{< tag }} or {{> tag }}
             (/\G < $tag $ctag/gcxs or /\G > $tag $ctag/gcxs) && do {
-                $errors{tag_name}->($1) unless length($1);
-                push @$results, [ partial => $1, ($padding || '') ];
+                my $name = $1;
+                $errors{tag_name}->($name) unless length($name);
+                push @$results, [ partial => $name, ($padding || '') ];
+
                 /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
             # Unescaped Content Tag -- {{{ tag }}} or {{& tag }}
             (/\G \{ $tag \} $ctag/gcxs or /\G \& $tag $ctag/gcxs) && do {
-                $errors{tag_name}->($1) unless length($1);
-                push @$results, [ utag => $1 ];
+                my $name = $1;
+                $errors{tag_name}->($name) unless length($name);
+                push @$results, [ utag => $name ];
                 redo;
             };
 
             # HTML Escaped Content Tag -- {{ tag }}
             (/\G $tag $ctag/gcxs) && do {
-                $errors{tag_name}->($1) unless length($1);
-                push @$results, [ etag => $1 ];
+                my $name = $1;
+                $errors{tag_name}->($name) unless length($name);
+                push @$results, [ etag => $name ];
                 redo;
             };
 
