@@ -19,26 +19,11 @@ TEXT
         ComplexView->CONFIG(template_path => 'fixtures');
         assert_equal(ComplexView->render(), <<'HTML');
 <h1>Colors</h1>
-
   <ul>
-
-
       <li><strong>red</strong></li>
-
-
-
-
-
       <li><a href="#Green">green</a></li>
-
-
-
-
       <li><a href="#Blue">blue</a></li>
-
-
   </ul>
-
 HTML
     }
 
