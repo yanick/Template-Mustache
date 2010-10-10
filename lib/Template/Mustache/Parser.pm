@@ -58,6 +58,8 @@ sub parse
                 push @$results, [ 'section', $1, $block ];
                 push @$sections, [ $1, $results ];
                 $results = $block;
+
+                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
@@ -69,6 +71,8 @@ sub parse
                 push @$results, [ 'inverted', $1, $block ];
                 push @$sections, [ $1, $results ];
                 $results = $block;
+
+                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
@@ -82,6 +86,7 @@ sub parse
                 if (not defined $section) { $errors{unopened}->($1)       }
                 elsif ($section ne $1)    { $errors{unclosed}->($section) }
 
+                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
