@@ -71,7 +71,7 @@ case t::Template::Mustache::Parser
             '<h1>{{< outside}}</h1>',
             [ block => (
                 [ text => '<h1>' ],
-                [ partial => 'outside' ],
+                [ partial => 'outside', '' ],
                 [ text => '</h1>' ],
             ) ]
         );
@@ -83,7 +83,7 @@ case t::Template::Mustache::Parser
             '<h1>{{> outside}}</h1>',
             [ block => (
                 [ text => '<h1>' ],
-                [ partial => 'outside' ],
+                [ partial => 'outside', '' ],
                 [ text => '</h1>' ],
             ) ]
         );
@@ -97,7 +97,7 @@ case t::Template::Mustache::Parser
                 [ text => '<h1>' ],
                 [ etag => 'a' ],
                 [ utag => 'b' ],
-                [ partial => 'c' ],
+                [ partial => 'c', '' ],
                 [ etag => 'd' ],
                 [ text => '</h1>' ],
             ) ]

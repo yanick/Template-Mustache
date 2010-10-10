@@ -46,7 +46,10 @@ sub parse
     my $tag = '\s*(.*?)\s*';
 
     SCAN: {
-        /\G $otag/gcxs && do {
+        /\G (^[ \t]*)? $otag/gmcxs && do {
+            my $start_of_line = defined $1;
+            my $padding = $1;
+
             # Begin Section -- {{# tag }}
             (/\G \# $tag $ctag/gcxs) && do {
                 $errors{tag_name}->($1) unless length($1);
@@ -98,7 +101,8 @@ sub parse
             # Partials -- {{< tag }} or {{> tag }}
             (/\G < $tag $ctag/gcxs or /\G > $tag $ctag/gcxs) && do {
                 $errors{tag_name}->($1) unless length($1);
-                push @$results, [ partial => $1 ];
+                push @$results, [ partial => $1, ($padding || '') ];
+                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
@@ -121,7 +125,7 @@ sub parse
         };
 
         # Simple Text
-        /\G (.*?) ($otag)/gcxs && do {
+        /\G (.*?) ((^[ \t]*|) $otag)/gmcxs && do {
             push @$results, [ text => $1 ];
             pos() -= length $2;
             redo;

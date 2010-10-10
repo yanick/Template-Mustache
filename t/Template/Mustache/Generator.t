@@ -31,7 +31,7 @@ case t::Template::Mustache::Generator
 
     test partial
     {
-        assert_equal(partial('name'), '".($ctx->partial("name"))."');
+        assert_equal(partial('name', ' '), '".($ctx->partial("name", " "))."');
     }
 
     test block
@@ -58,13 +58,13 @@ case t::Template::Mustache::Generator
 
     test inverted
     {
-        my $pred = 'defined($v = $ctx->get("name"))';
-        my $map  = '$ctx->push($_); $v = "content"; $ctx->pop(); $v';
-        my $list = '($v ? () : ($v))';
+        my $pred  = 'defined($v = $ctx->get("name"))';
+        my $block = '$ctx->push($_); $v = "content"; $ctx->pop(); $v';
+        my $val   = '@{ref $v eq "ARRAY" ? $v : [$v || ()]}';
 
         assert_equal(
             inverted('name', [ block => [ text => 'content' ] ]),
-            qq'".($pred && join "", map { $map } $list)."',
+            qq'".($pred && ($val) ? "" : do { $block })."',
         );
     }
 

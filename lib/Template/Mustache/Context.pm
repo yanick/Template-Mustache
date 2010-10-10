@@ -47,12 +47,14 @@ sub pop
 
 sub partial
 {
-    my ($self, $name) = @_;
+    my ($self, $name, $padding) = @_;
     my $mustache = first {
         UNIVERSAL::isa($_, 'Template::Mustache');
     } @{$self->{stack}};
 
-    return $mustache->render($mustache->partial($name), $self);
+    my $partial = $mustache->render($mustache->partial($name), $self);
+    $partial =~ s/^/$padding/gm;
+    return $partial;
 }
 
 1;

@@ -21,27 +21,27 @@ TEXT
 <h1>Colors</h1>
 
   <ul>
-  
-    
+
+
       <li><strong>red</strong></li>
-    
-    
-  
-    
-    
+
+
+
+
+
       <li><a href="#Green">green</a></li>
-    
-  
-    
-    
+
+
+
+
       <li><a href="#Blue">blue</a></li>
-    
-  
+
+
   </ul>
 
 HTML
     }
-    
+
     test Partial
     {
         require 'fixtures/Partial.pm';
@@ -51,7 +51,6 @@ HTML
 Hello Bob
 You have just won $1000!
 Well, $600, after taxes.
-
 <h2>Fair enough, right?</h2>
 HTML
     }

@@ -57,8 +57,9 @@ sub utag
 
 sub partial
 {
-    my $name = inspect(@_);
-    return evalable("\$ctx->partial($name)");
+    my $name = inspect(shift);
+    my $indent = inspect(shift);
+    return evalable("\$ctx->partial($name, $indent)");
 }
 
 sub block
@@ -90,7 +91,7 @@ sub inverted
     my $block   = '$ctx->push($_); $v = ' . $content . '; $ctx->pop(); $v';
     my $val     = '@{ref $v eq "ARRAY" ? $v : [$v || ()]}';
 
-    return evalable(qq'defined($fetch) && ($val ? "" : do { $block })');
+    return evalable(qq'defined($fetch) && ($val) ? "" : do { $block }');
 }
 
 sub build
