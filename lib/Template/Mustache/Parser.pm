@@ -53,6 +53,11 @@ sub parse
             # Begin Section -- {{# tag }}
             (/\G \# $tag $ctag/gcxs) && do {
                 my $name = $1;
+
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
                 $errors{tag_name}->($name) unless length($name);
 
                 my $block = [ 'block' ];
@@ -60,13 +65,17 @@ sub parse
                 push @$sections, [ $name, $results ];
                 $results = $block;
 
-                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
             # Begin Inverted Section -- {{^ tag }}
             (/\G \^ $tag $ctag/gcxs) && do {
                 my $name = $1;
+
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
                 $errors{tag_name}->($name) unless length($name);
 
                 my $block = [ 'block' ];
@@ -74,13 +83,17 @@ sub parse
                 push @$sections, [ $name, $results ];
                 $results = $block;
 
-                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
             # End Section -- {{/ tag }}
             (/\G \/ $tag $ctag/gcxs) && do {
                 my $name = $1;
+
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
                 $errors{tag_name}->($name) unless length($name);
 
                 my ($section, $result) = @{pop @$sections || []};
@@ -89,7 +102,6 @@ sub parse
                 if (not defined $section) { $errors{unopened}->($name)       }
                 elsif ($section ne $name)    { $errors{unclosed}->($section) }
 
-                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
@@ -99,39 +111,59 @@ sub parse
             # Set Delimiter Tag -- {{= otag ctag =}}
             (/\G = $tag \  $tag =? $ctag/gcxs) && do {
                 my ($open, $close) = ($1, $2);
+
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
                 $errors{tag_name}->($open) unless length($open);
                 $errors{tag_name}->($close) unless length($close);
 
                 $otag = "\Q$open\E";
                 $ctag = "\Q$close\E";
 
-                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
             # Partials -- {{< tag }} or {{> tag }}
             (/\G < $tag $ctag/gcxs or /\G > $tag $ctag/gcxs) && do {
                 my $name = $1;
+
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
                 $errors{tag_name}->($name) unless length($name);
                 push @$results, [ partial => $name, ($padding || '') ];
 
-                /\G \n/gcxs if $start_of_line;
                 redo;
             };
 
             # Unescaped Content Tag -- {{{ tag }}} or {{& tag }}
             (/\G \{ $tag \} $ctag/gcxs or /\G \& $tag $ctag/gcxs) && do {
                 my $name = $1;
+
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
                 $errors{tag_name}->($name) unless length($name);
                 push @$results, [ utag => $name ];
+
                 redo;
             };
 
             # HTML Escaped Content Tag -- {{ tag }}
             (/\G $tag $ctag/gcxs) && do {
                 my $name = $1;
+
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
                 $errors{tag_name}->($name) unless length($name);
                 push @$results, [ etag => $name ];
+
                 redo;
             };
 
