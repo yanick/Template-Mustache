@@ -26,7 +26,7 @@ sub trim
 
 sub evalable
 {
-    return qq'".(@_)."'
+    return qq'(@_)'
 }
 
 sub call
@@ -40,7 +40,7 @@ use namespace::clean;
 sub text
 {
     my $string = inspect(@_);
-    return substr($string, 1, -1);
+    return $string;
 }
 
 sub etag
@@ -65,7 +65,7 @@ sub partial
 sub block
 {
     my @parts = map { call(@$_) } @_;
-    return join('', @parts);
+    return join(' . ', @parts);
 }
 
 sub section
@@ -97,7 +97,7 @@ sub inverted
 sub build
 {
     my ($block) = @_;
-    return qq'"@{[ call(@$block) ]}"'
+    return qq'@{[ call(@$block) ]}'
 }
 
 1;

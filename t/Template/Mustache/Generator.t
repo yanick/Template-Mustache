@@ -16,22 +16,22 @@ case t::Template::Mustache::Generator
     test text
     {
         my $text = text('This string "contains" quotes.');
-        assert_equal($text, 'This string \"contains\" quotes.');
+        assert_equal($text, '"This string \"contains\" quotes."');
     }
 
     test utag
     {
-        assert_equal(utag('name'), '".($ctx->get("name"))."');
+        assert_equal(utag('name'), '($ctx->get("name"))');
     }
 
     test etag
     {
-        assert_equal(etag('name'), '".(CGI::escapeHTML($ctx->get("name")))."');
+        assert_equal(etag('name'), '(CGI::escapeHTML($ctx->get("name")))');
     }
 
     test partial
     {
-        assert_equal(partial('name', ' '), '".($ctx->partial("name", " "))."');
+        assert_equal(partial('name', ' '), '($ctx->partial("name", " "))');
     }
 
     test block
@@ -41,7 +41,7 @@ case t::Template::Mustache::Generator
             [ utag => 'name' ],
             [ text => 'def' ],
         );
-        assert_equal($block, 'abc".($ctx->get("name"))."def');
+        assert_equal($block, '"abc" . ($ctx->get("name")) . "def"');
     }
 
     test section
@@ -52,7 +52,7 @@ case t::Template::Mustache::Generator
 
         assert_equal(
             section('name', [ block => [ text => 'content' ] ]),
-            qq'".($pred && join "", map { $map } $list)."',
+            qq'($pred && join "", map { $map } $list)',
         );
     }
 
@@ -64,13 +64,13 @@ case t::Template::Mustache::Generator
 
         assert_equal(
             inverted('name', [ block => [ text => 'content' ] ]),
-            qq'".($pred && ($val) ? "" : do { $block })."',
+            qq'($pred && ($val) ? "" : do { $block })',
         );
     }
 
     test build
     {
-        my $content = '".(CGI::escapeHTML($ctx->get("content")))."';
+        my $content = '" . (CGI::escapeHTML($ctx->get("content"))) . "';
         my $pred = 'defined($v = $ctx->get("name"))';
         my $map  = '$ctx->push($_); $v = "-='.$content.'=-"; $ctx->pop(); $v';
         my $list = '@{ref $v eq "ARRAY" ? $v : [$v || ()]}';
@@ -91,7 +91,7 @@ case t::Template::Mustache::Generator
 
         assert_equal(
             $block,
-            qq'"pre".($pred && join "", map { $map } $list)."post"',
+            qq'"pre" . ($pred && join "", map { $map } $list) . "post"',
         );
     }
 }
