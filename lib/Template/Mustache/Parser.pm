@@ -143,9 +143,8 @@ sub parse
             (/\G \{ $tag \} $ctag/gcxs or /\G \& $tag $ctag/gcxs) && do {
                 my $name = $1;
 
-                if ($start_of_line && !/\G \n/gcxs) {
-                    push @$results, [ text => $padding ];
-                }
+                # Interpolation should always respect all existing content.
+                push @$results, [ text => $padding ] if $padding;
 
                 $errors{tag_name}->($name) unless length($name);
                 push @$results, [ utag => $name ];
@@ -157,9 +156,8 @@ sub parse
             (/\G $tag $ctag/gcxs) && do {
                 my $name = $1;
 
-                if ($start_of_line && !/\G \n/gcxs) {
-                    push @$results, [ text => $padding ];
-                }
+                # Interpolation should always respect all existing content.
+                push @$results, [ text => $padding ] if $padding;
 
                 $errors{tag_name}->($name) unless length($name);
                 push @$results, [ etag => $name ];
