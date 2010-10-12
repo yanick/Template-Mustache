@@ -106,7 +106,13 @@ sub parse
             };
 
             # Comment Tag -- {{! comment }}
-            (/\G ! (.*?) $ctag/gmcxs) && do { redo; };
+            (/\G ! (.*?) $ctag/gmcxs) && do {
+                if ($start_of_line && !/\G \n/gcxs) {
+                    push @$results, [ text => $padding ];
+                }
+
+                redo;
+            };
 
             # Set Delimiter Tag -- {{= otag ctag =}}
             (/\G = $tag \  $tag =? $ctag/gcxs) && do {
