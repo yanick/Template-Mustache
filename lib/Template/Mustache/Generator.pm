@@ -46,13 +46,17 @@ sub text
 sub etag
 {
     my $name = inspect(@_);
-    return evalable("CGI::escapeHTML(\$ctx->get($name))");
+    my $value = "\$v = \$ctx->get($name)";
+    my $deref = '$v = &$v($ctx) if ref $v eq "CODE"';
+    return evalable("do { $value; $deref; CGI::escapeHTML(\$v) }");
 }
 
 sub utag
 {
     my $name = inspect(@_);
-    return evalable("\$ctx->get($name)")
+    my $value = "\$v = \$ctx->get($name)";
+    my $deref = '$v = &$v($ctx) if ref $v eq "CODE"';
+    return evalable("do { $value; $deref; \$v }")
 }
 
 sub partial
