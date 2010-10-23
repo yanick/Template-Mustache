@@ -41,6 +41,10 @@ sub render
             package $class;
             our \@ISA = qw(@{[ ref $self ]});
 
+            use CGI 'escapeHTML';
+            use Template::Mustache::Parser    'parse';
+            use Template::Mustache::Generator 'build';
+
             sub render
             {
                 my (\$self, \$ctx) = \@_;
