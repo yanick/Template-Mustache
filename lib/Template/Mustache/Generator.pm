@@ -52,10 +52,10 @@ sub utag
 {
     my $name = inspect(@_);
     my $value  = "\$v = \$ctx->get($name)";
-    my $deref  = 'eval(build(parse(&$v($ctx))))';
+    my $deref  = 'eval(build(parse(&$v)))';
     my $update = 'do { $v = '.$deref.'; $ctx->set('.$name.', $v) }';
     my $v      = "do { ref($value) eq 'CODE' && $update; \$v }";
-    return $v;
+    return evalable($v);
 }
 
 sub partial
