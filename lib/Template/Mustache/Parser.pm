@@ -24,9 +24,9 @@ use namespace::clean;
 
 sub parse
 {
+    local $_ = shift;
     my ($sections, $results) = ([], ['block']);
 
-    local $_ = shift;
     pos() = 0;
 
     my $state = sub {
@@ -46,6 +46,7 @@ sub parse
     my $tag = '\s*(.*?)\s*';
 
     SCAN: {
+        my $before_match = pos();
         /\G (^[ \t]*)? $otag/gmcxs && do {
             my $start_of_line = defined $1;
             my $padding = $1;
@@ -62,7 +63,7 @@ sub parse
 
                 my $block = [ 'block' ];
                 push @$results, [ 'section', $name, $block ];
-                push @$sections, [ $name, $results ];
+                push @$sections, [ $name, $results, pos() ];
                 $results = $block;
 
                 redo;
@@ -80,7 +81,7 @@ sub parse
 
                 my $block = [ 'block' ];
                 push @$results, [ 'inverted', $name, $block ];
-                push @$sections, [ $name, $results ];
+                push @$sections, [ $name, $results, pos() ];
                 $results = $block;
 
                 redo;
@@ -96,11 +97,13 @@ sub parse
 
                 $errors{tag_name}->($name) unless length($name);
 
-                my ($section, $result) = @{pop @$sections || []};
+                my ($section, $result, $start) = @{pop @$sections || []};
+                push(@$results, substr($_, $start, $before_match - $start));
                 $results = $result;
 
-                if (not defined $section) { $errors{unopened}->($name)       }
-                elsif ($section ne $name)    { $errors{unclosed}->($section) }
+
+                if (not defined $section) { $errors{unopened}->($name)    }
+                elsif ($section ne $name) { $errors{unclosed}->($section) }
 
                 redo;
             };

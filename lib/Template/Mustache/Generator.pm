@@ -74,27 +74,31 @@ sub block
 sub section
 {
     my ($name, $block) = @_;
+    my $str = pop(@$block);
     $name = inspect($name);
     my $content = build($block);
 
-    my $fetch   = '$v = $ctx->get(' . $name . ')';
-    my $map     = '$ctx->push($_); $v = ' . $content . '; $ctx->pop(); $v';
-    my $array   = '@{ref $v eq "ARRAY" ? $v : [$v || ()]}';
+    my $value = "\$v = \$ctx->get($name)";
+    my $map   = '$ctx->push($_); $v = ' . $content . '; $ctx->pop(); $v';
+    my $CODE  = 'eval(build(parse(&$v(' . inspect($str) . '))))';
+    my $ELSE  = 'map { ' . $map . ' } @{ref $v eq "ARRAY" ? $v : [$v || ()]}';
 
-    return evalable(qq'defined($fetch) && join "", map { $map } $array');
+    return evalable("ref($value) eq 'CODE' ? $CODE : join('', $ELSE)");
 }
 
 sub inverted
 {
     my ($name, $block) = @_;
     $name = inspect($name);
+
+    pop(@$block);
     my $content = build($block);
 
-    my $fetch   = '$v = $ctx->get(' . $name . ')';
-    my $block   = '$ctx->push($_); $v = ' . $content . '; $ctx->pop(); $v';
-    my $val     = '@{ref $v eq "ARRAY" ? $v : [$v || ()]}';
+    my $value = "\$v = \$ctx->get($name)";
+    my $v     = '@{ref(' . $value . ') eq "ARRAY" ? $v : [$v || ()]}';
+    my $block = '$ctx->push($_); $v = ' . $content . '; $ctx->pop(); $v';
 
-    return evalable(qq'defined($fetch) && ($val) ? "" : do { $block }');
+    return evalable("$v ? '' : do { $block }");
 }
 
 sub build
