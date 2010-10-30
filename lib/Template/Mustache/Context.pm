@@ -7,19 +7,32 @@ use namespace::clean;
 sub new
 {
     my ($class, $initial) = @_;
-    return bless { stack => [ defined $initial ? $initial : () ] }, $class;
+    return bless {
+        stack => [ defined $initial ? $initial : () ],
+        frame => undef,
+    }, $class;
+}
+
+sub frame
+{
+    my ($self) = @_;
+    return $self->{frame};
 }
 
 sub get
 {
     my ($self, $name) = @_;
 
+    $self->{frame} = undef;
+
     for my $frame (@{$self->{stack}}) {
         if (UNIVERSAL::can($frame, $name)) {
             my $result = $frame->$name();
+            $self->{frame} = $frame;
             return defined $result ? $result : '';
         } elsif (ref $frame eq 'HASH' && exists $frame->{$name}) {
             my $result = $frame->{$name};
+            $self->{frame} = $frame;
             return defined $result ? $result : '';
         }
     }
