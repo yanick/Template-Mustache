@@ -43,12 +43,13 @@ sub get
 sub set
 {
     my ($self, %hash) = @_;
-    $self->push({ %hash });
+    unshift @{$self->{stack}}, { %hash };
 }
 
 sub push
 {
     my ($self, $ctx) = @_;
+    $ctx = { %$ctx } if ref $ctx eq 'HASH';
     unshift @{$self->{stack}}, $ctx;
 }
 
