@@ -67,6 +67,20 @@ case t::Template::Mustache::Context
                 assert_empty($self->ctx->get('age'));
             }
         }
+
+        case Stack {
+            setup {
+                $self->{ctx} = Template::Mustache::Context->new();
+                $self->ctx->push({ $_ => 'a' }) for qw/ bottom middle summit /;
+            }
+
+            test stack_lookup_holds_reference_to_stack_frame {
+                for my $frame (qw/ bottom middle summit /) {
+                    $self->ctx->get($frame);
+                    assert_equal($self->ctx->frame, { $frame => 'a' });
+                }
+            }
+        }
     }
 
     case ContextManipulation {
