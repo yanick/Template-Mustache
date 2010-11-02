@@ -15,8 +15,7 @@ use Template::Mustache::Context;
     sub species { 'Human'       }
 }
 
-case t::Template::Mustache::Context
-{
+case t::Template::Mustache::Context {
     sub ctx { shift->{ctx} }
 
     case Fetches::From {
