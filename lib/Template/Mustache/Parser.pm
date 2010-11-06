@@ -1,3 +1,13 @@
+# Template::Mustache's parser.
+#
+# This class is currently quite a mess; the entire parser is written to make
+# use of Perl's regular expression state machine, but limitations on the
+# accessibility of that data across (Perl) stack frames mean that the entire
+# parsing routine needs to be crammed into a single method.  The parser should
+# be fairly straightforward to rewrite in terms of a character- or line-based
+# state machine, but that implementation has not taken shape yet.
+#
+# @api private
 package Template::Mustache::Parser;
 
 use strict;
@@ -5,6 +15,11 @@ use base 'Exporter';
 
 our @EXPORT_OK = qw/ parse /;
 
+# Raise an error, with the appropriate context from the template.
+# @param $message [String] Cause of death.
+# @param $lineno [Integer] The line number we choked on.
+# @param $column [Integer] The column number we choked on, approximately.
+# @param $column [String] The line in question.
 sub error
 {
     my ($message, $lineno, $column, $line) = @_;
@@ -22,6 +37,10 @@ ERROR
 
 use namespace::clean;
 
+# Walks over the given string, and generates an abstract syntax tree for the
+# template.  Most often passed to the Generator's #build method.
+# @param $tmpl [String] The template string to parse.
+# @see Template::Mustache::Generator#build
 sub parse
 {
     local $_ = shift;
