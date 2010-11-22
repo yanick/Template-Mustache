@@ -111,9 +111,7 @@ case t::Template::Mustache::Parser
             [ block => (
                 [ text => '<h1>' ],
                 [ section => ('condition',
-                    [ block => (
-                        [ etag => 'inside' ],
-                    ) ],
+                    [ block => ([ etag => 'inside' ]), '{{ inside }}' ],
                 ) ],
                 [ text => '</h1>' ],
             ) ]
@@ -127,9 +125,7 @@ case t::Template::Mustache::Parser
             [ block => (
                 [ text => '<h1>' ],
                 [ inverted => ('condition',
-                    [ block => (
-                        [ etag => 'inside' ],
-                    ) ],
+                    [ block => ([ etag => 'inside' ]), '{{ inside }}' ],
                 ) ],
                 [ text => '</h1>' ],
             ) ]
