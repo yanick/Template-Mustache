@@ -55,7 +55,8 @@ sub utag
     my $frame  = '$ctx->frame';
     my $deref  = '$v = eval(build(parse(&$v)))';
     my $update = "$deref; ${frame}->{$name} = \$v if ref $frame eq 'HASH'";
-    my $v      = "do { ref($value) eq 'CODE' && do { $update }; \$v }";
+    my $number = '$v =~ /\d+(\.\d+)/ ? $v + 0 : $v';
+    my $v      = "do { ref($value) eq 'CODE' && do { $update }; $number }";
     return evalable($v);
 }
 
