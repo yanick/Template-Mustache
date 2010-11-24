@@ -31,7 +31,7 @@ case t::Template::Mustache::Generator
         sub assert_tag { shift->SUPER::assert_tag('utag', @_) }
 
         test with_static_value {
-            $self->assert_tag({ name => 'Phil'}, 'name' => 'Phil');
+            $self->assert_tag({ name => 'Phil' }, 'name' => 'Phil');
         }
 
         test with_html_special_values {
@@ -69,7 +69,7 @@ case t::Template::Mustache::Generator
         sub assert_tag { shift->SUPER::assert_tag('etag', @_) }
 
         test with_static_value {
-            $self->assert_tag({ name => 'Phil'}, 'name' => 'Phil');
+            $self->assert_tag({ name => 'Phil' }, 'name' => 'Phil');
         }
 
         test with_html_special_values {
