@@ -91,7 +91,7 @@ sub partial
     } @{$self->{stack}};
 
     my $partial = $mustache->render($mustache->partial($name), $self);
-    $partial =~ s/^/$padding/gm;
+    $partial =~ s/^/@{[ $padding || '' ]}/gm;
     return $partial;
 }
 
