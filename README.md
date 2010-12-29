@@ -7,4 +7,4 @@ The docs are presently pretty sparse (really, this is about it), but this is a f
 
 To do development work on this project, you will also need (at the very least) [Test::Mini::Unit](http://github.com/pvande/Test-Mini-Unit).
 
-This project is subject to tempestuous development.
+This project is subject to ongoing development.
