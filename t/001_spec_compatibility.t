@@ -83,7 +83,8 @@ use YAML::XS ();
     }
 }
 
-for my $file (glob catfile(dirname(__FILE__), '..', 'ext', 'spec', 'specs', '*.yml')) {
+my $specs = catfile(dirname(__FILE__), '..', 'ext', 'spec', 'specs');
+for my $file (glob catfile($specs, '*.yml')) {
     my $spec = YAML::XS::LoadFile($file);
     ($file = basename($file)) =~ s/^~//;
     my $pkg = ucfirst($file);
