@@ -32,7 +32,7 @@ use YAML::XS ();
         my ($self) = @_;
         $self->{partials} = catdir(dirname(__FILE__), '..', 'partials');
         mkdir($self->{partials});
-        Template::Mustache->CONFIG(template_path => $self->{partials});
+        # Template::Mustache->CONFIG(template_path => $self->{partials});
     };
 
     sub setup_partials {
