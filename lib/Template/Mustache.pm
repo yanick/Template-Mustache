@@ -11,7 +11,6 @@ use CGI ();
 
 sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
-
     my @buffer;
 
     my ($otag, $ctag) = @{ $delims || [qw'{{ }}'] };
@@ -19,34 +18,34 @@ sub parse {
         return qr/
             ((?:.|\n)*?)                # Capture the pre-tag content
             ([ \t]*)                    # Capture the pre-tag whitespace
-            (?:\Q$otag\E \s*)           # Match the opening tag
+            (?:\Q$otag\E \s*)           # Match the opening of the tag
             (?:
                 (=)   \s* (.+?) \s* = | # Capture Set Delimiters
                 ({)   \s* (.+?) \s* } | # Capture Triple Mustaches
                 (\W?) \s* ((?:.|\n)+?)  # Capture everything else
             )
-            (?:\s* \Q$ctag\E)           # Match the closing tag
+            (?:\s* \Q$ctag\E)           # Match the closing of the tag
         /xm;
     };
 
     my $pattern = $build_regex->();
-    my $pos = pos = $start || 0;
+    my $pos = pos($tmpl) = $start ||= 0;
 
-    while (my @match = ($tmpl =~ m/\G$pattern/gc)) {
-        my ($content, $whitespace) = @match[0,1];
-        my $type = $match[2] || $match[4] || $match[6];
-        my $tag  = $match[3] || $match[5] || $match[7];
+    while ($tmpl =~ m/\G$pattern/gc) {
+        my ($content, $whitespace) = ($1, $2);
+        my $type = $3 || $5 || $7;
+        my $tag  = $4 || $6 || $8;
 
-        my $contentEnd = $pos + length($content) - 1;
+        my $eoc = $pos + length($content) - 1;
         $pos = pos($tmpl);
 
-        my $isStandalone = (substr($tmpl, $contentEnd, 1) || "\n") eq "\n" &&
-                           (substr($tmpl, $pos, 1) || "\n")        eq "\n";
+        my $is_standalone = (substr($tmpl, $eoc, 1) || "\n") eq "\n" &&
+                            (substr($tmpl, $pos, 1) || "\n") eq "\n";
 
         push @buffer, $content;
 
-        if ($isStandalone && ($type !~ /^[\{\&]?$/)) {
-            $pos = pos($tmpl) += 1;
+        if ($is_standalone && ($type !~ /^[\{\&]?$/)) {
+            $pos += 1;
         } elsif ($whitespace) {
             push @buffer, $whitespace;
             $whitespace = '';
@@ -54,9 +53,16 @@ sub parse {
 
         if ($type eq '!') {
             # Do nothing...
-        } elsif ($type =~ /^[\{\&]?$/) {
+        } elsif ($type eq '{' || $type eq '&' || $type eq '') {
             push @buffer, [$type, $tag];
+        } elsif ($type eq '#' || $type eq '^') {
+            (my $raw, $pos) = parse($tmpl, [$otag, $ctag], $tag, $pos);
+            push @buffer, [ $type, $tag, [$raw, [$otag, $ctag]] ];
+        } elsif ($type eq '/') {
+            return (substr($tmpl, $start, $start - $pos - 1), $pos);
         }
+
+        pos($tmpl) = $pos
     }
 
     push @buffer, substr($tmpl, $pos);
@@ -66,6 +72,10 @@ sub parse {
 
 sub generate {
     my ($parse_tree, @context) = @_;
+
+    my $build = sub {
+        return generate(parse(@_), @context);
+    };
 
     my @parts;
     for my $part (@$parse_tree) {
@@ -77,6 +87,9 @@ sub generate {
             push @parts, CGI::escapeHTML($value);
         } elsif ($type eq '&' || $type eq '{') {
             push @parts, $value;
+        } elsif ($type eq '#') {
+            next unless $value;
+            push @parts, $build->(@$data);
         }
     }
 
