@@ -26,6 +26,7 @@ my %WriteMakefileArgs = (
     },
     'BUILD_REQUIRES' => {
         'Test::Mini::Unit' => 'v1.0.0',
+        'YAML::Syck'       => '1.15',
     },
     'CONFIGURE_REQUIRES' => {
          'ExtUtils::MakeMaker' => '6.31',

@@ -3,10 +3,12 @@ use Test::Mini;
 use File::Basename        qw/ basename dirname /;
 use File::Spec::Functions qw/ catdir catfile /;
 use Template::Mustache;
-use YAML::XS ();
+use YAML::Syck ();
+
+$YAML::Syck::ImplicitTyping = 1;
 
 {
-    # YAML::XS will automatically bless lambdas as a new instance of this.
+    # YAML::Syck will automatically bless lambdas as a new instance of this.
     package code;
     use overload '&{}' => sub { eval shift->{perl} }
 }
@@ -85,7 +87,7 @@ use YAML::XS ();
 
 my $specs = catfile(dirname(__FILE__), '..', 'ext', 'spec', 'specs');
 for my $file (glob catfile($specs, '*.yml')) {
-    my $spec = YAML::XS::LoadFile($file);
+    my $spec = YAML::Syck::LoadFile($file);
     ($file = basename($file)) =~ s/^~//;
     my $pkg = ucfirst($file);
 
