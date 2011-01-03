@@ -52,12 +52,46 @@ sub parse {
 
         if ($type eq '!') {
             # Do nothing...
+        } elsif ($type =~ /^[\{\&]?$/) {
+            push @buffer, [$type, $tag];
         }
     }
 
-    push @buffer, substr($tmpl, pos($tmpl));
+    push @buffer, substr($tmpl, $pos);
 
     return \@buffer;
+}
+
+sub generate {
+    my ($parse_tree, @context) = @_;
+
+    my @parts;
+    for my $part (@$parse_tree) {
+        push(@parts, $part) and next unless ref $part;
+        push @parts, lookup($part->[1], @context);
+    }
+
+    return join '', @parts;
+}
+
+sub lookup {
+    my ($field, @context) = @_;
+    my $value = '';
+
+    for my $index (reverse 0..$#{[@context]}) {
+        my $ctx = $context[$index];
+        if (ref $ctx eq 'HASH') {
+            next unless exists $ctx->{$field};
+            $value = $ctx->{$field};
+            last;
+        } else {
+            next unless UNIVERSAL::can($ctx, $field);
+            $value = UNIVERSAL::can($ctx, $field)->();
+            last;
+        }
+    }
+
+    return $value;
 }
 
 # Renders a template with the given data.
@@ -68,7 +102,7 @@ sub parse {
 sub render {
     my ($receiver, $tmpl, $data) = @_;
     my $parsed = parse($tmpl);
-    return join '', @$parsed;
+    return generate($parsed, $data);
 }
 
 1;
