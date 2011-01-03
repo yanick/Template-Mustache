@@ -44,7 +44,7 @@ sub parse {
         push @buffer, $content;
 
         if ($isStandalone && ($type !~ /^[\{\&]?$/)) {
-            pos($tmpl) += 1;
+            $pos = pos($tmpl) += 1;
         } elsif ($whitespace) {
             push @buffer, $whitespace;
             $whitespace = '';
