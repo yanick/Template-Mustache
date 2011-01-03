@@ -59,7 +59,7 @@ sub parse {
             (my $raw, $pos) = parse($tmpl, [$otag, $ctag], $tag, $pos);
             push @buffer, [ $type, $tag, [$raw, [$otag, $ctag]] ];
         } elsif ($type eq '/') {
-            return (substr($tmpl, $start, $start - $pos - 1), $pos);
+            return (substr($tmpl, $start, $eoc - ($start - 1)), $pos);
         }
 
         pos($tmpl) = $pos
@@ -89,6 +89,9 @@ sub generate {
             push @parts, $value;
         } elsif ($type eq '#') {
             next unless $value;
+            push @parts, $build->(@$data);
+        } elsif ($type eq '^') {
+            next if $value;
             push @parts, $build->(@$data);
         }
     }
