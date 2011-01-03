@@ -74,7 +74,8 @@ sub generate {
     my ($parse_tree, @context) = @_;
 
     my $build = sub {
-        return generate(parse(@_), @context);
+        my $value = pop(@_);
+        return generate(parse(@_), @context, defined $value ? $value : ());
     };
 
     my @parts;
@@ -89,10 +90,10 @@ sub generate {
             push @parts, $value;
         } elsif ($type eq '#') {
             next unless $value;
-            push @parts, $build->(@$data);
+            push @parts, $build->(@$data, $value);
         } elsif ($type eq '^') {
             next if $value;
-            push @parts, $build->(@$data);
+            push @parts, $build->(@$data, undef);
         }
     }
 
