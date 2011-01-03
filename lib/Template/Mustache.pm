@@ -92,7 +92,7 @@ sub generate {
             next unless $value;
             push @parts, $build->(@$data, $value);
         } elsif ($type eq '^') {
-            next if $value;
+            next if ref $value eq 'ARRAY' ? @$value : $value;
             push @parts, $build->(@$data, undef);
         }
     }
