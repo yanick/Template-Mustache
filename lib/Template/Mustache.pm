@@ -7,6 +7,8 @@ package Template::Mustache;
 use strict;
 use warnings;
 
+use CGI ();
+
 sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
 
@@ -68,7 +70,14 @@ sub generate {
     my @parts;
     for my $part (@$parse_tree) {
         push(@parts, $part) and next unless ref $part;
-        push @parts, lookup($part->[1], @context);
+        my ($type, $tag, $data) = @$part;
+        my $value = lookup($tag, @context);
+
+        if ($type eq '') {
+            push @parts, CGI::escapeHTML($value);
+        } elsif ($type eq '&' || $type eq '{') {
+            push @parts, $value;
+        }
     }
 
     return join '', @parts;
