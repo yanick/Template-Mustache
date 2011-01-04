@@ -61,6 +61,10 @@ sub parse {
             push @buffer, [ $type, $tag, [$raw, [$otag, $ctag]] ];
         } elsif ($type eq '/') {
             return (substr($tmpl, $start, $eoc + 1 - $start), $pos);
+        } elsif ($type eq '=') {
+            my @delims = split(/\s+/, $tag);
+            ($otag, $ctag) = @delims;
+            $pattern = $build_regex->();
         }
 
         pos($tmpl) = $pos
