@@ -47,6 +47,7 @@ sub parse {
         if ($is_standalone && ($type !~ /^[\{\&]?$/)) {
             $pos += 1;
         } elsif ($whitespace) {
+            $eoc += length($whitespace);
             push @buffer, $whitespace;
             $whitespace = '';
         }
@@ -59,7 +60,7 @@ sub parse {
             (my $raw, $pos) = parse($tmpl, [$otag, $ctag], $tag, $pos);
             push @buffer, [ $type, $tag, [$raw, [$otag, $ctag]] ];
         } elsif ($type eq '/') {
-            return (substr($tmpl, $start, $eoc - ($start - 1)), $pos);
+            return (substr($tmpl, $start, $eoc + 1 - $start), $pos);
         }
 
         pos($tmpl) = $pos
@@ -90,7 +91,11 @@ sub generate {
             push @parts, $value;
         } elsif ($type eq '#') {
             next unless $value;
-            push @parts, $build->(@$data, $value);
+            if (ref $value eq 'ARRAY') {
+                push @parts, $build->(@$data, $_) for @$value;
+            } else {
+                push @parts, $build->(@$data, $value);
+            }
         } elsif ($type eq '^') {
             next if ref $value eq 'ARRAY' ? @$value : $value;
             push @parts, $build->(@$data, undef);
