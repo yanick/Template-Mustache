@@ -100,6 +100,8 @@ sub generate {
             next unless $value;
             if (ref $value eq 'ARRAY') {
                 push @parts, $build->(@$data, $_) for @$value;
+            } elsif (ref $value eq 'CODE') {
+                push @parts, $build->($value->($data->[0]), $data->[1], undef);
             } else {
                 push @parts, $build->(@$data, $value);
             }
