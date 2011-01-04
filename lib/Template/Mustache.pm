@@ -87,11 +87,14 @@ sub generate {
     for my $part (@$parse_tree) {
         push(@parts, $part) and next unless ref $part;
         my ($type, $tag, $data) = @$part;
-        my $value = lookup($tag, @context);
+        my ($ctx, $value) = lookup($tag, @context);
 
-        if ($type eq '') {
-            push @parts, CGI::escapeHTML($value);
-        } elsif ($type eq '&' || $type eq '{') {
+        if ($type eq '{' || $type eq '&' || $type eq '') {
+            if (ref $value eq 'CODE') {
+                $value = $build->($value->(), undef);
+                $ctx->{$tag} = $value;
+            }
+            $value = CGI::escapeHTML($value) unless $type;
             push @parts, $value;
         } elsif ($type eq '#') {
             next unless $value;
@@ -111,10 +114,11 @@ sub generate {
 
 sub lookup {
     my ($field, @context) = @_;
+    my $ctx;
     my $value = '';
 
     for my $index (reverse 0..$#{[@context]}) {
-        my $ctx = $context[$index];
+        $ctx = $context[$index];
         if (ref $ctx eq 'HASH') {
             next unless exists $ctx->{$field};
             $value = $ctx->{$field};
@@ -126,7 +130,7 @@ sub lookup {
         }
     }
 
-    return $value;
+    return ($ctx, $value);
 }
 
 # Renders a template with the given data.
