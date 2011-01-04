@@ -61,6 +61,8 @@ sub parse {
             push @buffer, [ $type, $tag, [$raw, [$otag, $ctag]] ];
         } elsif ($type eq '/') {
             return (substr($tmpl, $start, $eoc + 1 - $start), $pos);
+        } elsif ($type eq '>') {
+            push @buffer, [ $type, $tag, $whitespace ];
         } elsif ($type eq '=') {
             my @delims = split(/\s+/, $tag);
             ($otag, $ctag) = @delims;
@@ -76,11 +78,11 @@ sub parse {
 }
 
 sub generate {
-    my ($parse_tree, @context) = @_;
+    my ($parse_tree, $partials, @context) = @_;
 
     my $build = sub {
         my $value = pop(@_);
-        return generate(parse(@_), @context, defined $value ? $value : ());
+        return generate(parse(@_), $partials, @context, $value);
     };
 
     my @parts;
@@ -108,6 +110,10 @@ sub generate {
         } elsif ($type eq '^') {
             next if ref $value eq 'ARRAY' ? @$value : $value;
             push @parts, $build->(@$data, undef);
+        } elsif ($type eq '>') {
+            my $partial = $partials->($tag);
+            $partial =~ s/^(.)/${data}${1}/gm;
+            push @parts, $build->($partial, undef);
         }
     }
 
@@ -139,11 +145,18 @@ sub lookup {
 #
 # @param [String] $tmpl The template to render.
 # @param [Hash,Class,Object] $data Data to interpolated into the template.
+# @param [Hash,Class,Object,Code] $partials A context element to fetch partials
+#   from, or a code reference that will return the appropriate partial given a
+#   partial name.
 # @return [String] The fully rendered template.
 sub render {
-    my ($receiver, $tmpl, $data) = @_;
+    my ($receiver, $tmpl, $data, $partials) = @_;
+
+    my $part = $partials;
+    my $part = sub { lookup(shift, $partials) } unless ref $partials eq 'CODE';
+
     my $parsed = parse($tmpl);
-    return generate($parsed, $data);
+    return generate($parsed, $part, $data);
 }
 
 1;

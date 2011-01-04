@@ -68,8 +68,9 @@ $YAML::Syck::ImplicitTyping = 1;
         my $expected = $test->{expected};
         my $tmpl = $test->{template};
         my $data = $test->{data};
+        my $partials = $test->{partials};
 
-        my $actual = Template::Mustache->render($tmpl, $data);
+        my $actual = Template::Mustache->render($tmpl, $data, $partials);
 
         assert_equal($actual, $expected,
             "$test->{desc}\n".
