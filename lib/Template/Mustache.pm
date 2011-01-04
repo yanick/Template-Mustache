@@ -9,26 +9,35 @@ use warnings;
 
 use CGI ();
 
+# Constructs a new regular expression, to be used in the parsing of Mustache
+# templates.
+# @param [String] $otag The tag opening delimiter.
+# @param [String] $ctag The tag closing delimiter.
+# @return [Regex] A regular expression that will match tags with the specified
+#   delimiters.
+# @api private
+sub build_pattern {
+    my ($otag, $ctag) = @_;
+    return qr/
+        ((?:.|\n)*?)                # Capture the pre-tag content
+        ([ \t]*)                    # Capture the pre-tag whitespace
+        (?:\Q$otag\E \s*)           # Match the opening of the tag
+        (?:
+            (=)   \s* (.+?) \s* = | # Capture Set Delimiters
+            ({)   \s* (.+?) \s* } | # Capture Triple Mustaches
+            (\W?) \s* ((?:.|\n)+?)  # Capture everything else
+        )
+        (?:\s* \Q$ctag\E)           # Match the closing of the tag
+    /xm;
+}
+
 sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
     my @buffer;
 
-    my ($otag, $ctag) = @{ $delims || [qw'{{ }}'] };
-    my $build_regex = sub {
-        return qr/
-            ((?:.|\n)*?)                # Capture the pre-tag content
-            ([ \t]*)                    # Capture the pre-tag whitespace
-            (?:\Q$otag\E \s*)           # Match the opening of the tag
-            (?:
-                (=)   \s* (.+?) \s* = | # Capture Set Delimiters
-                ({)   \s* (.+?) \s* } | # Capture Triple Mustaches
-                (\W?) \s* ((?:.|\n)+?)  # Capture everything else
-            )
-            (?:\s* \Q$ctag\E)           # Match the closing of the tag
-        /xm;
-    };
+    $delims ||= [qw'{{ }}'];
+    my $pattern = build_pattern(@$delims);
 
-    my $pattern = $build_regex->();
     my $pos = pos($tmpl) = $start ||= 0;
 
     while ($tmpl =~ m/\G$pattern/gc) {
@@ -57,16 +66,14 @@ sub parse {
         } elsif ($type eq '{' || $type eq '&' || $type eq '') {
             push @buffer, [$type, $tag];
         } elsif ($type eq '#' || $type eq '^') {
-            (my $raw, $pos) = parse($tmpl, [$otag, $ctag], $tag, $pos);
-            push @buffer, [ $type, $tag, [$raw, [$otag, $ctag]] ];
+            (my $raw, $pos) = parse($tmpl, $delims, $tag, $pos);
+            push @buffer, [ $type, $tag, [$raw, $delims] ];
         } elsif ($type eq '/') {
             return (substr($tmpl, $start, $eoc + 1 - $start), $pos);
         } elsif ($type eq '>') {
             push @buffer, [ $type, $tag, $whitespace ];
         } elsif ($type eq '=') {
-            my @delims = split(/\s+/, $tag);
-            ($otag, $ctag) = @delims;
-            $pattern = $build_regex->();
+            $pattern = build_pattern(@{$delims = [ split(/\s+/, $tag) ]});
         }
 
         pos($tmpl) = $pos
@@ -153,7 +160,7 @@ sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
 
     my $part = $partials;
-    my $part = sub { lookup(shift, $partials) } unless ref $partials eq 'CODE';
+    $part = sub { lookup(shift, $partials) } unless ref $partials eq 'CODE';
 
     my $parsed = parse($tmpl);
     return generate($parsed, $part, $data);
