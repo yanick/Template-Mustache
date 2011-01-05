@@ -237,6 +237,11 @@ sub lookup {
 sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
 
+    $partials ||= sub {
+        unshift @_, $receiver;
+        goto &{$receiver->can('partial')};
+    };
+
     my $part = $partials;
     $part = sub { lookup(shift, $partials) } unless ref $partials eq 'CODE';
 
