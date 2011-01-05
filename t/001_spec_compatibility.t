@@ -1,7 +1,7 @@
 use Test::Mini;
 
 use File::Basename        qw/ basename dirname /;
-use File::Spec::Functions qw/ catdir catfile /;
+use File::Spec::Functions qw/ catfile /;
 use Template::Mustache;
 use YAML::Syck ();
 $YAML::Syck::ImplicitTyping = 1;

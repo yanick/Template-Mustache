@@ -8,6 +8,8 @@ use strict;
 use warnings;
 
 use CGI ();
+use File::Spec;
+
 
 # Constructs a new regular expression, to be used in the parsing of Mustache
 # templates.
@@ -29,6 +31,23 @@ sub build_pattern {
         )
         (?:\s* \Q$ctag\E)           # Match the closing of the tag
     /xsm;
+}
+
+# Reads a file into a string, returning the empty string if the file does not
+# exist.
+# @param [String] $filename The name of the file to read.
+# @return [String] The contents of the given filename, or the empty string.
+# @api private
+sub read_file {
+    my ($filename) = @_;
+    return '' unless -f $filename;
+
+    local *FILE;
+    open FILE, $filename or die "Cannot read from file $filename!";
+    sysread(FILE, my $data, -s FILE);
+    close FILE;
+
+    return $data;
 }
 
 # @overload parse($tmpl)
@@ -224,6 +243,23 @@ sub lookup {
     }
 
     return ($ctx, $value);
+}
+
+our $path = '.';
+sub path { $path }
+
+our $extension = 'mustache';
+sub extension { $extension }
+
+# Reads a named partial off disk.
+# @param [String] $name The name of the partial to lookup.
+# @return [String] The contents of the partial (in {#path}, of type
+#   {#extension}), or the empty string, if the partial does not exist.
+sub partial {
+    my ($receiver, $name) = @_;
+    my $path = $receiver->path();
+    my $extension = $receiver->extension();
+    return read_file(File::Spec->catfile($path, "${name}.${extension}"));
 }
 
 # Renders a template with the given data.
