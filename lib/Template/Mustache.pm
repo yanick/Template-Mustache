@@ -245,6 +245,13 @@ sub lookup {
     return ($ctx, $value);
 }
 
+# @constructor
+# @param %args Initialization data.
+sub new {
+    my ($class, %args) = @_;
+    return bless({ %args }, $class);
+}
+
 our $path = '.';
 sub path { $path }
 
@@ -273,6 +280,7 @@ sub partial {
 sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
 
+    $data     ||= $receiver;
     $partials ||= sub {
         unshift @_, $receiver;
         goto &{$receiver->can('partial')};
