@@ -216,6 +216,10 @@ sub lookup {
             next unless exists $ctx->{$field};
             $value = $ctx->{$field};
             last;
+        } else {
+            next unless UNIVERSAL::can($ctx, $field);
+            $value = $ctx->$field();
+            last;
         }
     }
 
