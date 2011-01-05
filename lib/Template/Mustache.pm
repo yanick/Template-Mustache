@@ -123,47 +123,82 @@ sub parse {
     return \@buffer;
 }
 
+# Produces an expanded version of the template represented by the given parse
+# tree.
+# @param [Array<String,Array>] $parse_tree The AST of a Mustache template.
+# @param [Code] $partials A subroutine that looks up partials by name.
+# @param [(Any)] @context The context stack to perform key lookups against.
+# @return [String] The fully rendered template.
+# @api private
 sub generate {
     my ($parse_tree, $partials, @context) = @_;
 
-    my $build = sub {
-        my $value = pop(@_);
-        return generate(parse(@_), $partials, @context, $value);
-    };
+    # Build a helper function to abstract away subtemplate expansion.
+    # Recursively calls generate after parsing the given template.  This allows
+    # us to use the call stack as our context stack.
+    my $build = sub { generate(parse(@_[0,1]), $partials, $_[2], @context) };
 
-    my @parts;
-    for my $part (@$parse_tree) {
-        push(@parts, $part) and next unless ref $part;
-        my ($type, $tag, $data) = @$part;
-        my ($ctx, $value) = lookup($tag, @context);
+    # Walk through the parse tree, handling each element in turn.
+    join '', map {
+        # If the given element is a string, treat it literally.
+        my @result = ref $_ ? () : $_;
 
-        if ($type eq '{' || $type eq '&' || $type eq '') {
-            if (ref $value eq 'CODE') {
-                $value = $build->($value->(), undef);
-                $ctx->{$tag} = $value;
+        # Otherwise, it's a three element array, containing a tag's type, name,
+        # and accessory data.  As a precautionary step, we can prefetch any
+        # data value from the context stack (which will be useful in every case
+        # except partial tags).
+        unless (@result) {
+            my ($type, $tag, $data) = @$_;
+            my ($ctx, $value) = lookup($tag, @context) unless $type eq '>';
+
+            if ($type eq '{' || $type eq '&' || $type eq '') {
+                # Interpolation Tags
+                # If the value is a code reference, we should treat it
+                # according to Mustache's lambda rules.  Specifically, we
+                # should call the sub, render its contents against the current
+                # context, and cache the value (if possible).
+                if (ref $value eq 'CODE') {
+                    $value = $build->($value->());
+                    $ctx->{$tag} = $value if ref $ctx eq 'HASH';
+                }
+                # An empty `$type` represents an HTML escaped tag.
+                $value = CGI::escapeHTML($value) unless $type;
+                @result = $value;
+            } elsif ($type eq '#') {
+                # Section Tags
+                # `$data` will contain an array reference with the raw template
+                # string, and the delimiter pair being used when the section
+                # tag was encountered.
+                # There are four special cases for section tags.
+                #  * If the value is falsey, the section is skipped over.
+                #  * If the value is an array reference, the section is
+                #    rendered once using each element of the array.
+                #  * If the value is a code reference, the raw section string
+                #    is passed to the sub to be filtered before rendering.
+                #  * Otherwise, the section is rendered using given value.
+                if (ref $value eq 'ARRAY') {
+                    @result = map { $build->(@$data, $_) } @$value;
+                } elsif ($value) {
+                    $data->[0] = $value->($data->[0]) if ref $value eq 'CODE';
+                    @result = $build->(@$data, $value);
+                }
+            } elsif ($type eq '^') {
+                # Inverse Section Tags
+                # These should only be rendered if the value is falsey or an
+                # empty array reference.  `$data` is as for Section Tags.
+                $value = @$value if ref $value eq 'ARRAY';
+                @result = $build->(@$data) unless $value;
+            } elsif ($type eq '>') {
+                # Partial Tags
+                # `$data` contains indentation to be applied to the partial.
+                # The partial template is looked up thanks to the `$partials`
+                # code reference, rendered, and non-empty lines are indented.
+                @result = $build->(scalar $partials->($tag));
+                $result[0] =~ s/^(?=.)/${data}/gm if $data;
             }
-            $value = CGI::escapeHTML($value) unless $type;
-            push @parts, $value;
-        } elsif ($type eq '#') {
-            next unless $value;
-            if (ref $value eq 'ARRAY') {
-                push @parts, $build->(@$data, $_) for @$value;
-            } elsif (ref $value eq 'CODE') {
-                push @parts, $build->($value->($data->[0]), $data->[1], undef);
-            } else {
-                push @parts, $build->(@$data, $value);
-            }
-        } elsif ($type eq '^') {
-            next if ref $value eq 'ARRAY' ? @$value : $value;
-            push @parts, $build->(@$data, undef);
-        } elsif ($type eq '>') {
-            my $partial = $partials->($tag);
-            $partial =~ s/^(.)/${data}${1}/gm;
-            push @parts, $build->($partial, undef);
         }
-    }
-
-    return join '', @parts;
+        @result; # Collect the results...
+    } @$parse_tree;
 }
 
 sub lookup {
@@ -171,7 +206,7 @@ sub lookup {
     my $ctx;
     my $value = '';
 
-    for my $index (reverse 0..$#{[@context]}) {
+    for my $index (0..$#{[@context]}) {
         $ctx = $context[$index];
         if (ref $ctx eq 'HASH') {
             next unless exists $ctx->{$field};
