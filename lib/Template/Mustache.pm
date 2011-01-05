@@ -201,20 +201,20 @@ sub generate {
     } @$parse_tree;
 }
 
+# Performs a lookup of a `$field` in a context stack.
+# @param [String] $field The field to lookup.
+# @param [(Any)] @context The context stack.
+# @return [(Any, Any)] The context element and value for the given `$field`.
+# @api private
 sub lookup {
     my ($field, @context) = @_;
-    my $ctx;
-    my $value = '';
+    my ($value, $ctx) = '';
 
     for my $index (0..$#{[@context]}) {
         $ctx = $context[$index];
         if (ref $ctx eq 'HASH') {
             next unless exists $ctx->{$field};
             $value = $ctx->{$field};
-            last;
-        } else {
-            next unless UNIVERSAL::can($ctx, $field);
-            $value = UNIVERSAL::can($ctx, $field)->();
             last;
         }
     }
