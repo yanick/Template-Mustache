@@ -287,17 +287,51 @@ sub partial {
     return read_file(File::Spec->catfile($path, "${name}.${ext}"));
 }
 
-# Renders a template with the given data.
-#
-# @param [String] $tmpl The template to render.
-# @param [Hash,Class,Object] $data Data to interpolated into the template.
-# @param [Hash,Class,Object,Code] $partials A context element to fetch partials
-#   from, or a code reference that will return the appropriate partial given a
-#   partial name.
-# @return [String] The fully rendered template.
+# @overload render()
+#   Renders a class or instance's template with data from the receiver.  The
+#   template will be retrieved by calling the {#template} method.  Partials
+#   will be fetched by {#partials}.
+#   @return [String] The fully rendered template.
+# @overload render($tmpl)
+#   Renders the given template with data from the receiver.  Partials will be
+#   fetched by {#partials}.
+#   @param [String] $tmpl The template to render.
+#   @return [String] The fully rendered template.
+# @overload render($data)
+#   Renders a class or instance's template with data from the receiver.  The
+#   template will be retrieved by calling the {#template} method.  Partials
+#   will be fetched by {#partials}.
+#   @param [Hash,Object] $data Data to be interpolated into the template.
+#   @return [String] The fully rendered template.
+# @overload render($tmpl, $data)
+#   Renders the given template with the given data.    Partials will be fetched
+#   by {#partials}.
+#   @param [String] $tmpl The template to render.
+#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
+#   @return [String] The fully rendered template.
+# @overload render($tmpl, $data, $partials)
+#   Renders the given template with the given data.  Partials will be looked up
+#   by calling the given code reference with the partial's name.
+#   @param [String] $tmpl The template to render.
+#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
+#   @param [Code] $partials A function used to lookup partials.
+#   @return [String] The fully rendered template.
+# @overload render($tmpl, $data, $partials)
+#   Renders the given template with the given data.  Partials will be looked up
+#   by calling the partial's name as a method on the given class or object.
+#   @param [String] $tmpl The template to render.
+#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
+#   @param [Class,Object] $partials A thing that responds to partial names.
+#   @return [String] The fully rendered template.
+# @overload render($tmpl, $data, $partials)
+#   Renders the given template with the given data.  Partials will be looked up
+#   in the given hash.
+#   @param [String] $tmpl The template to render.
+#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
+#   @param [Hash] $partials A hash containing partials.
+#   @return [String] The fully rendered template.
 sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
-
     ($data, $tmpl) = ($tmpl, $data) if !(ref $data) && (ref $tmpl);
 
     $tmpl       = $receiver->template() unless defined $tmpl;
