@@ -280,6 +280,7 @@ sub partial {
 sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
 
+    $tmpl       = $receiver->template() unless defined $tmpl;
     $data     ||= $receiver;
     $partials ||= sub {
         unshift @_, $receiver;
