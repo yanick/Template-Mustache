@@ -258,7 +258,14 @@ our $template_extension = 'mustache';
 sub template_extension { $template_extension }
 
 our $template_file;
-sub template_file { $template_file }
+sub template_file {
+    my ($receiver) = @_;
+    return $template_file if $template_file;
+
+    my $class = ref $receiver || $receiver;
+    my $ext  = $receiver->template_extension();
+    return File::Spec->catfile(split(/::/, "${class}.${ext}"));
+};
 
 # Reads the template off disk.
 # @return [String] The contents of the template file, which is the module file
@@ -267,12 +274,6 @@ sub template {
     my ($receiver) = @_;
     my $path = $receiver->template_path();
     my $template_file = $receiver->template_file();
-
-    unless ($template_file) {
-        my $class = ref $receiver || $receiver;
-        my $ext  = $receiver->template_extension();
-        $template_file = File::Spec->catfile(split(/::/, "${class}.${ext}"));
-    }
     return read_file(File::Spec->catfile($path, $template_file));
 }
 
