@@ -251,36 +251,33 @@ sub new {
     return bless({ %args }, $class);
 }
 
-our $path = '.';
-sub path { $path }
+our $template_path = '.';
+sub template_path { $template_path }
 
-our $extension = 'mustache';
-sub extension { $extension }
+our $template_extension = 'mustache';
+sub template_extension { $template_extension }
 
 # Reads the template off disk.
 # @return [String] The contents of the template file, which is the module file
-#   path appended to {#path}, with a type of {#extension}.
+#   path appended to {#template_path}, with a type of {#template_extension}.
 sub template {
     my ($receiver) = @_;
     my $class = ref $receiver || $receiver;
-    my $path = $receiver->path();
-    my $extension = $receiver->extension();
-    my $file = File::Spec->catfile(
-        $receiver->path(),
-        split(/::/, "${class}.${extension}")
-    );
+    my $path = $receiver->template_path();
+    my $ext  = $receiver->template_extension();
+    my $file = File::Spec->catfile($path, split(/::/, "${class}.${ext}"));
     return read_file($file);
 }
 
 # Reads a named partial off disk.
 # @param [String] $name The name of the partial to lookup.
-# @return [String] The contents of the partial (in {#path}, of type
-#   {#extension}), or the empty string, if the partial does not exist.
+# @return [String] The contents of the partial (in {#template_path}, of type
+#   {#template_extension}), or the empty string, if the partial does not exist.
 sub partial {
     my ($receiver, $name) = @_;
-    my $path = $receiver->path();
-    my $extension = $receiver->extension();
-    return read_file(File::Spec->catfile($path, "${name}.${extension}"));
+    my $path = $receiver->template_path();
+    my $ext  = $receiver->template_extension();
+    return read_file(File::Spec->catfile($path, "${name}.${ext}"));
 }
 
 # Renders a template with the given data.

@@ -8,7 +8,7 @@ case t::ReadTemplatesFromFileSystem {
         use File::Temp qw/ tempdir /;
 
         our $tmpdir;
-        sub path { $tmpdir ||= tempdir(CLEANUP => 1); }
+        sub template_path { $tmpdir ||= tempdir(CLEANUP => 1); }
 
         sub name        { 'Joe' }
         sub occupation  { 'Plumber' }
@@ -16,7 +16,7 @@ case t::ReadTemplatesFromFileSystem {
     }
 
     setup {
-        my $tmp = t::ReadTemplatesFromFileSystem::Mustache->path();
+        my $tmp = t::ReadTemplatesFromFileSystem::Mustache->template_path();
         mkdir "$tmp/t";
         mkdir "$tmp/t/ReadTemplatesFromFileSystem";
 

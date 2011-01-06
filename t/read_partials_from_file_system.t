@@ -8,14 +8,14 @@ case t::ReadPartialsFromFileSystem {
         use File::Temp qw/ tempdir /;
 
         our $tmpdir;
-        sub path { $tmpdir ||= tempdir(CLEANUP => 1); }
+        sub template_path { $tmpdir ||= tempdir(CLEANUP => 1); }
     }
 
     setup {
-        my $tmpdir = t::ReadPartialsFromFileSystem::Mustache->path();
+        my $tmpdir = t::ReadPartialsFromFileSystem::Mustache->template_path();
 
         local *FILE;
-        open FILE, '+>', "${tmpdir}/list1.mustache" or die "${tmpdir}/list1.mustache";
+        open FILE, '+>', "${tmpdir}/list1.mustache";
         print FILE "a, b, c";
         close FILE;
 
