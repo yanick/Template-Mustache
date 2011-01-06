@@ -91,7 +91,7 @@ case t::ReadTemplatesFromFileSystem {
         test rendering {
             local $Template::Mustache::template_path = $self->{tmpdir};
             local $Template::Mustache::template_file = 'TemplateFile.mustache';
-            my $result = Template::Mustache->render(undef, {
+            my $result = Template::Mustache->render({
                 name       => 'Joe',
                 occupation => 'Plumber',
             });

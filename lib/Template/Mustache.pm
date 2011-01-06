@@ -298,6 +298,8 @@ sub partial {
 sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
 
+    ($data, $tmpl) = ($tmpl, $data) if !(ref $data) && (ref $tmpl);
+
     $tmpl       = $receiver->template() unless defined $tmpl;
     $data     ||= $receiver;
     $partials ||= sub {
