@@ -257,16 +257,23 @@ sub template_path { $template_path }
 our $template_extension = 'mustache';
 sub template_extension { $template_extension }
 
+our $template_file;
+sub template_file { $template_file }
+
 # Reads the template off disk.
 # @return [String] The contents of the template file, which is the module file
 #   path appended to {#template_path}, with a type of {#template_extension}.
 sub template {
     my ($receiver) = @_;
-    my $class = ref $receiver || $receiver;
     my $path = $receiver->template_path();
-    my $ext  = $receiver->template_extension();
-    my $file = File::Spec->catfile($path, split(/::/, "${class}.${ext}"));
-    return read_file($file);
+    my $template_file = $receiver->template_file();
+
+    unless ($template_file) {
+        my $class = ref $receiver || $receiver;
+        my $ext  = $receiver->template_extension();
+        $template_file = File::Spec->catfile(split(/::/, "${class}.${ext}"));
+    }
+    return read_file(File::Spec->catfile($path, $template_file));
 }
 
 # Reads a named partial off disk.
