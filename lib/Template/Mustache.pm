@@ -257,12 +257,15 @@ sub template_path { $template_path }
 our $template_extension = 'mustache';
 sub template_extension { $template_extension }
 
+sub template_namespace { '' }
+
 our $template_file;
 sub template_file {
     my ($receiver) = @_;
     return $template_file if $template_file;
 
     my $class = ref $receiver || $receiver;
+    $class =~ s/^@{[$receiver->template_namespace()]}:://;
     my $ext  = $receiver->template_extension();
     return File::Spec->catfile(split(/::/, "${class}.${ext}"));
 };
