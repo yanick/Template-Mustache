@@ -10,7 +10,6 @@ use warnings;
 use CGI ();
 use File::Spec;
 
-
 # Constructs a new regular expression, to be used in the parsing of Mustache
 # templates.
 # @param [String] $otag The tag opening delimiter.
@@ -257,6 +256,21 @@ sub path { $path }
 
 our $extension = 'mustache';
 sub extension { $extension }
+
+# Reads the template off disk.
+# @return [String] The contents of the template file, which is the module file
+#   path appended to {#path}, with a type of {#extension}.
+sub template {
+    my ($receiver) = @_;
+    my $class = ref $receiver || $receiver;
+    my $path = $receiver->path();
+    my $extension = $receiver->extension();
+    my $file = File::Spec->catfile(
+        $receiver->path(),
+        split(/::/, "${class}.${extension}")
+    );
+    return read_file($file);
+}
 
 # Reads a named partial off disk.
 # @param [String] $name The name of the partial to lookup.
