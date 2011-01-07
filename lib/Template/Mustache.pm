@@ -10,6 +10,8 @@ use warnings;
 use CGI ();
 use File::Spec;
 
+my %TemplateCache;
+
 # Constructs a new regular expression, to be used in the parsing of Mustache
 # templates.
 # @param [String] $otag The tag opening delimiter.
@@ -73,8 +75,13 @@ sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
     my @buffer;
 
+    # Pull the parse tree out of the cache, if we can...
+    $delims ||= [qw'{{ }}'];
+    my $cache = $TemplateCache{join ' ', @$delims} ||= {};
+    return $cache->{$tmpl} if exists $cache->{$tmpl};
+
     # Build the pattern, and instruct the regex engine to begin at `$start`.
-    my $pattern = build_pattern(@{$delims ||= [qw'{{ }}']});
+    my $pattern = build_pattern(@$delims);
     my $pos = pos($tmpl) = $start ||= 0;
 
     # Begin parsing out tags
@@ -127,17 +134,21 @@ sub parse {
             push @buffer, [ $type, $tag, [$raw, $delims] ];
         } elsif ($type eq '/') {
             # End Section Tag - Short circuits a recursive call to #parse,
-            # returning the raw section template and the index immediately
-            # following this tag.
-            return (substr($tmpl, $start, $eoc + 1 - $start), $pos);
+            # caches the buffer for the raw section template, and returns the
+            # raw section template and the index immediately following the tag.
+            my $raw_section = substr($tmpl, $start, $eoc + 1 - $start);
+            $cache->{$raw_section} = [@buffer];
+            return ($raw_section, $pos);
         }
 
         # Update our match pointer to coincide with any changes we've made.
         pos($tmpl) = $pos
     }
 
-    # Buffer any remaining template, and return a reference to the buffer.
+    # Buffer any remaining template, cache the template for later, and return
+    # a reference to the buffer.
     push @buffer, substr($tmpl, $pos);
+    $cache->{$tmpl} = [@buffer];
     return \@buffer;
 }
 
