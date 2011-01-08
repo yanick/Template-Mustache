@@ -1,0 +1,11 @@
+'lib/**/*.pm'
+--format pod
+
+--no-stats
+--no-save
+
+--default-return ''
+--hide-void-return
+
+--query "object.type != :module"
+--query "@api.nil? || @api == 'public'"
