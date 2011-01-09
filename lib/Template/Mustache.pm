@@ -80,6 +80,13 @@ sub parse {
     my $cache = $TemplateCache{join ' ', @$delims} ||= {};
     return $cache->{$tmpl} if exists $cache->{$tmpl};
 
+    my $error = sub {
+        my ($message, $errorPos) = @_;
+        my @lineCount = split("\n", substr($tmpl, 0, $errorPos));
+
+        die $message . "\nLine " . length(@lineCount);
+    };
+
     # Build the pattern, and instruct the regex engine to begin at `$start`.
     my $pattern = build_pattern(@$delims);
     my $pos = pos($tmpl) = $start ||= 0;
@@ -125,7 +132,12 @@ sub parse {
         } elsif ($type eq '=') {
             # Set Delimiter Tag - Changes the delimiter pair and updates the
             # tag pattern.
-            $pattern = build_pattern(@{$delims = [ split(/\s+/, $tag) ]});
+            $delims = [ split(/\s+/, $tag) ];
+
+            $error->("Set Delimiters tags must have exactly two values!", $pos)
+                if @$delims != 2;
+
+            $pattern = build_pattern(@$delims);
         } elsif ($type eq '#' || $type eq '^') {
             # Section Tag - Recursively calls #parse (starting from the current
             # index), and receives the raw section string and a new index.
@@ -136,9 +148,19 @@ sub parse {
             # End Section Tag - Short circuits a recursive call to #parse,
             # caches the buffer for the raw section template, and returns the
             # raw section template and the index immediately following the tag.
+            my $msg;
+            if (!$section) {
+                $msg = "End Section tag '$tag' found, but not in a section!";
+            } elsif ($tag ne $section) {
+                $msg = "End Section tag closes '$tag'; expected '$section'!";
+            }
+            $error->($msg, $pos) if $msg;
+
             my $raw_section = substr($tmpl, $start, $eoc + 1 - $start);
             $cache->{$raw_section} = [@buffer];
             return ($raw_section, $pos);
+        } else {
+            $error->("Unknown tag type -- $type", $pos);
         }
 
         # Update our match pointer to coincide with any changes we've made.
