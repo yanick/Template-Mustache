@@ -1,8 +1,8 @@
 # Template::Mustache is an implementation of the fabulous Mustache templating
 # language for Perl 5.8 and later.
 #
-# Information about the design and syntax of Mustache can be found
-# [here](http://mustache.github.com).
+# @author Pieter van de Bruggen
+# @see http://mustache.github.com
 package Template::Mustache;
 use strict;
 use warnings;
@@ -277,25 +277,70 @@ sub lookup {
     return ($ctx, $value);
 }
 
-# @constructor
+use namespace::clean;
+
+# Standard hash constructor.
 # @param %args Initialization data.
+# @return [Template::Mustache] A new instance.
 sub new {
     my ($class, %args) = @_;
     return bless({ %args }, $class);
 }
 
 our $template_path = '.';
-sub template_path { $template_path }
+
+# Filesystem path for template and partial lookups.
+# @return [String] +$Template::Mustache::template_path+ (defaults to '.').
+# @scope dual
+sub template_path { $Template::Mustache::template_path }
 
 our $template_extension = 'mustache';
-sub template_extension { $template_extension }
 
+# File extension for templates and partials.
+# @return [String] +$Template::Mustache::template_extension+ (defaults to
+#   'mustache').
+# @scope dual
+sub template_extension { $Template::Mustache::template_extension }
+
+# Package namespace to ignore during template lookups.
+#
+# As an example, if you subclass +Template::Mustache+ as the class
+# +My::Heavily::Namepaced::Views::SomeView+, calls to {render} will
+# automatically try to load the template
+# +./My/Heavily/Namespaced/Views/SomeView.mustache+ under the {template_path}.
+# Since views will very frequently all live in a common namespace, you can
+# override this method in your subclass, and save yourself some headaches.
+#
+#    Setting template_namespace to:      yields template name:
+#      My::Heavily::Namespaced::Views => SomeView.mustache
+#      My::Heavily::Namespaced        => Views/SomeView.mustache
+#      Heavily::Namespaced            => My/Heavily/Namespaced/Views/SomeView.mustache
+#
+# As noted by the last example, namespaces will only be removed from the
+# beginning of the package name.
+# @return [String] The empty string.
+# @scope dual
 sub template_namespace { '' }
 
 our $template_file;
+
+# The template filename to read.  The filename follows standard Perl module
+# lookup practices (e.g. My::Module becomes My/Module.pm) with the following
+# differences:
+# * Templates have the extension given by {template_extension} ('mustache' by
+#   default).
+# * Templates will have {template_namespace} removed, if it appears at the
+#   beginning of the package name.
+# * Template filename resolution will short circuit if
+#   +$Template::Mustache::template_file+ is set.
+# * Template filename resolution may be overriden in subclasses.
+# * Template files will be resolved against {template_path}, not +$PERL5LIB+.
+# @return [String] The path to the template file, relative to {template_path}.
+# @see template
 sub template_file {
     my ($receiver) = @_;
-    return $template_file if $template_file;
+    return $Template::Mustache::template_file
+        if $Template::Mustache::template_file;
 
     my $class = ref $receiver || $receiver;
     $class =~ s/^@{[$receiver->template_namespace()]}:://;
@@ -304,8 +349,7 @@ sub template_file {
 };
 
 # Reads the template off disk.
-# @return [String] The contents of the template file, which is the module file
-#   path appended to {#template_path}, with a type of {#template_extension}.
+# @return [String] The contents of the {template_file} under {template_path}.
 sub template {
     my ($receiver) = @_;
     my $path = $receiver->template_path();
@@ -315,8 +359,8 @@ sub template {
 
 # Reads a named partial off disk.
 # @param [String] $name The name of the partial to lookup.
-# @return [String] The contents of the partial (in {#template_path}, of type
-#   {#template_extension}), or the empty string, if the partial does not exist.
+# @return [String] The contents of the partial (in {template_path}, of type
+#   {template_extension}), or the empty string, if the partial does not exist.
 sub partial {
     my ($receiver, $name) = @_;
     my $path = $receiver->template_path();
@@ -326,23 +370,23 @@ sub partial {
 
 # @overload render()
 #   Renders a class or instance's template with data from the receiver.  The
-#   template will be retrieved by calling the {#template} method.  Partials
-#   will be fetched by {#partials}.
+#   template will be retrieved by calling the {template} method.  Partials
+#   will be fetched by {partial}.
 #   @return [String] The fully rendered template.
 # @overload render($tmpl)
 #   Renders the given template with data from the receiver.  Partials will be
-#   fetched by {#partials}.
+#   fetched by {partial}.
 #   @param [String] $tmpl The template to render.
 #   @return [String] The fully rendered template.
 # @overload render($data)
 #   Renders a class or instance's template with data from the receiver.  The
-#   template will be retrieved by calling the {#template} method.  Partials
-#   will be fetched by {#partials}.
+#   template will be retrieved by calling the {template} method.  Partials
+#   will be fetched by {partial}.
 #   @param [Hash,Object] $data Data to be interpolated into the template.
 #   @return [String] The fully rendered template.
 # @overload render($tmpl, $data)
-#   Renders the given template with the given data.    Partials will be fetched
-#   by {#partials}.
+#   Renders the given template with the given data.  Partials will be fetched
+#   by {partial}.
 #   @param [String] $tmpl The template to render.
 #   @param [Hash,Class,Object] $data Data to be interpolated into the template.
 #   @return [String] The fully rendered template.
