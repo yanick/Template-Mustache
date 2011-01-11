@@ -10,6 +10,8 @@ use warnings;
 use CGI ();
 use File::Spec;
 
+our $VERSION = 'v0.5.0';
+
 my %TemplateCache;
 
 # Constructs a new regular expression, to be used in the parsing of Mustache
