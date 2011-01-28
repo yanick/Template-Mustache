@@ -246,8 +246,9 @@ sub generate {
                 # `$data` contains indentation to be applied to the partial.
                 # The partial template is looked up thanks to the `$partials`
                 # code reference, rendered, and non-empty lines are indented.
-                @result = $build->(scalar $partials->($tag));
-                $result[0] =~ s/^(?=.)/${data}/gm if $data;
+                my $partial = scalar $partials->($tag);
+                $partial =~ s/^(?=.)/${data}/gm if $data;
+                @result = $build->($partial);
             }
         }
         @result; # Collect the results...
