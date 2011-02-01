@@ -232,7 +232,16 @@ sub generate {
                 if (ref $value eq 'ARRAY') {
                     @result = map { $build->(@$data, $_) } @$value;
                 } elsif ($value) {
-                    $data->[0] = $value->($data->[0]) if ref $value eq 'CODE';
+                    if (ref $value eq 'CODE') {
+                        my $part = $value->($data->[0]);
+                        $data->[0] =
+                          ref $part eq 'CODE'
+                          ? $part->(
+                            $data->[0],
+                            sub { generate(parse(shift, $data->[1]), $partials, @context) }
+                          )
+                          : $part;
+                    }
                     @result = $build->(@$data, $value);
                 }
             } elsif ($type eq '^') {
