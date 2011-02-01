@@ -234,13 +234,14 @@ sub generate {
                 } elsif ($value) {
                     if (ref $value eq 'CODE') {
                         my $part = $value->($data->[0]);
-                        $data->[0] =
+                        $part =
                           ref $part eq 'CODE'
                           ? $part->(
                             $data->[0],
                             sub { generate(parse(shift, $data->[1]), $partials, @context) }
                           )
                           : $part;
+                        $data = [$part, $data->[1]];
                     }
                     @result = $build->(@$data, $value);
                 }
