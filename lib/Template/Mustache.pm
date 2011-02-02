@@ -202,16 +202,19 @@ sub generate {
         # except partial tags).
         unless (@result) {
             my ($type, $tag, $data) = @$_;
+            my $render = sub { $build->(shift, $data->[1]) };
+
             my ($ctx, $value) = lookup($tag, @context) unless $type eq '>';
 
             if ($type eq '{' || $type eq '&' || $type eq '') {
                 # Interpolation Tags
                 # If the value is a code reference, we should treat it
                 # according to Mustache's lambda rules.  Specifically, we
-                # should call the sub, render its contents against the current
+                # should call the sub (passing a "render" function as a
+                # convenience), render its contents against the current
                 # context, and cache the value (if possible).
                 if (ref $value eq 'CODE') {
-                    $value = $build->($value->());
+                    $value = $build->($value->($render));
                     $ctx->{$tag} = $value if ref $ctx eq 'HASH';
                 }
                 # An empty `$type` represents an HTML escaped tag.
@@ -227,13 +230,15 @@ sub generate {
                 #  * If the value is an array reference, the section is
                 #    rendered once using each element of the array.
                 #  * If the value is a code reference, the raw section string
-                #    is passed to the sub to be filtered before rendering.
+                #    and a rendering function are passed to the sub; the return
+                #    value is then automatically rendered.
                 #  * Otherwise, the section is rendered using given value.
                 if (ref $value eq 'ARRAY') {
                     @result = map { $build->(@$data, $_) } @$value;
                 } elsif ($value) {
-                    $data->[0] = $value->($data->[0]) if ref $value eq 'CODE';
-                    @result = $build->(@$data, $value);
+                    my @x = @$data;
+                    $x[0] = $value->($x[0], $render) if ref $value eq 'CODE';
+                    @result = $build->(@x, $value);
                 }
             } elsif ($type eq '^') {
                 # Inverse Section Tags
