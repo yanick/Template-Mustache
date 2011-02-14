@@ -12,7 +12,7 @@ SKIP
 my %WriteMakefileArgs = (
     'NAME'       => 'Template::Mustache',
     'ABSTRACT'   => 'Drawing Mustaches on Perl for fun and profit',
-    'VERSION'    => 'v0.5.0',
+    'VERSION'    => 'v0.5.1',
     'AUTHOR'     => 'Pieter van de Bruggen <pvande@cpan.org>',
     'LICENSE'    => 'perl',
     'META_MERGE' => {
@@ -23,9 +23,10 @@ my %WriteMakefileArgs = (
         },
     },
     'PREREQ_PM' => {
+        'version' => '0.77',
     },
     'BUILD_REQUIRES' => {
-        'Test::Mini::Unit' => 'v1.0.0',
+        'Test::Mini::Unit' => 'v1.0.3',
         'YAML::Syck'       => '1.15',
     },
     'CONFIGURE_REQUIRES' => {
@@ -44,11 +45,15 @@ my %WriteMakefileArgs = (
     },
 );
 
-delete $WriteMakefileArgs{BUILD_REQUIRES}
-  unless eval { ExtUtils::MakeMaker->VERSION(6.56) };
+unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
+    my $REQS = delete $WriteMakefileArgs{BUILD_REQUIRES};
+    $WriteMakefileArgs{PREREQ_PM}->{$_} = $REQS->{$_} for keys %$REQS;
+}
 
-delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
-  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+unless (eval { ExtUtils::MakeMaker->VERSION(6.52) }) {
+    my $REQS = delete $WriteMakefileArgs{CONFIGURE_REQUIRES};
+    $WriteMakefileArgs{PREREQ_PM}->{$_} = $REQS->{$_} for keys %$REQS;
+}
 
 (my $DISTNAME = $WriteMakefileArgs{NAME}) =~ s/::/-/g;
 my $DISTDIR = "$DISTNAME-$WriteMakefileArgs{VERSION}";

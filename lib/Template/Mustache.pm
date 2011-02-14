@@ -10,7 +10,7 @@ use warnings;
 use CGI ();
 use File::Spec;
 
-our $VERSION = 'v0.5.0';
+use version 0.77; our $VERSION = qv("v0.5.1");
 
 my %TemplateCache;
 

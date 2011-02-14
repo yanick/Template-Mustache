@@ -1,0 +1,13 @@
+Revision history for Template-Mustache
+
+v0.5.1  2011-02-13
+        Updating dependency on Test::Mini::Unit.  Solves build problems on Perl
+        5.13+.
+
+        An optional second argument, `$render`, is now passed to lambdas.  This
+        code reference will render the template it's given against the current
+        context stack.
+
+v0.5.0  2011-01-10
+        Initial release to CPAN.
+
