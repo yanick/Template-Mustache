@@ -290,7 +290,7 @@ sub lookup {
         if(ref $context eq 'HASH' && exists($context->{$target})){
           $value = $context->{$target};
           last;
-        }elsif(UNIVERSAL::can($context, $target)){
+        }elsif($context->can($target)){
           $value = $context->$target();
           last;
         }
