@@ -20,7 +20,7 @@ else {
     my $doc = join('', <>);
     if($doc =~ /^(\s*---(.+)---\s*)/isg) {
         my $yml = $2;
-        $doc =~ s/$1//g; # remove YAML data block
+        $doc =~ s/\Q$1\E//g; # remove YAML data block, quote metachars
         $yml =~ s/^\s+|\s+$//g; # trim whitespace
         $yml = Load($yml);
         print Template::Mustache->render($doc, $yml);
