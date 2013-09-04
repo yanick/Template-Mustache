@@ -5,18 +5,17 @@ use strict;
 use warnings;
 use autodie;
 
-use Getopt::Long;
 use Template::Mustache;
 use YAML::Syck;
 
-my $input_file = 'file.mustache';
-open( my $input_fh, "<", $input_file ) || die "Can't open $input_file: $!";
-my $self_yml = LoadFile('file.yml');
-my $self_tpl = join('', <$input_fh>);
-
-# use Data::Dumper;
-# print Dumper($self_yml);
-# print $self_tpl;
-
-print Template::Mustache->render($self_tpl, $self_yml);
-# print Template::Mustache->render($self_tpl);
+my $doc = join('', <>);
+if($doc =~ /^(\s*---(.+)---\s*)/isg) {
+    my $yml = $2;
+    $doc =~ s/$1//g; # remove YAML data block
+    $yml =~ s/^\s+|\s+$//g; # trim whitespace
+    $yml = Load($yml);
+    print Template::Mustache->render($doc, $yml);
+}
+else {
+    print Template::Mustache->render($doc);
+}
