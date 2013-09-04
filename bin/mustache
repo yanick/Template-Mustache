@@ -8,14 +8,42 @@ use autodie;
 use Template::Mustache;
 use YAML::Syck;
 
-my $doc = join('', <>);
-if($doc =~ /^(\s*---(.+)---\s*)/isg) {
-    my $yml = $2;
-    $doc =~ s/$1//g; # remove YAML data block
-    $yml =~ s/^\s+|\s+$//g; # trim whitespace
-    $yml = Load($yml);
-    print Template::Mustache->render($doc, $yml);
+my ($self, $args) = @_;
+my @args = $args ? @$args : @ARGV;
+my $cli_opt = shift @args || '-h';
+
+if ($cli_opt eq "-h" and -t STDIN) {
+    print "Usage: mustache FILE ...\n";
+    print "`perldoc mustache` for more usage info.\n";
 }
 else {
-    print Template::Mustache->render($doc);
+    my $doc = join('', <>);
+    if($doc =~ /^(\s*---(.+)---\s*)/isg) {
+        my $yml = $2;
+        $doc =~ s/$1//g; # remove YAML data block
+        $yml =~ s/^\s+|\s+$//g; # trim whitespace
+        $yml = Load($yml);
+        print Template::Mustache->render($doc, $yml);
+    }
+    else {
+        print Template::Mustache->render($doc);
+    }
 }
+
+=head1 NAME
+
+mustache - Command line frontend for mustache logic-less templates.
+
+  Usage: mustache FILE ...
+
+See mustache(1) or http://mustache.github.com/mustache.1.html for more details.
+
+=head1 RECIPES
+
+Examples:
+
+  $ mustache data.yml template.mustache
+  $ cat data.yml | mustache - template.mustache
+  $ cat data.yml template.mustache | mustache
+
+=cut
