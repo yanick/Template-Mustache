@@ -4,6 +4,7 @@
 # @author Pieter van de Bruggen
 # @see http://mustache.github.com
 package Template::Mustache;
+
 use strict;
 use warnings;
 
@@ -86,7 +87,7 @@ sub parse {
         my ($message, $errorPos) = @_;
         my @lineCount = split("\n", substr($tmpl, 0, $errorPos));
 
-        die $message . "\nLine " . length(@lineCount);
+        die $message . "\nLine " . scalar(@lineCount);
     };
 
     # Build the pattern, and instruct the regex engine to begin at `$start`.
@@ -185,7 +186,6 @@ sub parse {
 # @api private
 sub generate {
     my ($parse_tree, $partials, @context) = @_;
-
     # Build a helper function to abstract away subtemplate expansion.
     # Recursively calls generate after parsing the given template.  This allows
     # us to use the call stack as our context stack.
@@ -271,9 +271,27 @@ sub lookup {
 
     for my $index (0..$#{[@context]}) {
         $ctx = $context[$index];
-        if (ref $ctx eq 'HASH') {
-            next unless exists $ctx->{$field};
+
+        if($field =~ /\./) {
+            # Dotted syntax foo.bar
+            my ($var, $field) = $field =~ /(.+?)\.(.+)/;
+
+            if(ref $ctx eq 'HASH') {
+                next unless exists $ctx->{$var};
+                ($ctx, $value) = lookup($field, $ctx->{$var});
+                last;
+            } elsif(ref $ctx eq 'ARRAY') {
+                next unless @$ctx[$var];
+                ($ctx, $value) = lookup($field, @$ctx[$var]);
+                last;
+            }
+        } elsif (ref $ctx eq 'HASH') {
+		    next unless exists $ctx->{$field};
             $value = $ctx->{$field};
+            last;
+        } elsif (ref $ctx eq 'ARRAY') {
+            next unless @$ctx[$field];
+            $value = @$ctx[$field];
             last;
         } else {
             next unless UNIVERSAL::can($ctx, $field);
