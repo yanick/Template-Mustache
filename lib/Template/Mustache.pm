@@ -9,6 +9,7 @@ use warnings;
 
 use CGI ();
 use File::Spec;
+use Scalar::Util 'blessed';
 
 use version 0.77; our $VERSION = qv("v0.5.1");
 
@@ -275,8 +276,7 @@ sub lookup {
             next unless exists $ctx->{$field};
             $value = $ctx->{$field};
             last;
-        } else {
-            next unless UNIVERSAL::can($ctx, $field);
+        } elsif (blessed($ctx) && $ctx->can($field)) {;
             $value = $ctx->$field();
             last;
         }
