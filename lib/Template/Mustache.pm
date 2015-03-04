@@ -85,9 +85,9 @@ sub parse {
 
     my $error = sub {
         my ($message, $errorPos) = @_;
-        my @lineCount = split("\n", substr($tmpl, 0, $errorPos));
+        my $lineCount = substr($tmpl, 0, $errorPos) =~ tr/\n/\n/;
 
-        die $message . "\nLine " . length(@lineCount);
+        die $message . "\nLine " . $lineCount
     };
 
     # Build the pattern, and instruct the regex engine to begin at `$start`.
