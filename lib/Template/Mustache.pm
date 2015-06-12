@@ -11,7 +11,7 @@ use CGI ();
 use File::Spec;
 use Scalar::Util 'blessed';
 
-use version 0.77; our $VERSION = qv("v0.5.1");
+use version 0.77; our $VERSION = qv("v0.5.2");
 
 my %TemplateCache;
 
