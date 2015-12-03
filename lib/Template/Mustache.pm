@@ -7,7 +7,7 @@ package Template::Mustache;
 use strict;
 use warnings;
 
-use CGI ();
+use HTML::Entities;
 use File::Spec;
 use Scalar::Util 'blessed';
 
@@ -219,7 +219,7 @@ sub generate {
                     $ctx->{$tag} = $value if ref $ctx eq 'HASH';
                 }
                 # An empty `$type` represents an HTML escaped tag.
-                $value = CGI::escapeHTML($value) unless $type;
+                $value = encode_entities($value) unless $type;
                 @result = $value;
             } elsif ($type eq '#') {
                 # Section Tags
