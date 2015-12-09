@@ -1,5 +1,13 @@
 Revision history for Template-Mustache
 
+v0.5.2  2015-06-12
+
+        don't use length(@arr) when scalar(@arr) is meant!
+
+        use tr/// for counting, not split
+
+        don't die if provided context object is a non-object ref
+
 v0.5.1  2011-02-13
         Updating dependency on Test::Mini::Unit.  Solves build problems on Perl
         5.13+.

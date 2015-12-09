@@ -11,7 +11,7 @@ use CGI ();
 use File::Spec;
 use Scalar::Util 'blessed';
 
-use version 0.77; our $VERSION = qv("v0.5.1");
+use version 0.77; our $VERSION = qv("v0.5.2");
 
 my %TemplateCache;
 
@@ -276,7 +276,9 @@ sub lookup {
             next unless exists $ctx->{$field};
             $value = $ctx->{$field};
             last;
-        } elsif (blessed($ctx) && $ctx->can($field)) {;
+        } elsif ($ctx && (blessed($ctx) || ! ref $ctx) && $ctx->can($field)) {;
+            # We want to accept class names and objects, but not unblessed refs
+            # or undef. -- rjbs, 2015-06-12
             $value = $ctx->$field();
             last;
         }
