@@ -1,6 +1,7 @@
 Revision history for Template-Mustache
 
-        Update master GitHub Mustache project url. (ReadmeCritic, GH#22)
+        - Update master GitHub Mustache project url. (ReadmeCritic, GH#22)
+        - Use HTML::Entities instead of CGI::escapeHTML. (Josh Lavin, GH#21)
 
 v0.5.2  2015-06-12
 
