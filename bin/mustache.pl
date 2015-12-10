@@ -32,9 +32,9 @@ else {
 
 =head1 NAME
 
-mustache - Command line frontend for mustache logic-less templates.
+mustache.pl - Command line frontend for mustache logic-less templates.
 
-  Usage: mustache FILE ...
+  Usage: mustache.pl FILE ...
 
 See mustache(1) or http://mustache.github.com/mustache.1.html for more details.
 
@@ -42,8 +42,8 @@ See mustache(1) or http://mustache.github.com/mustache.1.html for more details.
 
 Examples:
 
-  $ mustache data.yml template.mustache
-  $ cat data.yml | mustache - template.mustache
-  $ cat data.yml template.mustache | mustache
+  $ mustache.pl data.yml template.mustache
+  $ cat data.yml | mustache.pl - template.mustache
+  $ cat data.yml template.mustache | mustache.pl
 
 =cut
