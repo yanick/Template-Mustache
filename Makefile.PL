@@ -44,6 +44,7 @@ my %WriteMakefileArgs = (
         'PREOP'  => 'RUBYLIB=:../yard-perl-plugin/lib:../yard-pod-plugin/lib yard -e yard-perl-plugin.rb -e yard-pod-plugin.rb',
         'POSTOP' => 'make realclean; rm MANIFEST',
     },
+    'EXE_FILES' => ['bin/mustache.pl'],
 );
 
 unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
