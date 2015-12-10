@@ -12,7 +12,7 @@ SKIP
 my %WriteMakefileArgs = (
     'NAME'       => 'Template::Mustache',
     'ABSTRACT'   => 'Drawing Mustaches on Perl for fun and profit',
-    'VERSION'    => 'v0.5.1',
+    'VERSION'    => 'v0.5.3',
     'AUTHOR'     => 'Pieter van de Bruggen <pvande@cpan.org>',
     'LICENSE'    => 'perl',
     'META_MERGE' => {
