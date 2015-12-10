@@ -24,6 +24,7 @@ my %WriteMakefileArgs = (
     },
     'PREREQ_PM' => {
         'version' => '0.77',
+        'HTML::Entities' => 0,
     },
     'BUILD_REQUIRES' => {
         'Test::Mini::Unit' => 'v1.0.3',
