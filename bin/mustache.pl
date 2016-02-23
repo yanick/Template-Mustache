@@ -36,7 +36,7 @@ mustache.pl - Command line frontend for mustache logic-less templates.
 
   Usage: mustache.pl FILE ...
 
-See mustache(1) or http://mustache.github.com/mustache.1.html for more details.
+See mustache(1) or http://mustache.github.io/mustache.1.html for more details.
 
 =head1 RECIPES
 
