@@ -1,5 +1,9 @@
 package SpecCompatibility;
 use base 'Test::Mini::TestCase';
+
+use strict;
+use warnings;
+
 use Test::Mini::Assertions;
 
 use Template::Mustache;

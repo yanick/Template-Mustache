@@ -1,3 +1,6 @@
+use strict;
+use warnings;
+
 use Test::Mini::Unit;
 
 case t::ReadPartialsFromPartialMethod {
