@@ -15,6 +15,7 @@ my %WriteMakefileArgs = (
     'VERSION'    => 'v0.5.3',
     'AUTHOR'     => 'Pieter van de Bruggen <pvande@cpan.org>',
     'LICENSE'    => 'perl',
+    'MIN_PERL_VERSION' => '5.8.0',
     'META_MERGE' => {
         'resources' => {
             'homepage'   => 'https://github.com/pvande/Template-Mustache',
