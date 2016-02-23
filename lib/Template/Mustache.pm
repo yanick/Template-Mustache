@@ -46,10 +46,9 @@ sub read_file {
     my ($filename) = @_;
     return '' unless -f $filename;
 
-    local *FILE;
-    open FILE, $filename or die "Cannot read from file $filename!";
-    sysread(FILE, my $data, -s FILE);
-    close FILE;
+    open my $fh, "<", $filename or die "Cannot read from file $filename!";
+    sysread($fh, my $data, -s $fh);
+    close $fh;
 
     return $data;
 }
