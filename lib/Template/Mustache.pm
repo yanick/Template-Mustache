@@ -1,11 +1,30 @@
-# Template::Mustache is an implementation of the fabulous Mustache templating
-# language for Perl 5.8 and later.
-#
-# @author Pieter van de Bruggen
-# @see http://mustache.github.com
 package Template::Mustache;
 use strict;
 use warnings;
+
+=head1 NAME
+
+Template::Mustache
+
+=head1 SYNOPSIS
+
+    use Template::Mustache;
+
+    print Template::Mustache->render(
+        "Hello {{planet}}", {planet => "World!"}), "\n";
+
+=head1 DESCRIPTION
+
+Template::Mustache is an implementation of the fabulous Mustache templating
+language for Perl 5.8 and later.
+
+See L<http://mustache.github.com>.
+
+=head1 AUTHOR
+
+Pieter van de Bruggen
+
+=cut
 
 use HTML::Entities;
 use File::Spec;
@@ -15,13 +34,32 @@ use version 0.77; our $VERSION = qv("v0.5.3");
 
 my %TemplateCache;
 
-# Constructs a new regular expression, to be used in the parsing of Mustache
-# templates.
-# @param [String] $otag The tag opening delimiter.
-# @param [String] $ctag The tag closing delimiter.
-# @return [Regex] A regular expression that will match tags with the specified
-#   delimiters.
-# @api private
+=head2 Functions
+
+=over 4
+
+=item build_pattern($otag, $ctag)
+
+Constructs a new regular expression, to be used in the parsing of Mustache
+templates.
+
+=over 4
+
+=item $otag
+
+The tag opening delimiter.
+
+=item $ctag
+
+The tag closing delimiter.
+
+=back
+
+Returns a regular expression that will match tags with the specified
+delimiters.
+
+=cut
+
 sub build_pattern {
     my ($otag, $ctag) = @_;
     return qr/
@@ -37,11 +75,23 @@ sub build_pattern {
     /xsm;
 }
 
-# Reads a file into a string, returning the empty string if the file does not
-# exist.
-# @param [String] $filename The name of the file to read.
-# @return [String] The contents of the given filename, or the empty string.
-# @api private
+=item read_file($filename)
+
+Reads a file into a string, returning the empty string if the file does not
+exist.
+
+=over 4
+
+=item $filename
+
+The name of the file to read.
+
+=back
+
+Returns the contents of the given filename, or the empty string.
+
+=cut
+
 sub read_file {
     my ($filename) = @_;
     return '' unless -f $filename;
@@ -54,26 +104,76 @@ sub read_file {
     return $data;
 }
 
-# @overload parse($tmpl)
-#   Creates an AST from the given template.
-#   @param [String] $tmpl The template to parse.
-#   @return [Array] The AST represented by the given template.
-#   @api private
-# @overload parse($tmpl, $delims)
-#   Creates an AST from the given template, with non-standard delimiters.
-#   @param [String] $tmpl The template to parse.
-#   @param [Array<String>[2]] $delims The delimiter pair to begin parsing with.
-#   @return [Array] The AST represented by the given template.
-#   @api private
-# @overload parse($tmpl, $delims, $section, $start)
-#   Parses out a section tag from the given template.
-#   @param [String] $tmpl The template to parse.
-#   @param [Array<String>[2]] $delims The delimiter pair to begin parsing with.
-#   @param [String] $section The name of the section we're parsing.
-#   @param [Int] $start The index of the first character of the section.
-#   @return [(String, Int)] The raw text of the section, and the index of the
-#       character immediately following the close section tag.
-#   @api internal
+=item parse($tmpl, [$delims, [$section, $start]])
+
+Can be called in one of three forms:
+
+=over 4
+
+=item parse($tmpl)
+
+Creates an AST from the given template.
+
+=over 4
+
+=item $tmpl
+
+The template to parse.
+
+=back
+
+An array reference to the AST represented by the given template.
+
+=item parse($tmpl, $delims)
+
+Creates an AST from the given template, with non-standard delimiters.
+
+=over 4
+
+=item $tmpl
+
+The template to parse.
+
+=item $delims
+
+An array reference to the delimiter pair with which to begin parsing.
+
+=back
+
+Returns an array reference to the AST represented by the given template.
+
+=item parse($tmpl, $delims, $section, $start)
+
+Parses out a section tag from the given template.
+
+=over 4
+
+=item $tmpl
+
+The template to parse.
+
+=item $delims
+
+An array reference to the delimiter pair with which to begin parsing.
+
+=item $section
+
+The name of the section we're parsing.
+
+=item $start
+
+The index of the first character of the section.
+
+=back
+
+Returns an array reference to the raw text of the section (first element),
+and the index of the character immediately following the close section tag
+(last element).
+
+=back
+
+=cut
+
 sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
     my @buffer;
@@ -177,13 +277,31 @@ sub parse {
     return \@buffer;
 }
 
-# Produces an expanded version of the template represented by the given parse
-# tree.
-# @param [Array<String,Array>] $parse_tree The AST of a Mustache template.
-# @param [Code] $partials A subroutine that looks up partials by name.
-# @param [(Any)] @context The context stack to perform key lookups against.
-# @return [String] The fully rendered template.
-# @api private
+=item generate($parse_tree, $partials, @context)
+
+Produces an expanded version of the template represented by the given parse
+tree.
+
+=over 4
+
+=item $parse_tree
+
+The AST of a Mustache template.
+
+=item $partials
+
+A subroutine that looks up partials by name.
+
+=item @context
+
+The context stack to perform key lookups against.
+
+=back
+
+Returns the fully rendered template as a string.
+
+=cut
+
 sub generate {
     my ($parse_tree, $partials, @context) = @_;
 
@@ -261,11 +379,28 @@ sub generate {
     } @$parse_tree;
 }
 
-# Performs a lookup of a `$field` in a context stack.
-# @param [String] $field The field to lookup.
-# @param [(Any)] @context The context stack.
-# @return [(Any, Any)] The context element and value for the given `$field`.
-# @api private
+=item lookup($field, @context)
+
+Performs a lookup of a C<$field> in a context stack.
+
+=over 4
+
+=item $field
+
+The field to look up.
+
+=item @context
+
+The context stack.
+
+=back
+
+Returns the context element and value for the given C<$field>.
+
+=back
+
+=cut
+
 sub lookup {
     my ($field, @context) = @_;
     my ($value, $ctx) = '';
@@ -289,9 +424,26 @@ sub lookup {
 
 use namespace::clean;
 
-# Standard hash constructor.
-# @param %args Initialization data.
-# @return [Template::Mustache] A new instance.
+=head2 Methods
+
+=over 4
+
+=item new(%args)
+
+Standard hash constructor.
+
+=over 4
+
+=item %args
+
+Initialization data.
+
+=back
+
+Returns A new C<Template::Mustache> instance.
+
+=cut
+
 sub new {
     my ($class, %args) = @_;
     return bless({ %args }, $class);
@@ -299,54 +451,94 @@ sub new {
 
 our $template_path = '.';
 
-# Filesystem path for template and partial lookups.
-# @return [String] +$Template::Mustache::template_path+ (defaults to '.').
-# @scope dual
+=item template_path
+
+Filesystem path for template and partial lookups.
+
+Returns a string containing the template path (defaults to '.').
+
+=cut
+
 sub template_path { $Template::Mustache::template_path }
 
 our $template_extension = 'mustache';
 
-# File extension for templates and partials.
-# @return [String] +$Template::Mustache::template_extension+ (defaults to
-#   'mustache').
-# @scope dual
+=item template_extension
+
+File extension for templates and partials.
+
+Returns the file extension as a string (defaults to 'mustache').
+
+=cut
+
 sub template_extension { $Template::Mustache::template_extension }
 
-# Package namespace to ignore during template lookups.
-#
-# As an example, if you subclass +Template::Mustache+ as the class
-# +My::Heavily::Namepaced::Views::SomeView+, calls to {render} will
-# automatically try to load the template
-# +./My/Heavily/Namespaced/Views/SomeView.mustache+ under the {template_path}.
-# Since views will very frequently all live in a common namespace, you can
-# override this method in your subclass, and save yourself some headaches.
-#
-#    Setting template_namespace to:      yields template name:
-#      My::Heavily::Namespaced::Views => SomeView.mustache
-#      My::Heavily::Namespaced        => Views/SomeView.mustache
-#      Heavily::Namespaced            => My/Heavily/Namespaced/Views/SomeView.mustache
-#
-# As noted by the last example, namespaces will only be removed from the
-# beginning of the package name.
-# @return [String] The empty string.
-# @scope dual
+=item template_namespace
+
+Package namespace to ignore during template lookups.
+
+As an example, if you subclass C<Template::Mustache> as the class
+C<My::Heavily::Namepaced::Views::SomeView>, calls to C<render> will
+automatically try to load the template
+C<./My/Heavily/Namespaced/Views/SomeView.mustache> under the
+C<template_path>.  Since views will very frequently all live in a common
+namespace, you can override this method in your subclass, and save yourself
+some headaches.
+
+   Setting template_namespace to:      yields template name:
+     My::Heavily::Namespaced::Views => SomeView.mustache
+     My::Heavily::Namespaced        => Views/SomeView.mustache
+     Heavily::Namespaced            => My/Heavily/Namespaced/Views/SomeView.mustache
+
+As noted by the last example, namespaces will only be removed from the
+beginning of the package name.
+
+Returns the empty string.
+
+=cut
+
 sub template_namespace { '' }
 
 our $template_file;
 
-# The template filename to read.  The filename follows standard Perl module
-# lookup practices (e.g. My::Module becomes My/Module.pm) with the following
-# differences:
-# * Templates have the extension given by {template_extension} ('mustache' by
-#   default).
-# * Templates will have {template_namespace} removed, if it appears at the
-#   beginning of the package name.
-# * Template filename resolution will short circuit if
-#   +$Template::Mustache::template_file+ is set.
-# * Template filename resolution may be overriden in subclasses.
-# * Template files will be resolved against {template_path}, not +$PERL5LIB+.
-# @return [String] The path to the template file, relative to {template_path}.
-# @see template
+=item template_file
+
+The template filename to read.  The filename follows standard Perl module
+lookup practices (e.g. C<My::Module> becomes C<My/Module.pm>) with the
+following differences:
+
+=over 4
+
+=item *
+
+Templates have the extension given by C<template_extension> ('mustache' by
+default).
+
+=item *
+
+Templates will have C<template_namespace> removed, if it appears at the
+beginning of the package name.
+
+=item *
+
+Template filename resolution will short circuit if
+C<$Template::Mustache::template_file> is set.
+
+=item *
+
+Template filename resolution may be overriden in subclasses.
+
+=item *
+
+Template files will be resolved against C<template_path>, not C<$PERL5LIB>.
+
+=back
+
+Returns The path to the template file, relative to C<template_path> as a
+string.  See L<template>.
+
+=cut
+
 sub template_file {
     my ($receiver) = @_;
     return $Template::Mustache::template_file
@@ -358,8 +550,14 @@ sub template_file {
     return File::Spec->catfile(split(/::/, "${class}.${ext}"));
 };
 
-# Reads the template off disk.
-# @return [String] The contents of the {template_file} under {template_path}.
+=item template
+
+Reads the template off disk.
+
+Returns the contents of the C<template_file> under C<template_path>.
+
+=cut
+
 sub template {
     my ($receiver) = @_;
     my $path = $receiver->template_path();
@@ -367,10 +565,23 @@ sub template {
     return read_file(File::Spec->catfile($path, $template_file));
 }
 
-# Reads a named partial off disk.
-# @param [String] $name The name of the partial to lookup.
-# @return [String] The contents of the partial (in {template_path}, of type
-#   {template_extension}), or the empty string, if the partial does not exist.
+=item partial($name)
+
+Reads a named partial off disk.
+
+=over 4
+
+=item $name
+
+The name of the partial to lookup.
+
+=back
+
+Returns the contents of the partial (in C<template_path> of type
+C<template_extension>), or the empty string, if the partial does not exist.
+
+=cut
+
 sub partial {
     my ($receiver, $name) = @_;
     my $path = $receiver->template_path();
@@ -378,49 +589,130 @@ sub partial {
     return read_file(File::Spec->catfile($path, "${name}.${ext}"));
 }
 
-# @overload render()
-#   Renders a class or instance's template with data from the receiver.  The
-#   template will be retrieved by calling the {template} method.  Partials
-#   will be fetched by {partial}.
-#   @return [String] The fully rendered template.
-# @overload render($tmpl)
-#   Renders the given template with data from the receiver.  Partials will be
-#   fetched by {partial}.
-#   @param [String] $tmpl The template to render.
-#   @return [String] The fully rendered template.
-# @overload render($data)
-#   Renders a class or instance's template with data from the receiver.  The
-#   template will be retrieved by calling the {template} method.  Partials
-#   will be fetched by {partial}.
-#   @param [Hash,Object] $data Data to be interpolated into the template.
-#   @return [String] The fully rendered template.
-# @overload render($tmpl, $data)
-#   Renders the given template with the given data.  Partials will be fetched
-#   by {partial}.
-#   @param [String] $tmpl The template to render.
-#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
-#   @return [String] The fully rendered template.
-# @overload render($tmpl, $data, $partials)
-#   Renders the given template with the given data.  Partials will be looked up
-#   by calling the given code reference with the partial's name.
-#   @param [String] $tmpl The template to render.
-#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
-#   @param [Code] $partials A function used to lookup partials.
-#   @return [String] The fully rendered template.
-# @overload render($tmpl, $data, $partials)
-#   Renders the given template with the given data.  Partials will be looked up
-#   by calling the partial's name as a method on the given class or object.
-#   @param [String] $tmpl The template to render.
-#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
-#   @param [Class,Object] $partials A thing that responds to partial names.
-#   @return [String] The fully rendered template.
-# @overload render($tmpl, $data, $partials)
-#   Renders the given template with the given data.  Partials will be looked up
-#   in the given hash.
-#   @param [String] $tmpl The template to render.
-#   @param [Hash,Class,Object] $data Data to be interpolated into the template.
-#   @param [Hash] $partials A hash containing partials.
-#   @return [String] The fully rendered template.
+=item render
+
+Render a class or instances data, in each case returning the fully rendered
+template as a string; can be called in one of the following forms:
+
+=over 4
+
+=item render()
+
+Renders a class or instance's template with data from the receiver.  The
+template will be retrieved by calling the C<template> method.  Partials will
+be fetched by C<partial>.
+
+=item render($tmpl)
+
+Renders the given template with data from the receiver.  Partials will be
+fetched by C<partial>.
+
+=over 4
+
+=item $tmpl
+
+The template to render.
+
+=back
+
+=item render($data)
+
+Renders a class or instance's template with data from the receiver.  The
+template will be retrieved by calling the C<template> method.  Partials
+will be fetched by C<partial>.
+
+=over 4
+
+=item $data
+
+Data (as hash or object) to be interpolated into the template.
+
+=back
+
+=item render($tmpl, $data)
+
+Renders the given template with the given data.  Partials will be fetched
+by C<partial>.
+
+=over 4
+
+=item $tmpl
+
+The template to render.
+
+=item $data
+
+Data (as a hash, class, or object) to be interpolated into the template.
+
+=back
+
+=item render($tmpl, $data, $partials)
+
+Renders the given template with the given data.  Partials will be looked up
+by calling the given code reference with the partial's name.
+
+=over 4
+
+=item $tmpl
+
+The template to render.
+
+=item $data
+
+Data (as a hash, class, or object) to be interpolated into the template.
+
+=item $partials
+
+A function used to lookup partials.
+
+=back
+
+=item render($tmpl, $data, $partials)
+
+Renders the given template with the given data.  Partials will be looked up
+by calling the partial's name as a method on the given class or object.
+
+=over 4
+
+=item $tmpl
+
+The template to render.
+
+=item $data
+
+Data (as a hash, class, or object) to be interpolated into the template.
+
+=item $partials
+
+A thing (class or object) that responds to partial names.
+
+=back
+
+=item render($tmpl, $data, $partials)
+
+Renders the given template with the given data.  Partials will be looked up
+in the given hash.
+
+=over 4
+
+=item $tmpl
+
+The template to render.
+
+=item $data
+
+Data (as a hash, class, or object) to be interpolated into the template.
+
+=item $partials
+
+A hash containing partials.
+
+=back
+
+=back
+
+=cut
+
 sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
     ($data, $tmpl) = ($tmpl, $data) if !(ref $data) && (ref $tmpl);
@@ -438,5 +730,19 @@ sub render {
     my $parsed = parse($tmpl);
     return generate($parsed, $part, $data);
 }
+
+=back
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it only under the terms of Perl itself.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+Perl licensing terms for more details.
+
+=cut
 
 1;
