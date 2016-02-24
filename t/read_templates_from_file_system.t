@@ -6,6 +6,7 @@ use Template::Mustache;
 
 case t::ReadTemplatesFromFileSystem {
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadTemplatesFromFileSystem::Mustache;
         use base 'Template::Mustache';
         use File::Temp qw/ tempdir /;
