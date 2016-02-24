@@ -2,6 +2,7 @@ use Test::Mini::Unit;
 
 case t::ReadPartialsFromPartialMethod {
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadPartialsFromPartialMethod::Mustache;
         use base 'Template::Mustache';
 
