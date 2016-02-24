@@ -14,14 +14,13 @@ case t::ReadPartialsFromFileSystem {
     setup {
         my $tmpdir = t::ReadPartialsFromFileSystem::Mustache->template_path();
 
-        local *FILE;
-        open FILE, '+>', "${tmpdir}/list1.mustache";
-        print FILE "a, b, c";
-        close FILE;
+        open my $fh, '+>', "${tmpdir}/list1.mustache";
+        print $fh "a, b, c";
+        close $fh;
 
-        open FILE, '+>', "${tmpdir}/list2.mustache";
-        print FILE "d, e, f";
-        close FILE;
+        open $fh, '+>', "${tmpdir}/list2.mustache";
+        print $fh "d, e, f";
+        close $fh;
 
         $self->{template} = '[ {{> list1}}, {{> list2}} ]';
         $self->{expected} = '[ a, b, c, d, e, f ]';

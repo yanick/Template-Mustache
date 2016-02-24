@@ -24,10 +24,9 @@ case t::ReadTemplatesFromFileSystemWithNamespace {
         my $tmp = $mustache->template_path();
         mkdir "$tmp/ReadTemplatesFromFileSystemWithNamespace";
 
-        local *FILE;
-        open FILE, '+>', "$tmp/ReadTemplatesFromFileSystemWithNamespace/Mustache.mustache";
-        print FILE '{{name}} -- {{occupation}} ({{is_instance}})';
-        close FILE;
+        open my $fh, '+>', "$tmp/ReadTemplatesFromFileSystemWithNamespace/Mustache.mustache";
+        print $fh '{{name}} -- {{occupation}} ({{is_instance}})';
+        close $fh;
     }
 
     test class_render {

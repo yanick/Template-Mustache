@@ -27,11 +27,10 @@ case t::ReadTemplatesFromFileSystem {
         setup {
             my $tmp = $self->{tmpdir};
 
-            local *FILE;
             my $filename = "$tmp/t/ReadTemplatesFromFileSystem/Mustache.mustache";
-            open FILE, '+>', $filename;
-            print FILE '{{name}} the {{occupation}} ({{is_instance}})';
-            close FILE;
+            open my $fh, '+>', $filename;
+            print $fh '{{name}} the {{occupation}} ({{is_instance}})';
+            close $fh;
         }
 
         test class_render {
@@ -49,11 +48,10 @@ case t::ReadTemplatesFromFileSystem {
         setup {
             my $tmp = $self->{tmpdir};
 
-            local *FILE;
             my $filename = "$tmp/OtherTemplate.mustache";
-            open FILE, '+>', $filename;
-            print FILE '{{name}} -- {{occupation}} ({{is_instance}})';
-            close FILE;
+            open my $fh, '+>', $filename;
+            print $fh '{{name}} -- {{occupation}} ({{is_instance}})';
+            close $fh;
         }
 
         setup {
@@ -81,11 +79,10 @@ case t::ReadTemplatesFromFileSystem {
         setup {
             my $tmp = $self->{tmpdir};
 
-            local *FILE;
             my $filename = "$tmp/TemplateFile.mustache";
-            open FILE, '+>', $filename;
-            print FILE '{{name}}, {{occupation}}';
-            close FILE;
+            open my $fh, '+>', $filename;
+            print $fh '{{name}}, {{occupation}}';
+            close $fh;
         }
 
         test rendering {
