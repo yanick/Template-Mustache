@@ -1,6 +1,7 @@
 Revision history for Template-Mustache
 
-{{$NEXT}
+v0.5.4 2016-11-06
+
     - Update link to Mustache main site. (GH#29, paultcochrane)
     - Lots of maintance work by paultcochrane
       (GH#23,GH#25,GH#26,GH#27,GH#30,GH#31,GH#32 paultcochrane)
