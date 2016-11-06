@@ -1,2 +1,8 @@
 .DS_Store
-^Makefile$
+Makefile*
+MANIFEST
+MYMETA.*
+Template-Mustache-*.tar.gz
+blib/
+cover_db/
+pm_to_blib
