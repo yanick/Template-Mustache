@@ -406,11 +406,13 @@ sub lookup {
 
     for my $index (0..$#{[@context]}) {
         $ctx = $context[$index];
+        my $blessed_or_not_ref = blessed($ctx) || !ref $ctx;
         if (ref $ctx eq 'HASH') {
             next unless exists $ctx->{$field};
             $value = $ctx->{$field};
             last;
-        } elsif ($ctx && (blessed($ctx) || ! ref $ctx) && $ctx->can($field)) {;
+        }
+        elsif ($ctx && $blessed_or_not_ref && _can_run_field($ctx, $field)) {
             # We want to accept class names and objects, but not unblessed refs
             # or undef. -- rjbs, 2015-06-12
             $value = $ctx->$field();
@@ -419,6 +421,21 @@ sub lookup {
     }
 
     return ($ctx, $value);
+}
+
+sub _can_run_field {
+    my ($ctx, $field) = @_;
+
+    my $can_run_field;
+    if ( $] < 5.018 ) {
+        eval { $ctx->can($field) };
+        $can_run_field = not $@;
+    }
+    else {
+        $can_run_field = $ctx->can($field);
+    }
+
+    return $can_run_field;
 }
 
 use namespace::clean;
