@@ -1,10 +1,12 @@
 use strict;
 use warnings;
 
-use Test::Mini::Unit;
 use Template::Mustache;
 
-case t::ReadPartialsFromFileSystem {
+package t::ReadPartialsFromFileSystem;
+
+use Test::More;
+
     {
         ## no critic (RequireFilenameMatchesPackage)
         package t::ReadPartialsFromFileSystem::Mustache;
@@ -15,7 +17,6 @@ case t::ReadPartialsFromFileSystem {
         sub template_path { $tmpdir ||= tempdir(CLEANUP => 1); }
     }
 
-    setup {
         my $tmpdir = t::ReadPartialsFromFileSystem::Mustache->template_path();
 
         open my $fh, '+>', "${tmpdir}/list1.mustache";
@@ -26,16 +27,18 @@ case t::ReadPartialsFromFileSystem {
         print $fh "d, e, f";
         close $fh;
 
+        my $self = {};
+
         $self->{template} = '[ {{> list1}}, {{> list2}} ]';
         $self->{expected} = '[ a, b, c, d, e, f ]';
-    }
 
-    test rendering {
+    subtest rendering => sub {
         my $rendered = t::ReadPartialsFromFileSystem::Mustache->render(
             $self->{template},
             $self->{data},
         );
 
-        assert_equal($rendered, $self->{expected});
-    }
-}
+        is($rendered, $self->{expected});
+    };
+
+done_testing

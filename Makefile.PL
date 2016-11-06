@@ -29,7 +29,6 @@ my %WriteMakefileArgs = (
         'namespace::clean' => 0,
     },
     'BUILD_REQUIRES' => {
-        'Test::Mini::Unit' => 'v1.0.3',
         'YAML::Syck'       => '1.15',
     },
     'CONFIGURE_REQUIRES' => {

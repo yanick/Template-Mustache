@@ -1,9 +1,8 @@
 use strict;
 use warnings;
 
-use Test::Mini::Unit;
+use Test::More;
 
-case t::ReadPartialsFromPartialMethod {
     {
         ## no critic (RequireFilenameMatchesPackage)
         package t::ReadPartialsFromPartialMethod::Mustache;
@@ -16,17 +15,18 @@ case t::ReadPartialsFromPartialMethod {
         }
     }
 
-    setup {
+my $self = {};
+
         $self->{template} = '[ {{> list1}}, {{> list2}} ]';
         $self->{expected} = '[ a, b, c, d, e, f ]';
-    }
 
-    test rendering {
+    subtest rendering => sub {
         my $rendered = t::ReadPartialsFromPartialMethod::Mustache->render(
             $self->{template},
             $self->{data},
         );
 
-        assert_equal($rendered, $self->{expected});
-    }
-}
+        is($rendered, $self->{expected});
+    };
+
+done_testing;

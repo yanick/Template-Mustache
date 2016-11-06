@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-use Test::Mini::Unit;
 use Template::Mustache;
+use Test::More;
 
-case t::ReadTemplatesFromFileSystemWithNamespace {
+subtest ReadTemplatesFromFileSystemWithNamespace => sub {
     {
         ## no critic (RequireFilenameMatchesPackage)
         package t::ReadTemplatesFromFileSystemWithNamespace::Mustache;
@@ -21,7 +21,8 @@ case t::ReadTemplatesFromFileSystemWithNamespace {
         sub is_instance { ref(shift) ? 'yes' : 'no' }
     }
 
-    setup {
+    my $self = {};
+
         my $mustache = 't::ReadTemplatesFromFileSystemWithNamespace::Mustache';
         $self->{class} = $mustache;
 
@@ -31,13 +32,13 @@ case t::ReadTemplatesFromFileSystemWithNamespace {
         open my $fh, '+>', "$tmp/ReadTemplatesFromFileSystemWithNamespace/Mustache.mustache";
         print $fh '{{name}} -- {{occupation}} ({{is_instance}})';
         close $fh;
-    }
 
-    test class_render {
-        assert_equal($self->{class}->render(), "Joe -- Plumber (no)");
-    }
+    subtest class_render => sub {
+        is($self->{class}->render(), "Joe -- Plumber (no)");
+    };
 
-    test instance_render {
-        assert_equal($self->{class}->new()->render(), "Joe -- Plumber (yes)");
-    }
-}
+    subtest instance_render => sub {
+        is($self->{class}->new()->render(), "Joe -- Plumber (yes)");
+    };
+};
+done_testing
