@@ -4,6 +4,7 @@ Revision history for Template-Mustache
     - Update link to Mustache main site. (GH#29, paultcochrane)
     - Lots of maintance work by paultcochrane
       (GH#23,GH#25,GH#26,GH#27,GH#30,GH#31,GH#32 paultcochrane)
+    - Convert internal docs to POD (GH#24, paultcochrane)
 
 v0.5.3 2015-12-10
         - Update master GitHub Mustache project url. (ReadmeCritic, GH#22)
