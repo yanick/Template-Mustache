@@ -66,16 +66,18 @@ $WriteMakefileArgs{dist}->{PREOP} .= " -o $LIBDIR; ";
 $WriteMakefileArgs{dist}->{PREOP} .= "(cd $DISTDIR; find lib -name '*.pod' -type f >> MANIFEST)";
 
 # Create a MANIFEST.SKIP file.
-open(GITIGNORE, '<.gitignore');
-open(SKIP, '>MANIFEST.SKIP');
-print SKIP "#!include_default\n";
-print SKIP "MANIFEST.SKIP.*\n";
-print SKIP "^$DISTNAME.*\n";
-print SKIP "^\\..*\n";
-print SKIP <GITIGNORE>;
-print SKIP $SKIP_FILES;
-close SKIP;
-close GITIGNORE;
+open my $gih, '<', '.gitignore';
+my $gitignore = do { local $/; <$gih> };
+close $gih;
+
+open my $skip, '>', 'MANIFEST.SKIP';
+print $skip "#!include_default\n";
+print $skip "MANIFEST.SKIP.*\n";
+print $skip "^$DISTNAME.*\n";
+print $skip "^\\..*\n";
+print $skip $gitignore;
+print $skip $SKIP_FILES;
+close $skip;
 
 # Create a new MANIFEST.
 ExtUtils::Manifest::mkmanifest();
