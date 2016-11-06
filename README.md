@@ -1,6 +1,8 @@
 Template::Mustache
 ==================
 
+[![Build Status](https://travis-ci.org/pvande/Template-Mustache.svg?branch=master)](https://travis-ci.org/pvande/Template-Mustache)
+
 Template::Mustache is a port of the
 [Mustache](https://github.com/mustache/mustache) templating language to Perl.
 
