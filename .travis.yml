@@ -13,5 +13,5 @@ perl:
     - "5.8"
 
 install:
-    - cpanm --installdeps --notest .
+    - cpanm --installdeps .
     - git submodule update --init
