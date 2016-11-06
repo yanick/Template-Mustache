@@ -1,4 +1,4 @@
-package SpecCompatibility;
+package SpecCompatibility; ## no critic (RequireFilenameMatchesPackage)
 use base 'Test::Mini::TestCase';
 
 use strict;

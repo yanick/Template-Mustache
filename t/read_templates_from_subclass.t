@@ -6,6 +6,7 @@ use Template::Mustache;
 
 case t::ReadTemplatesFromSubclass {
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadTemplatesFromSubclass::Mustache;
         use base 'Template::Mustache';
 

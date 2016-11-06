@@ -6,6 +6,7 @@ use Template::Mustache;
 
 case t::LambdasReceiveRenderHelper {
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::LambdasReceiveRenderHelper::Mustache;
         use base 'Template::Mustache';
 
