@@ -30,7 +30,7 @@ use HTML::Entities;
 use File::Spec;
 use Scalar::Util 'blessed';
 
-use version 0.77; our $VERSION = qv('v0.5.4');
+use version 0.77; our $VERSION = qv('v0.5.5');
 
 my %TemplateCache;
 
