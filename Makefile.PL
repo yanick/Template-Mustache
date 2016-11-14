@@ -27,6 +27,7 @@ my %WriteMakefileArgs = (
         'version' => '0.77',
         'HTML::Entities' => 0,
         'namespace::clean' => 0,
+        'Test::Exception' => 0,
     },
     'BUILD_REQUIRES' => {
         'YAML::Syck'       => '1.15',

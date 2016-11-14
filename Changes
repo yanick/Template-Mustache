@@ -1,5 +1,8 @@
 Revision history for Template-Mustache
 
+v0.5.5 2016-11-13
+     - Add Test::Exception as dependency.
+
 v0.5.4 2016-11-06
 
     - Update link to Mustache main site. (GH#29, paultcochrane)
