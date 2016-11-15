@@ -85,9 +85,9 @@ sub parse {
 
     my $error = sub {
         my ($message, $errorPos) = @_;
-        my @lineCount = split("\n", substr($tmpl, 0, $errorPos));
+        my $lineCount = substr($tmpl, 0, $errorPos) =~ tr/\n/\n/;
 
-        die $message . "\nLine " . scalar(@lineCount);
+        die $message . "\nLine " . $lineCount
     };
 
     # Build the pattern, and instruct the regex engine to begin at `$start`.
@@ -271,6 +271,7 @@ sub lookup {
 
     for my $index (0..$#{[@context]}) {
         $ctx = $context[$index];
+        my $blessed_or_not_ref = blessed($ctx) || !ref $ctx;
 
         if($field =~ /\./) {
             # Dotted syntax foo.bar
@@ -293,8 +294,10 @@ sub lookup {
             next unless @$ctx[$field];
             $value = @$ctx[$field];
             last;
-        } else {
-            next unless UNIVERSAL::can($ctx, $field);
+        }
+        elsif ($ctx && $blessed_or_not_ref && _can_run_field($ctx, $field)) {
+            # We want to accept class names and objects, but not unblessed refs
+            # or undef. -- rjbs, 2015-06-12
             $value = $ctx->$field();
             last;
         }
