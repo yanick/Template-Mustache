@@ -1,6 +1,7 @@
-package SpecCompatibility;
-use base 'Test::Mini::TestCase';
-use Test::Mini::Assertions;
+use Test::More;
+
+use strict;
+use warnings;
 
 use Template::Mustache;
 
@@ -18,18 +19,20 @@ $Data::Dumper::Indent = 0;
 $Data::Dumper::Sortkeys = 1;
 $Data::Dumper::Deparse = 1;
 
+
 my $specs = catfile(dirname(__FILE__), '..', 'ext', 'spec', 'specs');
+
+plan skip_all => "Couldn't find specs; try running `git submodule update --init`"
+    unless glob catfile($specs, '*.yml');
+
 for my $file (glob catfile($specs, '*.yml')) {
     my $spec = YAML::Syck::LoadFile($file);
     ($file = basename($file)) =~ s/[^\w.]//g;
 
-    no strict 'refs';
-    @{"$file\::ISA"} = 'Test::Mini::TestCase';
-
     for my $test (@{$spec->{tests}}) {
         (my $name = $test->{name}) =~ s/'/"/g;
 
-        *{"$file\::test - @{[$name]}"} = sub {
+        subtest $name => sub {
             my ($self) = @_;
 
             my $expected = $test->{expected};
@@ -48,7 +51,7 @@ for my $file (glob catfile($specs, '*.yml')) {
 
             my $actual = Template::Mustache->render($tmpl, $data, $partials);
 
-            assert_equal($actual, $expected,
+            is($actual, $expected,
                 "$test->{desc}\n".
                 "Data:     @{[ Dumper $test->{data} ]}\n".
                 "Template: @{[ Dumper $test->{template} ]}\n".
@@ -58,8 +61,5 @@ for my $file (glob catfile($specs, '*.yml')) {
     }
 }
 
-sub test_spec_was_tested {
-    assert(1);
-    skip "Couldn't find specs; try running `git submodule update --init`"
-        unless glob catfile($specs, '*.yml');
-}
+done_testing;
+

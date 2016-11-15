@@ -1,19 +1,24 @@
-use Test::Mini::Unit;
+use strict;
+
 use Template::Mustache;
 
-case t::ReadDataFromClasses {
+{
+package t::ReadDataFromClasses;
+
+use Test::More;
+
     sub name       { 'Joe' }
     sub occupation { 'Plumber' }
     sub qualified  { (ref $_[0]) . '::' . ($_[0]->{name}) }
 
-    setup {
-        my $testname = (ref $self) . '::' . $self->{name};
-        $self->{template} = '{{name}} the {{occupation}} ({{qualified}})';
-        $self->{expected} = "Joe the Plumber ($testname)";
-    }
+    my $self = bless {}, __PACKAGE__;
 
-    test rendering {
-        my $rendered = Template::Mustache->render($self->{template}, $self);
-        assert_equal($rendered, $self->{expected});
-    }
+    my $testname = (ref $self) . '::' . $self->{name};
+    $self->{template} = '{{name}} the {{occupation}} ({{qualified}})';
+    $self->{expected} = "Joe the Plumber ($testname)";
+
+    my $rendered = Template::Mustache->render($self->{template}, $self);
+    is($rendered, $self->{expected});
+
+done_testing;
 }

@@ -1,8 +1,11 @@
-use Test::Mini::Unit;
-use Template::Mustache;
+use strict;
+use warnings;
 
-case t::ReadTemplatesFromSubclass {
+use Template::Mustache;
+use Test::More;
+
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadTemplatesFromSubclass::Mustache;
         use base 'Template::Mustache';
 
@@ -15,13 +18,14 @@ case t::ReadTemplatesFromSubclass {
         sub occupation  { 'Plumber' }
     }
 
-    test class_render {
+    subtest class_render => sub {
         my $rendered = t::ReadTemplatesFromSubclass::Mustache->render();
-        assert_equal($rendered, "Joe the Plumber (no)");
-    }
+        is($rendered, "Joe the Plumber (no)");
+    };
 
-    test instance_render {
+    subtest instance_render => sub {
         my $rendered = t::ReadTemplatesFromSubclass::Mustache->new()->render();
-        assert_equal($rendered, "Joe the Plumber (yes)");
-    }
-}
+        is($rendered, "Joe the Plumber (yes)");
+    };
+
+done_testing;

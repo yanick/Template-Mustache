@@ -1,21 +1,25 @@
-use Test::Mini::Unit;
+use strict;
+use warnings;
+
+
+package Foo;
+
+use Test::More;
+
 use Template::Mustache;
 
-case t::ReadDataFromClasses {
-    sub name       { 'Joe' }
-    sub occupation { 'Plumber' }
-    sub classname  { shift }
+sub name       { 'Joe' }
+sub occupation { 'Plumber' }
+sub classname  { shift }
 
-    setup {
-        $self->{template} = '{{name}} the {{occupation}} ({{classname}})';
-        $self->{expected} = 'Joe the Plumber (t::ReadDataFromClasses)';
-    }
+my $self = {};
+$self->{template} = '{{name}} the {{occupation}} ({{classname}})';
+$self->{expected} = 'Joe the Plumber (Foo)';
 
-    test rendering {
-        my $rendered = Template::Mustache->render(
-            $self->{template},
-            ref($self),
-        );
-        assert_equal($rendered, $self->{expected});
-    }
-}
+my $rendered = Template::Mustache->render(
+    $self->{template},
+    __PACKAGE__
+);
+is($rendered, $self->{expected});
+
+done_testing;

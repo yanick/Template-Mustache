@@ -1,8 +1,11 @@
-use Test::Mini::Unit;
+use strict;
+use warnings;
+
 use Template::Mustache;
 
-case t::ReadPartialsFromSubs {
-    setup {
+use Test::More;
+
+my $self = {};
         $self->{template} = '[ {{> list1}}, {{> list2}} ]';
         $self->{partials} = sub {
             return 'a, b, c' if $_[0] eq 'list1';
@@ -10,15 +13,15 @@ case t::ReadPartialsFromSubs {
         };
 
         $self->{expected} = '[ a, b, c, d, e, f ]';
-    }
 
-    test rendering {
+    subtest rendering => sub {
         my $rendered = Template::Mustache->render(
             $self->{template},
             $self->{data},
             $self->{partials},
         );
 
-        assert_equal($rendered, $self->{expected});
-    }
-}
+        is($rendered, $self->{expected});
+    };
+
+done_testing;

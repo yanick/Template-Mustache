@@ -1,8 +1,12 @@
-use Test::Mini::Unit;
-use Template::Mustache;
+use strict;
+use warnings;
 
-case t::ReadTemplatesFromFileSystemWithNamespace {
+use Template::Mustache;
+use Test::More;
+
+subtest ReadTemplatesFromFileSystemWithNamespace => sub {
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadTemplatesFromFileSystemWithNamespace::Mustache;
         use base 'Template::Mustache';
         use File::Temp qw/ tempdir /;
@@ -17,24 +21,24 @@ case t::ReadTemplatesFromFileSystemWithNamespace {
         sub is_instance { ref(shift) ? 'yes' : 'no' }
     }
 
-    setup {
+    my $self = {};
+
         my $mustache = 't::ReadTemplatesFromFileSystemWithNamespace::Mustache';
         $self->{class} = $mustache;
 
         my $tmp = $mustache->template_path();
         mkdir "$tmp/ReadTemplatesFromFileSystemWithNamespace";
 
-        local *FILE;
-        open FILE, '+>', "$tmp/ReadTemplatesFromFileSystemWithNamespace/Mustache.mustache";
-        print FILE '{{name}} -- {{occupation}} ({{is_instance}})';
-        close FILE;
-    }
+        open my $fh, '+>', "$tmp/ReadTemplatesFromFileSystemWithNamespace/Mustache.mustache";
+        print $fh '{{name}} -- {{occupation}} ({{is_instance}})';
+        close $fh;
 
-    test class_render {
-        assert_equal($self->{class}->render(), "Joe -- Plumber (no)");
-    }
+    subtest class_render => sub {
+        is($self->{class}->render(), "Joe -- Plumber (no)");
+    };
 
-    test instance_render {
-        assert_equal($self->{class}->new()->render(), "Joe -- Plumber (yes)");
-    }
-}
+    subtest instance_render => sub {
+        is($self->{class}->new()->render(), "Joe -- Plumber (yes)");
+    };
+};
+done_testing

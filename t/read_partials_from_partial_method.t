@@ -1,7 +1,10 @@
-use Test::Mini::Unit;
+use strict;
+use warnings;
 
-case t::ReadPartialsFromPartialMethod {
+use Test::More;
+
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadPartialsFromPartialMethod::Mustache;
         use base 'Template::Mustache';
 
@@ -12,17 +15,18 @@ case t::ReadPartialsFromPartialMethod {
         }
     }
 
-    setup {
+my $self = {};
+
         $self->{template} = '[ {{> list1}}, {{> list2}} ]';
         $self->{expected} = '[ a, b, c, d, e, f ]';
-    }
 
-    test rendering {
+    subtest rendering => sub {
         my $rendered = t::ReadPartialsFromPartialMethod::Mustache->render(
             $self->{template},
             $self->{data},
         );
 
-        assert_equal($rendered, $self->{expected});
-    }
-}
+        is($rendered, $self->{expected});
+    };
+
+done_testing;

@@ -1,0 +1,10 @@
+\.git
+Template-Mustache
+MANIFEST.SKIP
+MANIFEST.bak
+ext
+.shipit
+.yardopts
+Makefile$
+blib
+.travis

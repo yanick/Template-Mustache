@@ -1,8 +1,15 @@
-use Test::Mini::Unit;
+use strict;
+use warnings;
+
 use Template::Mustache;
 
-case t::ReadDataFromSubclass {
+{
+package t::ReadDataFromSubclass; 
+
+use Test::More;
+
     {
+        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadDataFromSubclass::Mustache;
         use base 'Template::Mustache';
 
@@ -10,21 +17,23 @@ case t::ReadDataFromSubclass {
         sub occupation  { 'Plumber' }
         sub is_instance { ref(shift) ? 'yes' : 'no' }
     }
-    setup {
-        $self->{template} = '{{name}} the {{occupation}} ({{is_instance}})';
-    }
 
-    test class_render {
+    my $self = {};
+    $self->{template} = '{{name}} the {{occupation}} ({{is_instance}})';
+
+    subtest class_render => sub {
         my $rendered = t::ReadDataFromSubclass::Mustache->render(
             $self->{template},
         );
-        assert_equal($rendered, "Joe the Plumber (no)");
-    }
+        is($rendered, "Joe the Plumber (no)");
+    };
 
-    test instance_render {
+    subtest instance_render => sub {
         my $rendered = t::ReadDataFromSubclass::Mustache->new()->render(
             $self->{template},
         );
-        assert_equal($rendered, "Joe the Plumber (yes)");
-    }
+        is($rendered, "Joe the Plumber (yes)");
+    };
+
+    done_testing;
 }

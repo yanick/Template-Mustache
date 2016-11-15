@@ -1,27 +1,29 @@
-use Test::Mini::Unit;
+use strict;
+use warnings;
+
+use Test::More;
+
 use Template::Mustache;
 
-case t::ReadDataFromHashes {
-    setup {
-        $self->{template} = '[ {{1}}, {{#sub}}{{2}}, {{3}}{{/sub}}, {{4}} ]';
-        $self->{data} = {
-            1 => 'a, b',
-            sub => {
-                2 => 'c',
-                3 => 'd',
-            },
-            4 => 'e, f',
-        };
+my $self = {};
 
-        $self->{expected} = '[ a, b, c, d, e, f ]';
-    }
+$self->{template} = '[ {{1}}, {{#sub}}{{2}}, {{3}}{{/sub}}, {{4}} ]';
+$self->{data} = {
+    1 => 'a, b',
+    sub => {
+        2 => 'c',
+        3 => 'd',
+    },
+    4 => 'e, f',
+};
 
-    test rendering {
-        my $rendered = Template::Mustache->render(
-            $self->{template},
-            $self->{data},
-        );
+$self->{expected} = '[ a, b, c, d, e, f ]';
 
-        assert_equal($rendered, $self->{expected});
-    }
-}
+my $rendered = Template::Mustache->render(
+    $self->{template},
+    $self->{data},
+);
+
+is($rendered, $self->{expected});
+
+done_testing;
