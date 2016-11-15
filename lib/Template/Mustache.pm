@@ -760,16 +760,6 @@ sub render {
 
 =back
 
-=head1 LICENSE
-
-This program is free software; you can redistribute it and/or modify
-it only under the terms of Perl itself.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-Perl licensing terms for more details.
-
 =cut
 
 1;
