@@ -1,10 +1,8 @@
 package Template::Mustache;
+# ABSTRACT: Drawing Mustaches on Perl for fun and profit
+
 use strict;
 use warnings;
-
-=head1 NAME
-
-Template::Mustache
 
 =head1 SYNOPSIS
 
@@ -19,10 +17,6 @@ Template::Mustache is an implementation of the fabulous Mustache templating
 language for Perl 5.8 and later.
 
 See L<http://mustache.github.com>.
-
-=head1 AUTHOR
-
-Pieter van de Bruggen
 
 =cut
 
