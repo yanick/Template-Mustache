@@ -1,8 +1,13 @@
 Revision history for Template-Mustache
 
 {$NEXT}
+    [ FEATURES ]
+    - Support dotted names (GH#38, jfparis84)
+
+
     [ DISTRIBUTION MAINTENANCE ]
     - Maintenance passed to Yanick, github repo moved in consequence.
+
 
 v0.5.5 2016-11-13
      - Add Test::Exception as dependency.

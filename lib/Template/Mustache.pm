@@ -297,7 +297,6 @@ Returns the fully rendered template as a string.
 
 sub generate {
     my ($parse_tree, $partials, @context) = @_;
-
     # Build a helper function to abstract away subtemplate expansion.
     # Recursively calls generate after parsing the given template.  This allows
     # us to use the call stack as our context stack.
@@ -401,9 +400,27 @@ sub lookup {
     for my $index (0..$#{[@context]}) {
         $ctx = $context[$index];
         my $blessed_or_not_ref = blessed($ctx) || !ref $ctx;
-        if (ref $ctx eq 'HASH') {
-            next unless exists $ctx->{$field};
+
+        if($field =~ /\./) {
+            # Dotted syntax foo.bar
+            my ($var, $field) = $field =~ /(.+?)\.(.+)/;
+
+            if(ref $ctx eq 'HASH') {
+                next unless exists $ctx->{$var};
+                ($ctx, $value) = lookup($field, $ctx->{$var});
+                last;
+            } elsif(ref $ctx eq 'ARRAY') {
+                next unless @$ctx[$var];
+                ($ctx, $value) = lookup($field, @$ctx[$var]);
+                last;
+            }
+        } elsif (ref $ctx eq 'HASH') {
+		    next unless exists $ctx->{$field};
             $value = $ctx->{$field};
+            last;
+        } elsif (ref $ctx eq 'ARRAY') {
+            next unless @$ctx[$field];
+            $value = @$ctx[$field];
             last;
         }
         elsif ($ctx && $blessed_or_not_ref && _can_run_field($ctx, $field)) {
