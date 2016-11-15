@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 # Original: https://github.com/defunkt/mustache/blob/master/bin/mustache
 
+# PODNAME: mustache.pl
+
 use strict;
 use warnings;
 use autodie;
