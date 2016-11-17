@@ -1,49 +1,44 @@
 Revision history for Template-Mustache
 
-{{$NEXT}}
-    [ FEATURES ]
-    - Support dotted names (GH#38, jfparis84)
-
-
-    [ DISTRIBUTION MAINTENANCE ]
+0.5.6 2016-11-17
+  [ DISTRIBUTION MAINTENANCE ]
     - Maintenance passed to Yanick, github repo moved in consequence.
 
+  [ FEATURES ]
+    - Support dotted names (GH#38, jfparis84)
+
+  [ STATISTICS ]
+    - code churn: 25 files changed, 1242 insertions(+), 556 deletions(-)
 
 v0.5.5 2016-11-13
-     - Add Test::Exception as dependency.
+  - Add Test::Exception as dependency.
 
 v0.5.4 2016-11-06
-
-    - Update link to Mustache main site. (GH#29, paultcochrane)
-    - Lots of maintance work by paultcochrane
-      (GH#23,GH#25,GH#26,GH#27,GH#30,GH#31,GH#32 paultcochrane)
-    - Convert internal docs to POD (GH#24, paultcochrane)
-    - Fix spec test suite breakages. (GH#33, paultcochrane)
-    - Add Travis config (GH#34, paultcochrane)
-    - Convert tests away from Test::Mini.
+  - Update link to Mustache main site. (GH#29, paultcochrane)
+  - Lots of maintance work by paultcochrane
+    (GH#23,GH#25,GH#26,GH#27,GH#30,GH#31,GH#32 paultcochrane)
+  - Convert internal docs to POD (GH#24, paultcochrane)
+  - Fix spec test suite breakages. (GH#33, paultcochrane)
+  - Add Travis config (GH#34, paultcochrane)
+  - Convert tests away from Test::Mini.
 
 v0.5.3 2015-12-10
-        - Update master GitHub Mustache project url. (ReadmeCritic, GH#22)
-        - Use HTML::Entities instead of CGI::escapeHTML. (Josh Lavin, GH#21)
-        - add script 'mustache.pl'. (Chris Christensen, GH#15)
-        - add 'namespace::clean' as a dependency. (mskott, GH#7)
+  - Update master GitHub Mustache project url. (ReadmeCritic, GH#22)
+  - Use HTML::Entities instead of CGI::escapeHTML. (Josh Lavin, GH#21)
+  - add script 'mustache.pl'. (Chris Christensen, GH#15)
+  - add 'namespace::clean' as a dependency. (mskott, GH#7)
 
-v0.5.2  2015-06-12
+v0.5.2 2015-06-12
+  - don't use length(@arr) when scalar(@arr) is meant!
+  - use tr/// for counting, not split
+  - don't die if provided context object is a non-object ref
 
-        don't use length(@arr) when scalar(@arr) is meant!
+v0.5.1 2011-02-13
+  - Updating dependency on Test::Mini::Unit.  Solves build problems on Perl
+  - 5.13+.
+  - An optional second argument, `$render`, is now passed to lambdas.  This
+  - code reference will render the template it's given against the current
+  - context stack.
 
-        use tr/// for counting, not split
-
-        don't die if provided context object is a non-object ref
-
-v0.5.1  2011-02-13
-        Updating dependency on Test::Mini::Unit.  Solves build problems on Perl
-        5.13+.
-
-        An optional second argument, `$render`, is now passed to lambdas.  This
-        code reference will render the template it's given against the current
-        context stack.
-
-v0.5.0  2011-01-10
-        Initial release to CPAN.
-
+v0.5.0 2011-01-10
+  - Initial release to CPAN.

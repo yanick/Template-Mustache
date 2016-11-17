@@ -1,24 +1,10 @@
 package Template::Mustache;
+our $AUTHORITY = 'cpan:YANICK';
 # ABSTRACT: Drawing Mustaches on Perl for fun and profit
-
+$Template::Mustache::VERSION = '0.5.6';
 use strict;
 use warnings;
 
-=head1 SYNOPSIS
-
-    use Template::Mustache;
-
-    print Template::Mustache->render(
-        "Hello {{planet}}", {planet => "World!"}), "\n";
-
-=head1 DESCRIPTION
-
-Template::Mustache is an implementation of the fabulous Mustache templating
-language for Perl 5.8 and later.
-
-See L<http://mustache.github.com>.
-
-=cut
 
 use HTML::Entities;
 use File::Spec;
@@ -26,31 +12,6 @@ use Scalar::Util 'blessed';
 
 my %TemplateCache;
 
-=head2 Functions
-
-=over 4
-
-=item build_pattern($otag, $ctag)
-
-Constructs a new regular expression, to be used in the parsing of Mustache
-templates.
-
-=over 4
-
-=item $otag
-
-The tag opening delimiter.
-
-=item $ctag
-
-The tag closing delimiter.
-
-=back
-
-Returns a regular expression that will match tags with the specified
-delimiters.
-
-=cut
 
 sub build_pattern {
     my ($otag, $ctag) = @_;
@@ -67,22 +28,6 @@ sub build_pattern {
     /xsm;
 }
 
-=item read_file($filename)
-
-Reads a file into a string, returning the empty string if the file does not
-exist.
-
-=over 4
-
-=item $filename
-
-The name of the file to read.
-
-=back
-
-Returns the contents of the given filename, or the empty string.
-
-=cut
 
 sub read_file {
     my ($filename) = @_;
@@ -95,75 +40,6 @@ sub read_file {
     return $data;
 }
 
-=item parse($tmpl, [$delims, [$section, $start]])
-
-Can be called in one of three forms:
-
-=over 4
-
-=item parse($tmpl)
-
-Creates an AST from the given template.
-
-=over 4
-
-=item $tmpl
-
-The template to parse.
-
-=back
-
-An array reference to the AST represented by the given template.
-
-=item parse($tmpl, $delims)
-
-Creates an AST from the given template, with non-standard delimiters.
-
-=over 4
-
-=item $tmpl
-
-The template to parse.
-
-=item $delims
-
-An array reference to the delimiter pair with which to begin parsing.
-
-=back
-
-Returns an array reference to the AST represented by the given template.
-
-=item parse($tmpl, $delims, $section, $start)
-
-Parses out a section tag from the given template.
-
-=over 4
-
-=item $tmpl
-
-The template to parse.
-
-=item $delims
-
-An array reference to the delimiter pair with which to begin parsing.
-
-=item $section
-
-The name of the section we're parsing.
-
-=item $start
-
-The index of the first character of the section.
-
-=back
-
-Returns an array reference to the raw text of the section (first element),
-and the index of the character immediately following the close section tag
-(last element).
-
-=back
-
-=cut
 
 sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
@@ -268,30 +144,6 @@ sub parse {
     return \@buffer;
 }
 
-=item generate($parse_tree, $partials, @context)
-
-Produces an expanded version of the template represented by the given parse
-tree.
-
-=over 4
-
-=item $parse_tree
-
-The AST of a Mustache template.
-
-=item $partials
-
-A subroutine that looks up partials by name.
-
-=item @context
-
-The context stack to perform key lookups against.
-
-=back
-
-Returns the fully rendered template as a string.
-
-=cut
 
 sub generate {
     my ($parse_tree, $partials, @context) = @_;
@@ -369,27 +221,6 @@ sub generate {
     } @$parse_tree;
 }
 
-=item lookup($field, @context)
-
-Performs a lookup of a C<$field> in a context stack.
-
-=over 4
-
-=item $field
-
-The field to look up.
-
-=item @context
-
-The context stack.
-
-=back
-
-Returns the context element and value for the given C<$field>.
-
-=back
-
-=cut
 
 sub lookup {
     my ($field, @context) = @_;
@@ -449,6 +280,255 @@ sub _can_run_field {
 
 use namespace::clean;
 
+
+sub new {
+    my ($class, %args) = @_;
+    return bless({ %args }, $class);
+}
+
+our $template_path = '.';
+
+
+sub template_path { $Template::Mustache::template_path }
+
+our $template_extension = 'mustache';
+
+
+sub template_extension { $Template::Mustache::template_extension }
+
+
+sub template_namespace { '' }
+
+our $template_file;
+
+
+sub template_file {
+    my ($receiver) = @_;
+    return $Template::Mustache::template_file
+        if $Template::Mustache::template_file;
+
+    my $class = ref $receiver || $receiver;
+    $class =~ s/^@{[$receiver->template_namespace()]}:://;
+    my $ext  = $receiver->template_extension();
+    return File::Spec->catfile(split(/::/, "${class}.${ext}"));
+};
+
+
+sub template {
+    my ($receiver) = @_;
+    my $path = $receiver->template_path();
+    my $template_file = $receiver->template_file();
+    return read_file(File::Spec->catfile($path, $template_file));
+}
+
+
+sub partial {
+    my ($receiver, $name) = @_;
+    my $path = $receiver->template_path();
+    my $ext  = $receiver->template_extension();
+    return read_file(File::Spec->catfile($path, "${name}.${ext}"));
+}
+
+
+sub render {
+    my ($receiver, $tmpl, $data, $partials) = @_;
+    ($data, $tmpl) = ($tmpl, $data) if !(ref $data) && (ref $tmpl);
+
+    $tmpl       = $receiver->template() unless defined $tmpl;
+    $data     ||= $receiver;
+    $partials ||= sub {
+        unshift @_, $receiver;
+        goto &{$receiver->can('partial')};
+    };
+
+    my $part = $partials;
+    $part = sub { lookup(shift, $partials) } unless ref $partials eq 'CODE';
+
+    my $parsed = parse($tmpl);
+    return generate($parsed, $part, $data);
+}
+
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Template::Mustache - Drawing Mustaches on Perl for fun and profit
+
+=head1 VERSION
+
+version 0.5.6
+
+=head1 SYNOPSIS
+
+    use Template::Mustache;
+
+    print Template::Mustache->render(
+        "Hello {{planet}}", {planet => "World!"}), "\n";
+
+=head1 DESCRIPTION
+
+Template::Mustache is an implementation of the fabulous Mustache templating
+language for Perl 5.8 and later.
+
+See L<http://mustache.github.com>.
+
+=head2 Functions
+
+=over 4
+
+=item build_pattern($otag, $ctag)
+
+Constructs a new regular expression, to be used in the parsing of Mustache
+templates.
+
+=over 4
+
+=item $otag
+
+The tag opening delimiter.
+
+=item $ctag
+
+The tag closing delimiter.
+
+=back
+
+Returns a regular expression that will match tags with the specified
+delimiters.
+
+=item read_file($filename)
+
+Reads a file into a string, returning the empty string if the file does not
+exist.
+
+=over 4
+
+=item $filename
+
+The name of the file to read.
+
+=back
+
+Returns the contents of the given filename, or the empty string.
+
+=item parse($tmpl, [$delims, [$section, $start]])
+
+Can be called in one of three forms:
+
+=over 4
+
+=item parse($tmpl)
+
+Creates an AST from the given template.
+
+=over 4
+
+=item $tmpl
+
+The template to parse.
+
+=back
+
+An array reference to the AST represented by the given template.
+
+=item parse($tmpl, $delims)
+
+Creates an AST from the given template, with non-standard delimiters.
+
+=over 4
+
+=item $tmpl
+
+The template to parse.
+
+=item $delims
+
+An array reference to the delimiter pair with which to begin parsing.
+
+=back
+
+Returns an array reference to the AST represented by the given template.
+
+=item parse($tmpl, $delims, $section, $start)
+
+Parses out a section tag from the given template.
+
+=over 4
+
+=item $tmpl
+
+The template to parse.
+
+=item $delims
+
+An array reference to the delimiter pair with which to begin parsing.
+
+=item $section
+
+The name of the section we're parsing.
+
+=item $start
+
+The index of the first character of the section.
+
+=back
+
+Returns an array reference to the raw text of the section (first element),
+and the index of the character immediately following the close section tag
+(last element).
+
+=back
+
+=item generate($parse_tree, $partials, @context)
+
+Produces an expanded version of the template represented by the given parse
+tree.
+
+=over 4
+
+=item $parse_tree
+
+The AST of a Mustache template.
+
+=item $partials
+
+A subroutine that looks up partials by name.
+
+=item @context
+
+The context stack to perform key lookups against.
+
+=back
+
+Returns the fully rendered template as a string.
+
+=item lookup($field, @context)
+
+Performs a lookup of a C<$field> in a context stack.
+
+=over 4
+
+=item $field
+
+The field to look up.
+
+=item @context
+
+The context stack.
+
+=back
+
+Returns the context element and value for the given C<$field>.
+
+=back
+
 =head2 Methods
 
 =over 4
@@ -467,36 +547,17 @@ Initialization data.
 
 Returns A new C<Template::Mustache> instance.
 
-=cut
-
-sub new {
-    my ($class, %args) = @_;
-    return bless({ %args }, $class);
-}
-
-our $template_path = '.';
-
 =item template_path
 
 Filesystem path for template and partial lookups.
 
 Returns a string containing the template path (defaults to '.').
 
-=cut
-
-sub template_path { $Template::Mustache::template_path }
-
-our $template_extension = 'mustache';
-
 =item template_extension
 
 File extension for templates and partials.
 
 Returns the file extension as a string (defaults to 'mustache').
-
-=cut
-
-sub template_extension { $Template::Mustache::template_extension }
 
 =item template_namespace
 
@@ -519,12 +580,6 @@ As noted by the last example, namespaces will only be removed from the
 beginning of the package name.
 
 Returns the empty string.
-
-=cut
-
-sub template_namespace { '' }
-
-our $template_file;
 
 =item template_file
 
@@ -562,33 +617,11 @@ Template files will be resolved against C<template_path>, not C<$PERL5LIB>.
 Returns The path to the template file, relative to C<template_path> as a
 string.  See L<template>.
 
-=cut
-
-sub template_file {
-    my ($receiver) = @_;
-    return $Template::Mustache::template_file
-        if $Template::Mustache::template_file;
-
-    my $class = ref $receiver || $receiver;
-    $class =~ s/^@{[$receiver->template_namespace()]}:://;
-    my $ext  = $receiver->template_extension();
-    return File::Spec->catfile(split(/::/, "${class}.${ext}"));
-};
-
 =item template
 
 Reads the template off disk.
 
 Returns the contents of the C<template_file> under C<template_path>.
-
-=cut
-
-sub template {
-    my ($receiver) = @_;
-    my $path = $receiver->template_path();
-    my $template_file = $receiver->template_file();
-    return read_file(File::Spec->catfile($path, $template_file));
-}
 
 =item partial($name)
 
@@ -604,15 +637,6 @@ The name of the partial to lookup.
 
 Returns the contents of the partial (in C<template_path> of type
 C<template_extension>), or the empty string, if the partial does not exist.
-
-=cut
-
-sub partial {
-    my ($receiver, $name) = @_;
-    my $path = $receiver->template_path();
-    my $ext  = $receiver->template_extension();
-    return read_file(File::Spec->catfile($path, "${name}.${ext}"));
-}
 
 =item render
 
@@ -736,28 +760,31 @@ A hash containing partials.
 
 =back
 
-=cut
+=back
 
-sub render {
-    my ($receiver, $tmpl, $data, $partials) = @_;
-    ($data, $tmpl) = ($tmpl, $data) if !(ref $data) && (ref $tmpl);
+=head1 AUTHORS
 
-    $tmpl       = $receiver->template() unless defined $tmpl;
-    $data     ||= $receiver;
-    $partials ||= sub {
-        unshift @_, $receiver;
-        goto &{$receiver->can('partial')};
-    };
+=over 4
 
-    my $part = $partials;
-    $part = sub { lookup(shift, $partials) } unless ref $partials eq 'CODE';
+=item *
 
-    my $parsed = parse($tmpl);
-    return generate($parsed, $part, $data);
-}
+Pieter van de Bruggen <pvande@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Ricardo Signes <rjbs@cpan.org>
 
 =back
 
-=cut
+=head1 COPYRIGHT AND LICENSE
 
-1;
+This software is copyright (c) 2011 by Pieter van de Bruggen.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

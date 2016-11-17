@@ -1,0 +1,56 @@
+---
+abstract: 'Drawing Mustaches on Perl for fun and profit'
+author:
+  - 'Pieter van de Bruggen <pvande@cpan.org>'
+  - 'Yanick Champoux <yanick@cpan.org>'
+  - 'Ricardo Signes <rjbs@cpan.org>'
+build_requires:
+  Data::Dumper: '0'
+  ExtUtils::MakeMaker: '0'
+  File::Basename: '0'
+  File::Spec: '0'
+  File::Spec::Functions: '0'
+  File::Temp: '0'
+  IO::Handle: '0'
+  IPC::Open3: '0'
+  Test::Exception: '0'
+  Test::More: '0.88'
+  base: '0'
+  perl: '5.006'
+configure_requires:
+  ExtUtils::MakeMaker: '0'
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 5.043, CPAN::Meta::Converter version 2.150001'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: Template-Mustache
+provides:
+  Template::Mustache:
+    file: lib/Template/Mustache.pm
+    version: v0.5.6
+requires:
+  File::Spec: '0'
+  HTML::Entities: '0'
+  Scalar::Util: '0'
+  YAML::Syck: '0'
+  autodie: '0'
+  namespace::clean: '0'
+  strict: '0'
+  warnings: '0'
+resources:
+  bugtracker: https://github.com/yanick/Template-Mustache/issues
+  homepage: https://github.com/yanick/Template-Mustache
+  repository: https://github.com/yanick/Template-Mustache.git
+version: 0.5.6
+x_authority: cpan:YANICK
+x_contributors:
+  - 'Chris Christensen <christianchristensen@gmail.com>'
+  - 'Jean-Francois Paris <jfparis84@gmail.com>'
+  - 'Josh Lavin <jlavin@endpoint.com>'
+  - 'Paul Cochrane <paul@liekut.de>'
+  - 'Pieter Vande Bruggen <pvande@gmail.com>'
+  - 'Pieter van de Bruggen <pvande@gmail.com>'
+  - 'ReadmeCritic <frankensteinbot@gmail.com>'
+  - 'Yanick Champoux <yanick@babyl.dyndns.org>'
