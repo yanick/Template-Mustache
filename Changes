@@ -1,6 +1,6 @@
 Revision history for Template-Mustache
 
-{$NEXT}
+{{$NEXT}}
     [ FEATURES ]
     - Support dotted names (GH#38, jfparis84)
 
