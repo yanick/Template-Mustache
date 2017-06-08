@@ -12,7 +12,6 @@ SIGNATURE
 benchmark.pl
 bin/mustache.pl
 cpanfile
-dist.ini
 doap.xml
 lib/Template/Mustache.pm
 t/00-compile.t
@@ -32,5 +31,4 @@ t/read_partials_from_subs.t
 t/read_templates_from_file_system.t
 t/read_templates_from_file_system_with_namespacing.t
 t/read_templates_from_subclass.t
-xt/release/pause-permissions.t
 xt/release/unused-vars.t
