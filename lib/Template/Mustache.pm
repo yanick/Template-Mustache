@@ -73,15 +73,15 @@ delimiters.
 sub build_pattern {
     my ($otag, $ctag) = @_;
     return qr/
-        (.*?)                       # Capture the pre-tag content
-        ([ \t]*)                    # Capture the pre-tag whitespace
-        (?:\Q$otag\E \s*)           # Match the opening of the tag
+        (?<pretag_content>.*?)                  # Capture the pre-tag content
+        (?<pretag_whitespace>[ \t]*)            # Capture the pre-tag whitespace
+        (?<opening_tag>\Q$otag\E \s*)           # Match the opening of the tag
         (?:
-            (=)   \s* (.+?) \s* = | # Capture Set Delimiters
-            ({)   \s* (.+?) \s* } | # Capture Triple Mustaches
-            (\W?) \s* (.+?)         # Capture everything else
+            (?<type>=)   \s* (?<tag>.+?) \s* = | # Capture Set Delimiters
+            (?<type>{)   \s* (?<tag>.+?) \s* } | # Capture Triple Mustaches
+            (?<type>\W?) \s* (?<tag>.*?)         # Capture everything else
         )
-        (?:\s* \Q$ctag\E)           # Match the closing of the tag
+        (?<closing_tag>\s* \Q$ctag\E)           # Match the closing of the tag
     /xsm;
 }
 
@@ -187,6 +187,8 @@ sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
     my @buffer;
 
+    $tmpl =~ s/\r(?=\n)//g;  # change \r\n to \n
+
     # Pull the parse tree out of the cache, if we can...
     $delims ||= [qw'{{ }}'];
     my $cache = $TemplateCache{join ' ', @$delims} ||= {};
@@ -205,9 +207,11 @@ sub parse {
 
     # Begin parsing out tags
     while ($tmpl =~ m/\G$pattern/gc) {
-        my ($content, $whitespace) = ($1, $2);
-        my $type = $3 || $5 || $7;
-        my $tag  = $4 || $6 || $8;
+        my ($content, $whitespace, $type, $tag) = @+{qw/ pretag_content pretag_whitespace type tag /};
+
+        if( $type eq '.' and $tag eq '' ) {
+            ($tag,$type) = ($type, $tag );
+        }
 
         # Buffer any non-tag content we have.
         push @buffer, $content if $content;
@@ -334,6 +338,7 @@ sub generate {
             my ($ctx, $value) = lookup($tag, @context) unless $type eq '>';
 
             if ($type eq '{' || $type eq '&' || $type eq '') {
+                $DB::single = 1;
                 # Interpolation Tags
                 # If the value is a code reference, we should treat it
                 # according to Mustache's lambda rules.  Specifically, we
@@ -360,6 +365,8 @@ sub generate {
                 #    and a rendering function are passed to the sub; the return
                 #    value is then automatically rendered.
                 #  * Otherwise, the section is rendered using given value.
+                $DB::single = 1;
+                
                 if (ref $value eq 'ARRAY') {
                     @result = map { $build->(@$data, $_) } @$value;
                 } elsif ($value) {
@@ -409,6 +416,24 @@ Returns the context element and value for the given C<$field>.
 
 =cut
 
+
+sub _can_run_field {
+    my ($ctx, $field) = @_;
+
+    my $can_run_field;
+    if ( $] < 5.018 ) {
+        eval { $ctx->can($field) };
+        $can_run_field = not $@;
+    }
+    else {
+        $can_run_field = $ctx->can($field);
+    }
+
+    return $can_run_field;
+}
+
+use namespace::clean;
+
 sub lookup {
     my ($field, @context) = @_;
     my ($value, $ctx) = '';
@@ -418,6 +443,10 @@ sub lookup {
         my $blessed_or_not_ref = blessed($ctx) || !ref $ctx;
 
         if($field =~ /\./) {
+            if ( $field eq '.' ) {
+                return ($ctx,$ctx);
+            }
+
             # Dotted syntax foo.bar
             my ($var, $field) = $field =~ /(.+?)\.(.+)/;
 
@@ -449,23 +478,6 @@ sub lookup {
 
     return ($ctx, $value);
 }
-
-sub _can_run_field {
-    my ($ctx, $field) = @_;
-
-    my $can_run_field;
-    if ( $] < 5.018 ) {
-        eval { $ctx->can($field) };
-        $can_run_field = not $@;
-    }
-    else {
-        $can_run_field = $ctx->can($field);
-    }
-
-    return $can_run_field;
-}
-
-use namespace::clean;
 
 =head2 Methods
 

@@ -25,39 +25,37 @@ my $specs = catfile(dirname(__FILE__), '..', 'ext', 'spec', 'specs');
 plan skip_all => "Couldn't find specs; try running `git submodule update --init`"
     unless glob catfile($specs, '*.yml');
 
-for my $file (glob catfile($specs, '*.yml')) {
+for my $file (glob catfile($specs, $ARGV[0] || '*.yml')) {
     my $spec = YAML::Syck::LoadFile($file);
     ($file = basename($file)) =~ s/[^\w.]//g;
 
-    for my $test (@{$spec->{tests}}) {
-        (my $name = $test->{name}) =~ s/'/"/g;
+    ( my $name = $file ) =~ s/\.yml//;
 
-        subtest $name => sub {
-            my ($self) = @_;
+    subtest $name => sub {
+        for my $test (@{$spec->{tests}}) {
+            (my $name = $test->{name}) =~ s/'/"/g;
 
-            my $expected = $test->{expected};
-            my $tmpl = $test->{template};
-            my $data = $test->{data};
-            my $partials = $test->{partials};
+            subtest $name => sub {
 
-            # Ensure that lambdas are properly setup.
-            my @hashes = $data;
-            for my $hash (@hashes) {
-                while (my ($k, $v) = each %$hash) {
-                    $hash->{$k} = eval $v->{perl} if ref $v eq 'code';
-                    push @hashes, $v              if ref $v eq 'HASH';
+                my $expected = $test->{expected};
+                my $tmpl = $test->{template};
+                my $data = $test->{data};
+                my $partials = $test->{partials};
+
+                # Ensure that lambdas are properly setup.
+                my @hashes = $data;
+                for my $hash (@hashes) {
+                    while (my ($k, $v) = each %$hash) {
+                        $hash->{$k} = eval $v->{perl} if ref $v eq 'code';
+                        push @hashes, $v              if ref $v eq 'HASH';
+                    }
                 }
-            }
 
-            my $actual = Template::Mustache->render($tmpl, $data, $partials);
+                my $actual = Template::Mustache->render($tmpl, $data, $partials);
 
-            is($actual, $expected,
-                "$test->{desc}\n".
-                "Data:     @{[ Dumper $test->{data} ]}\n".
-                "Template: @{[ Dumper $test->{template} ]}\n".
-                "Partials: @{[ Dumper ($test->{partials} || {}) ]}\n"
-            );
-        };
+                is($actual, $expected, $test->{desc}) or diag explain $test;
+            };
+        }
     }
 }
 
