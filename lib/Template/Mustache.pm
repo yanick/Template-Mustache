@@ -13,10 +13,28 @@ use warnings;
 
 =head1 DESCRIPTION
 
-Template::Mustache is an implementation of the fabulous Mustache templating
-language for Perl 5.8 and later.
+Template::Mustache is an implementation of the fabulous L<Mustache|https://mustache.github.io/> templating
+language for Perl.
 
-See L<http://mustache.github.com>.
+=head1 SEE ALSO
+
+=over
+
+=item L<https://mustache.github.io>
+
+The main, pan-language site for I<Mustache>.
+
+=item L<https://mustache.github.io/mustache.5.html>
+
+Specs of the I<Mustache> DSL.
+
+=item L<Text::Handlebars|https://metacpan.org/pod/Text::Handlebars>
+
+I<Handlebars> is another templating language heavily inspired and very similar to I<Mustache>. L<Text::Handlebars>
+is an implementation of it using L<Text::Xslate>.
+
+=back
+
 
 =cut
 
