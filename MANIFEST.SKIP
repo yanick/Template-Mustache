@@ -8,3 +8,4 @@ ext
 Makefile$
 blib
 .travis
+dist.ini
