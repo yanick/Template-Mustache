@@ -30,7 +30,9 @@ sub render {
 }
 
 sub _compile_template {  
-    my( $self, $template, $pre ) = @_;
+    my( $self, $template, $pre, $standalone_prefix ) = @_;
+
+    $standalone_prefix //= 1;
 
     return sub { $pre } unless length $template;
 
@@ -39,15 +41,21 @@ sub _compile_template {
     use DDP;
     my $next = extract_multiple( $template,
         [
-            { Comment => sub { 
-                (extract_tagged( $_[0], $delim[0] . '\s*!', $delim[1] ))[4,1]
+            { 'Template::Mustache::Comment' => sub { 
+                (extract_tagged( $_[0], $delim[0] . '\s*!', $delim[1], '' ))[4,1]
             } },
-            { Block => sub { 
-                (extract_tagged( $_[0], $delim[0], $delim[1] ))[4,1]
+            { 'Template::Mustache::Block' => sub { 
+                (extract_tagged( $_[0], $delim[0], $delim[1], '' ))[4,1]
             } },
-            { Pre => qr/^(.*?)(?=$delim[0]|$)/ },
+            { 'Template::Mustache::Pre::StandalonePrefix' => qr/^(\n[ \t]*)/ },
+            { 'Template::Mustache::Pre' => qr/^(.+?)(?=$|$delim[0])/ms },
         ]
     );
+
+    use Template::Mustache::Pre;
+    use Template::Mustache::Block;
+    use Template::Mustache::Comment;
+    return $next->compile( $self, $pre, $template, $standalone_prefix );
 
     unless ( ref $next ) {
         return $self->_compile_template( $template, $pre . $next );
