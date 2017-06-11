@@ -1,6 +1,105 @@
 package Template::Mustache;
 # ABSTRACT: Drawing Mustaches on Perl for fun and profit
 
+use Moo;
+use MooseX::MungeHas { has_rw => [ 'is_rw' ] };
+
+use Text::Balanced qw/ extract_tagged gen_extract_tagged extract_multiple /;
+
+has_rw template => (
+    trigger => sub { $_[0]->_clear_compiled_template },
+);
+
+has_rw _compiled_template => (
+    clearer => 1,
+    lazy => 1, 
+    default => sub {
+        $_[0]->_compile_template( $_[0]->template );
+    });
+
+has_rw delimiters => sub { [ '{{', '}}' ] };
+
+sub render {  
+    my $self = shift;
+
+    $self = $self->new unless ref $self;
+
+    $self->template( shift @_ );
+
+    $self->_compiled_template->( @_ );
+}
+
+sub _compile_template {  
+    my( $self, $template, $pre ) = @_;
+
+    return sub { $pre } unless length $template;
+
+    my @delim = map { quotemeta $_ } @{ $self->delimiters };
+
+    use DDP;
+    my $next = extract_multiple( $template,
+        [
+            { Comment => sub { 
+                (extract_tagged( $_[0], $delim[0] . '\s*!', $delim[1] ))[4,1]
+            } },
+            { Block => sub { 
+                (extract_tagged( $_[0], $delim[0], $delim[1] ))[4,1]
+            } },
+            { Pre => qr/^(.*?)(?=$delim[0]|$)/ },
+        ]
+    );
+
+    unless ( ref $next ) {
+        return $self->_compile_template( $template, $pre . $next );
+    }
+
+    if ( ref $next eq 'Pre' ) {
+        return $self->_compile_template( $template, $pre . $$next );
+    }
+
+    if ( ref $next eq 'Comment' ) {
+        return sub { 
+            my $context = shift;
+
+            warn $template;
+
+            return join '',
+                $pre, 
+                $self->_compile_template($template)->($context);
+        };
+    }
+
+    if ( ref $next eq 'Block' ) {
+        return sub { 
+            my $context = shift;
+
+            my $content = $context->{$$next};
+
+            return join '',
+                $pre, 
+                $content,
+                $self->_compile_template($template)->($context);
+        };
+    }
+
+    p $next;
+    ...;
+
+    warn "'$template'";
+    warn $@;
+
+    die qr/(.*?)($delim[0].*)?/;
+
+    my( undef, $post, undef, $directive );
+
+
+}
+
+
+1;
+
+__END__
+
 use strict;
 use warnings;
 

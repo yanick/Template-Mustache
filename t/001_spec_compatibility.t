@@ -5,59 +5,59 @@ use warnings;
 
 use Template::Mustache;
 
-use File::Basename        qw/ basename dirname /;
-use File::Spec::Functions qw/ catfile /;
+use Path::Tiny;
 
 use YAML::Syck ();
 $YAML::Syck::ImplicitTyping = 1;
 
-use Data::Dumper;
-$Data::Dumper::Terse = 1;
-$Data::Dumper::Useqq = 1;
-$Data::Dumper::Quotekeys = 0;
-$Data::Dumper::Indent = 0;
-$Data::Dumper::Sortkeys = 1;
-$Data::Dumper::Deparse = 1;
 
-
-my $specs = catfile(dirname(__FILE__), '..', 'ext', 'spec', 'specs');
+my $specs_dir = path( 'ext', 'spec', 'specs');
 
 plan skip_all => "Couldn't find specs; try running `git submodule update --init`"
-    unless glob catfile($specs, '*.yml');
+    unless $specs_dir->is_dir;
 
-for my $file (glob catfile($specs, $ARGV[0] || '*.yml')) {
-    my $spec = YAML::Syck::LoadFile($file);
-    ($file = basename($file)) =~ s/[^\w.]//g;
+my @specs = @ARGV 
+    ? ( map { $specs_dir->child( $_ . '.yml' ) } @ARGV )
+    : $specs_dir->children( qr/\.yml$/ );
 
-    ( my $name = $file ) =~ s/\.yml//;
+# only wrap in a subtest if there are more than one file involved
 
-    subtest $name => sub {
-        for my $test (@{$spec->{tests}}) {
-            (my $name = $test->{name}) =~ s/'/"/g;
-
-            subtest $name => sub {
-
-                my $expected = $test->{expected};
-                my $tmpl = $test->{template};
-                my $data = $test->{data};
-                my $partials = $test->{partials};
-
-                # Ensure that lambdas are properly setup.
-                my @hashes = $data;
-                for my $hash (@hashes) {
-                    while (my ($k, $v) = each %$hash) {
-                        $hash->{$k} = eval $v->{perl} if ref $v eq 'code';
-                        push @hashes, $v              if ref $v eq 'HASH';
-                    }
-                }
-
-                my $actual = Template::Mustache->render($tmpl, $data, $partials);
-
-                is($actual, $expected, $test->{desc}) or diag explain $test;
-            };
-        }
-    }
+if ( @specs == 1 ) {
+    test_spec( @specs );
+}
+else {
+    subtest $_ => sub{ test_spec($_) } for @specs;
 }
 
 done_testing;
 
+sub test_spec { 
+    my $file = shift;
+
+    my $spec = YAML::Syck::LoadFile($file);
+
+    for my $test (@{$spec->{tests}}) {
+        (my $name = $test->{name}) =~ s/'/"/g;
+
+        subtest $name => sub {
+
+            my $expected = $test->{expected};
+            my $tmpl = $test->{template};
+            my $data = $test->{data};
+            my $partials = $test->{partials};
+
+            # Ensure that lambdas are properly setup.
+            my @hashes = $data;
+            for my $hash (@hashes) {
+                while (my ($k, $v) = each %$hash) {
+                    $hash->{$k} = eval $v->{perl} if ref $v eq 'code';
+                    push @hashes, $v              if ref $v eq 'HASH';
+                }
+            }
+
+            my $actual = Template::Mustache->render($tmpl, $data, $partials);
+
+            is($actual, $expected, $test->{desc}) or diag explain $test;
+        };
+    }
+}
