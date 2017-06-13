@@ -7,13 +7,11 @@ use Moo;
 
 sub compile {
     no warnings 'uninitialized';
-    my( $self, $mustache, $pre, $post, $standalone_prefix ) = @_;
+    my( $self, $mustache, $pre, $post ) = @_;
 
     $pre .= $$self;
-    # only a standalone prefix is it's all whitespaces
-    $standalone_prefix &&= $pre =~ /^\s*$/;
 
-    return $mustache->_compile_template( $post, $pre, $standalone_prefix );
+    return $mustache->_compile_template( $post, $pre );
 }
 
 1;

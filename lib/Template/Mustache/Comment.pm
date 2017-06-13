@@ -5,33 +5,20 @@ use warnings;
 
 use Moo;
 
+use Text::Balanced qw/ extract_multiple /;
+
 sub compile {
-    my( $self, $mustache, $pre, $post, $standalone_prefix ) = @_;
+    my( $self, $mustache, $pre, $post ) = @_;
 
     no warnings 'uninitialized';
-
-
-    # standalone
-    if( $standalone_prefix and $post =~ /^\s*($|\n)/ ) {
-        $pre =~ s/[ \t]*$//;
-        $post =~ s/^[ \t]*(\r?\n)?//;
-    }
 
     return sub { 
         my $context = shift;
 
-        return join '',
-            $pre, 
-            $mustache->_compile_template($post, '', $standalone_prefix)->($context);
+        return 
+            $mustache->_compile_template($post, $pre)->($context);
     };
 }
 
-
-1;
-package Template::Mustache::Comment::Standalone;
-
-use Moo;
-
-extends 'Template::Mustache::Comment';
 
 1;

@@ -6,17 +6,17 @@ use warnings;
 use Moo;
 
 sub compile {
-    my( $self, $mustache, $pre, $post, $standalone_prefix ) = @_;
+    my( $self, $mustache, $pre, $post ) = @_;
+
+    no warnings 'uninitialized';
 
     return sub { 
         my $context = shift;
 
-        my $content = $context->{$$self};
+        my $content = 
+            $mustache->resolve_context( $$self, $context );
 
-        return join '',
-            $pre, 
-            $content,
-            $mustache->_compile_template($post)->($context);
+        return $mustache->_compile_template($post, $pre . $content )->($context);
     };
 }
 

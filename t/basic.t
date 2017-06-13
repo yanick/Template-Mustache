@@ -23,3 +23,5 @@ Begin
 }}
 End
 END
+
+done_testing;

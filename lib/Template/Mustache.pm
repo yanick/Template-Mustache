@@ -19,43 +19,71 @@ has_rw _compiled_template => (
 
 has_rw delimiters => sub { [ '{{', '}}' ] };
 
+has_rw partials => sub { +{} };
+
 sub render {  
     my $self = shift;
 
     $self = $self->new unless ref $self;
 
-    $self->template( shift @_ );
+    my( $template, $context, $partials ) = @_;
 
-    $self->_compiled_template->( @_ );
+    $self->template( $template );
+    $self->partials( $partials ) if $partials;
+
+    $self->_compiled_template->([ $context ]);
 }
 
 sub _compile_template {  
-    my( $self, $template, $pre, $standalone_prefix ) = @_;
-
-    $standalone_prefix //= 1;
+    my( $self, $template, $pre ) = @_;
 
     return sub { $pre } unless length $template;
 
     my @delim = map { quotemeta $_ } @{ $self->delimiters };
 
+    my $beg = ( length $pre == 0 or  $pre =~ /\n$/ );
+
     use DDP;
     my $next = extract_multiple( $template,
         [
+            { 'Template::Mustache::Section' => sub { 
+                return unless $beg;
+                my $open = '[ \t]*' . $delim[0] . '\s*#\s*';
+                my $close = '\s*'.$delim[1] . '[ \t]_\r?(\n|\$)';
+                (extract_tagged( $_[0], $open, $close, '' ))[4,1]
+            } },
+            { 'Template::Mustache::Section' => sub { 
+                my $open = $delim[0] . '\s*#\s*';
+                my $close = '\s*'.$delim[1];
+                (extract_tagged( $_[0], $open, $close, '' ))[4,1]
+            } },
+            { 'Template::Mustache::Comment' => sub { 
+                return unless $beg;
+                (extract_tagged( $_[0], 
+                    "[ \t]*" . $delim[0] . '\s*!', 
+                    $delim[1] . '[ \t]*\r?(\n|\$)', 
+                    '' ))[4,1]
+            } },
             { 'Template::Mustache::Comment' => sub { 
                 (extract_tagged( $_[0], $delim[0] . '\s*!', $delim[1], '' ))[4,1]
+            } },
+            { 'Template::Mustache::Partial' => sub { 
+                (extract_tagged( $_[0], $delim[0] . '\s*>\s*', '\s*'.$delim[1], '' ))[4,1]
             } },
             { 'Template::Mustache::Block' => sub { 
                 (extract_tagged( $_[0], $delim[0], $delim[1], '' ))[4,1]
             } },
-            { 'Template::Mustache::Pre::StandalonePrefix' => qr/^(\n[ \t]*)/ },
-            { 'Template::Mustache::Pre' => qr/^(.+?)(?=$|$delim[0])/ms },
+            { 'Template::Mustache::Pre' => qr/^(.*(?=$delim[0])|.*\n?)/ },
         ]
     );
 
     use Template::Mustache::Pre;
     use Template::Mustache::Block;
     use Template::Mustache::Comment;
-    return $next->compile( $self, $pre, $template, $standalone_prefix );
+    use Template::Mustache::Partial;
+    use Template::Mustache::Section;
+
+    return $next->compile( $self, $pre, $template );
 
     unless ( ref $next ) {
         return $self->_compile_template( $template, $pre . $next );
@@ -101,6 +129,26 @@ sub _compile_template {
     my( undef, $post, undef, $directive );
 
 
+}
+
+sub resolve_context {  
+    my ( $self, $key, $context ) = @_;
+
+    no warnings 'uninitialized';
+    return $context->[0] if $key eq '.' or $key eq '';
+
+    my $first;
+    ( $first, $key ) = split '\.', $key, 2;
+
+    CONTEXT:
+    for my $c ( @$context ) {
+        if ( ref $c eq 'HASH' ) {
+            next CONTEXT unless exists $c->{$first};
+            return $self->resolve_context($key,[$c->{$first}]);
+        }
+    }
+
+    return;
 }
 
 
