@@ -83,7 +83,7 @@ partial: /\s*/ "$otag" '>'  /[\w.]+/ "$ctag" /\s*/ {
     Template::Mustache::Token::Partial->new( name => $item[4] );
 }
 
-open_section: /\s*/ "$otag" '#' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
+open_section: /\s*/ "$otag" /[#^]/ /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
     if ( $item[1] =~ /\n/ or $prev ) {
@@ -94,7 +94,7 @@ open_section: /\s*/ "$otag" '#' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ {
         }
     }
 
-    [ $item[5], 
+    [ $item[5], $item[3] eq '^',
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
             Template::Mustache::Token::Verbatim->new( content => $item[8] )
     ];
@@ -141,12 +141,13 @@ inner_section: ...!close_section[ $arg[0] ] template_item
 
 section: open_section inner_section[ $item[1][0] ](s?) close_section[ $item[1][0] ] {
     Template::Mustache::Token::Template->new( items => [
-        $item[1]->[1],
+        $item[1]->[2],
         Template::Mustache::Token::Section->new(
             variable => $item[1][0],
+            inverse => $item[1][1],
             template => Template::Mustache::Token::Template->new( 
                 items => [ 
-                    $item[1]->[2], @{$item[2]}, $item[3]->[0] ], 
+                    $item[1]->[3], @{$item[2]}, $item[3]->[0] ], 
             )
         ),
         $item[3]->[1]
