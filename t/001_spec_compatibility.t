@@ -1,4 +1,5 @@
 use Test::More;
+use Test::Most;
 
 use strict;
 use warnings;
@@ -23,6 +24,7 @@ my @specs = @ARGV
 # only wrap in a subtest if there are more than one file involved
 
 if ( @specs == 1 ) {
+    bail_on_fail;
     test_spec( @specs );
 }
 else {

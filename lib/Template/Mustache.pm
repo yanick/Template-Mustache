@@ -19,8 +19,21 @@ has_rw _compiled_template => (
 
 has_rw delimiters => sub { [ '{{', '}}' ] };
 
-has_rw partials => sub { +{} };
+use List::AllUtils qw/ pairmap /;
+has_rw _partials => sub { +{} };
 
+sub partials {
+    my( $self, $partials ) = @_;
+    while( my ( $name, $template ) = each %$partials ) {
+        $self->add_partial( $name, $template );
+    }
+}
+
+sub add_partial {
+    my( $self, $name, $template ) = @_;
+    $self->_partials->{$name} = $self->compile( $template );
+}
+    
 sub render {  
     my $self = shift;
 
@@ -31,25 +44,27 @@ sub render {
     $self->template( $template );
     $self->partials( $partials ) if $partials;
 
-    $self->_compiled_template->([ $context ]);
+    $self->_compiled_template->([ $context ], $self->_partials);
 }
 
 use Parse::RecDescent;
 
-sub _compile_template {  
-    my( $self, $template, $pre ) = @_;
+sub compile {
+    my( $self, $template ) = @_;
 
     use Template::Mustache::Token::Block;
     use Template::Mustache::Token::Template;
     use Template::Mustache::Token::Variable;
     use Template::Mustache::Token::Verbatim;
     use Template::Mustache::Token::Section;
+    use Template::Mustache::Token::Partial;
     #$::RD_HINT = 0;
-    #$::RD_TRACE = 20;
+    # $::RD_TRACE = 20;
     my $parser = Parse::RecDescent->new(<<'END_GRAMMAR');
 
+<skip:qr//> 
 
-{ my ( $first_item, $otag, $ctag ) = ( 1, qw/ {{ }} / ); } 
+{ my ( $prev_is_standalone, $first_item, $otag, $ctag ) = ( 1, 1, qw/ {{ }} / ); } 
 
 eofile: /^\Z/
 
@@ -59,24 +74,58 @@ template: template_item(s?) ( eofile | <error> ) {
     );
 }
 
-template_item:  ( section | comment | variable | verbatim ) {
+template_item:  ( partial | section | comment | variable | verbatim ) {
     $item[1]
 }
 
+partial: /\s*/ "$otag" '>'  /[\w.]+/ "$ctag" /\s*/ { 
+    $prev_is_standalone = 0;
+    Template::Mustache::Token::Partial->new( name => $item[4] );
+}
 
-open_section: /\s*/ "$otag" '#'  /[\w.]+/ "$ctag" /\s*/ { $item[4] }
+open_section: /\s*/ "$otag" '#' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
+    my $prev = $prev_is_standalone;
+    $prev_is_standalone = 0;
+    if ( $item[1] =~ /\n/ or $prev ) {
+        if ( $item[8] =~ /\n/ ) {
+            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
+            $item[8] =~ s/^.*?\n//;
+            $prev_is_standalone = 1;
+        }
+    }
 
-close_section: /\s*/ "$otag" '/' "$arg[0]" "$ctag" /\s*/ {
-    'nope'
+    [ $item[5], 
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Verbatim->new( content => $item[8] )
+    ];
+}
+
+close_section: /\s*/ "$otag" '/' /\s*/ "$arg[0]" /\s*/ "$ctag" /\s*/ {
+    my $prev = $prev_is_standalone;
+    $prev_is_standalone = 0;
+    if ( $item[1] =~ /\n/ or $prev) {
+        if ( $item[8] =~ /\n/ or length $text == 0 ) {
+            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
+            $item[8] =~ s/^.*?\n//;
+            $prev_is_standalone = 1;
+        }
+    }
+    [
+        Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+        Template::Mustache::Token::Verbatim->new( content => $item[8] ),
+    ]
 }
 
 
 comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=$ctag)/s "$ctag" /\s*/ {
+    my $prev = $prev_is_standalone;
+    $prev_is_standalone = 0;
 
-    if ( $item[1] =~ /\n/ or $thisline == 1 ) {
+    if ( $item[1] =~ /\n/ or $thisline == 1 or $prev) {
         if ( $item[7] =~ /\n/ ) {
             $item[1] =~ s/(^|\n)\s*?$/$1/;
             $item[7] =~ s/^.*?\n//;
+            $prev_is_standalone = 1;
         }
     }
 
@@ -90,21 +139,28 @@ comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=$ctag)/s "$ctag" /\s*/ {
 
 inner_section: ...!close_section[ $arg[0] ] template_item
 
-section: open_section inner_section[ $item[1] ](s) close_section[ $item[1] ] {
-    Template::Mustache::Token::Section->new(
-        variable => $item[1],
-        template => Template::Mustache::Token::Template->new( items => $item[2] )
+section: open_section inner_section[ $item[1][0] ](s?) close_section[ $item[1][0] ] {
+    Template::Mustache::Token::Template->new( items => [
+        $item[1]->[1],
+        Template::Mustache::Token::Section->new(
+            variable => $item[1][0],
+            template => Template::Mustache::Token::Template->new( 
+                items => [ 
+                    $item[1]->[2], @{$item[2]}, $item[3]->[0] ], 
+            )
+        ),
+        $item[3]->[1]
+        ]
     );
 }
 
 
 
-variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" /\s*/ {
+variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" {
     Template::Mustache::Token::Template->new(
         items => [
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
             Template::Mustache::Token::Variable->new( name => $item{variable_name} ),
-            Template::Mustache::Token::Verbatim->new( content => $item[7] ),
         ]
     );
 }
@@ -112,6 +168,7 @@ variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" /\s*/ {
 variable_name: /[\w.]+/
 
 verbatim: /^\s*\S*?(?=$otag|\s|$)/ {
+    $prev_is_standalone = 0;
     Template::Mustache::Token::Verbatim->new( content => $item[1] );
 }
 
@@ -122,19 +179,22 @@ END_GRAMMAR
 #    open my $png, '>', 'grammar.png';
 #    print $png $graph->as_png;
 
-    my $tree = $parser->template( $template );
+    return $parser->template( $template );
+}
 
+sub _compile_template {  
+    my( $self, $template, $pre ) = @_;
+
+    my $tree = $self->compile($template);
 
     use DDP;
 
-    # p $tree;
+#    p $tree;
     use Data::Dumper;
     #warn Dumper($tree);
 
     return sub {
-        my $context = shift;
-
-        $tree->render($context)
+        $tree->render(@_)
     };
 
 

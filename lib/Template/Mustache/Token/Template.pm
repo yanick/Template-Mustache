@@ -11,9 +11,9 @@ sub flatten {
 }
 
 sub render {
-    my( $self, $context ) = @_;
+    my( $self, $context, $partials ) = @_;
 
-    return join '', map { $_->render($context) } flatten( @{ $self->items } );
+    return join '', map { $_->render($context, $partials) } flatten( @{ $self->items } );
 }
 
 1;

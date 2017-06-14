@@ -23,4 +23,11 @@ Begin
 End
 END
 
+is $mustache->render(<<'END'), "Begin\nEnd\n", "two standalones";
+Begin
+{{!  blah blah }}
+{{!  blah blah }}
+End
+END
+
 done_testing;
