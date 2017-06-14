@@ -68,13 +68,13 @@ sub compile {
 
 eofile: /^\Z/
 
-template: template_item(s?) ( eofile | <error> ) {
+template: template_item(s?) eofile {
     Template::Mustache::Token::Template->new(
         items => $item[1]
     );
-}
+} | <error>
 
-template_item:  ( partial | section | comment | variable | verbatim ) {
+template_item:  ( partial | section | comment | unescaped_variable_amp | unescaped_variable | variable | verbatim | <error>) {
     $item[1]
 }
 
@@ -154,6 +154,29 @@ section: open_section inner_section[ $item[1][0] ](s?) close_section[ $item[1][0
     );
 }
 
+unescaped_variable: /\s*/ "$otag" '{' /\s*/ variable_name /\s*/ '}' "$ctag" {
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Variable->new( 
+                name => $item{variable_name},
+                escape => 0,
+            ),
+        ]
+    );
+}
+
+unescaped_variable_amp: /\s*/ "$otag" '&' /\s*/ variable_name /\s*/ "$ctag" {
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Variable->new( 
+                name => $item{variable_name},
+                escape => 0,
+            ),
+        ]
+    );
+}
 
 
 variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" {
