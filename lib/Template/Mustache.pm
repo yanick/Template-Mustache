@@ -34,8 +34,94 @@ sub render {
     $self->_compiled_template->([ $context ]);
 }
 
+use Parse::RecDescent;
+
 sub _compile_template {  
     my( $self, $template, $pre ) = @_;
+
+    use Template::Mustache::Token::Block;
+    use Template::Mustache::Token::Template;
+    use Template::Mustache::Token::Variable;
+    use Template::Mustache::Token::Verbatim;
+    #$::RD_HINT = 0;
+    $::RD_TRACE = 20;
+    my $parser = Parse::RecDescent->new(<<'END_GRAMMAR');
+
+
+{ my ( $otag, $ctag ) = qw/ {{ }} /; } 
+
+<skip: qr//>
+eofile: /^\Z/
+
+template: template_item(s?) eofile {
+    Template::Mustache::Token::Template->new(
+        items => $item[1]
+    );
+}
+
+template_item: ( standalone_line | mixed_line | <error> ) {
+    $item[1]
+}
+
+standalone_line: /\s*/ ( comment ) /\s*\n/ {
+    $item[2]
+}
+
+
+mixed_line: line_item(s?) eoline {
+    [ @{ $item[1] }, $item[2] ];
+}
+
+eoline: ( /\n/ | eofile ) {
+    Template::Mustache::Token::Verbatim->new( content => $item[1] );
+}
+
+open_section: "$otag" '#' /[\w.]+/ "$ctag"  { $item[3] }
+
+close_section: "$otag" '/' "$arg[0]" "$ctag"
+
+
+line_item: ( section | comment | variable | verbatim ) {
+    $item[1]
+}
+
+comment: "$otag" /\s*/ '!' /.*?(?=$ctag)/s "$ctag" {
+    'skip'   
+}
+
+section: open_section line_item(s?) close_section[ $item[1] ] {
+       $item[2] 
+}
+
+
+
+variable: "$otag" /\s*/ variable_name /\s*/ "$ctag" {
+    Template::Mustache::Token::Variable->new( name => $item{variable_name} ) 
+}
+
+variable_name: /[\w.]+/
+
+verbatim: /^.+?(?=$otag|$)/m {
+    Template::Mustache::Token::Verbatim->new( content => $item[1] );
+}
+
+END_GRAMMAR
+
+    my $tree = $parser->template( $template );
+
+
+    use DDP;
+
+    # p $tree;
+    use Data::Dumper;
+    #warn Dumper($tree);
+
+    return sub {
+        my $context = shift;
+
+        $tree->render($context)
+    };
+
 
     return sub { $pre } unless length $template;
 
@@ -132,7 +218,7 @@ sub _compile_template {
 }
 
 sub resolve_context {  
-    my ( $self, $key, $context ) = @_;
+    my ( $key, $context ) = @_;
 
     no warnings 'uninitialized';
     return $context->[0] if $key eq '.' or $key eq '';
@@ -144,7 +230,7 @@ sub resolve_context {
     for my $c ( @$context ) {
         if ( ref $c eq 'HASH' ) {
             next CONTEXT unless exists $c->{$first};
-            return $self->resolve_context($key,[$c->{$first}]);
+            return resolve_context($key,[$c->{$first}]);
         }
     }
 

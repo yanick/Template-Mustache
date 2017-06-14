@@ -9,7 +9,7 @@ use Test::Exception;
 my $mustache = Template::Mustache->new;
 
 is $mustache->render( "{{#foo}}{{.}}{{/foo}}", {foo => "World!"})
-    => 'World!';
+    => 'World!';exit;
 
 is $mustache->render( "{{#foo }}{{.}}{{/foo}}", {foo => "World!"})
     => 'World!', 'spaces';
