@@ -15,7 +15,6 @@ is $mustache->render( "{{a}} and {{b}}", {a => 'this', b => 'that' })
 
 is $mustache->render( '123{{! no }}456' ) => '123456', 'comment';
 
-
 is $mustache->render(<<'END'), "Begin\nEnd\n", "standalone comment";
 Begin
 {{!

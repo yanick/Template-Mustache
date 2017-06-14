@@ -9,10 +9,11 @@ use Test::Exception;
 my $mustache = Template::Mustache->new;
 
 is $mustache->render( "{{#foo}}{{.}}{{/foo}}", {foo => "World!"})
-    => 'World!';exit;
+    => 'World!';
 
 is $mustache->render( "{{#foo }}{{.}}{{/foo}}", {foo => "World!"})
     => 'World!', 'spaces';
+
 
 is $mustache->render( "{{#foo }}{{.}}{{/foo }}", {foo => "World!"})
     => 'World!', 'spaces';

@@ -43,69 +43,84 @@ sub _compile_template {
     use Template::Mustache::Token::Template;
     use Template::Mustache::Token::Variable;
     use Template::Mustache::Token::Verbatim;
+    use Template::Mustache::Token::Section;
     #$::RD_HINT = 0;
-    $::RD_TRACE = 20;
+    #$::RD_TRACE = 20;
     my $parser = Parse::RecDescent->new(<<'END_GRAMMAR');
 
 
-{ my ( $otag, $ctag ) = qw/ {{ }} /; } 
+{ my ( $first_item, $otag, $ctag ) = ( 1, qw/ {{ }} / ); } 
 
-<skip: qr//>
 eofile: /^\Z/
 
-template: template_item(s?) eofile {
+template: template_item(s?) ( eofile | <error> ) {
     Template::Mustache::Token::Template->new(
         items => $item[1]
     );
 }
 
-template_item: ( standalone_line | mixed_line | <error> ) {
+template_item:  ( section | comment | variable | verbatim ) {
     $item[1]
 }
 
-standalone_line: /\s*/ ( comment ) /\s*\n/ {
-    $item[2]
+
+open_section: /\s*/ "$otag" '#'  /[\w.]+/ "$ctag" /\s*/ { $item[4] }
+
+close_section: /\s*/ "$otag" '/' "$arg[0]" "$ctag" /\s*/ {
+    'nope'
 }
 
 
-mixed_line: line_item(s?) eoline {
-    [ @{ $item[1] }, $item[2] ];
+comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=$ctag)/s "$ctag" /\s*/ {
+
+    if ( $item[1] =~ /\n/ or $thisline == 1 ) {
+        if ( $item[7] =~ /\n/ ) {
+            $item[1] =~ s/(^|\n)\s*?$/$1/;
+            $item[7] =~ s/^.*?\n//;
+        }
+    }
+
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Verbatim->new( content => $item[7] ),
+        ]
+    );
 }
 
-eoline: ( /\n/ | eofile ) {
-    Template::Mustache::Token::Verbatim->new( content => $item[1] );
-}
+inner_section: ...!close_section[ $arg[0] ] template_item
 
-open_section: "$otag" '#' /[\w.]+/ "$ctag"  { $item[3] }
-
-close_section: "$otag" '/' "$arg[0]" "$ctag"
-
-
-line_item: ( section | comment | variable | verbatim ) {
-    $item[1]
-}
-
-comment: "$otag" /\s*/ '!' /.*?(?=$ctag)/s "$ctag" {
-    'skip'   
-}
-
-section: open_section line_item(s?) close_section[ $item[1] ] {
-       $item[2] 
+section: open_section inner_section[ $item[1] ](s) close_section[ $item[1] ] {
+    Template::Mustache::Token::Section->new(
+        variable => $item[1],
+        template => Template::Mustache::Token::Template->new( items => $item[2] )
+    );
 }
 
 
 
-variable: "$otag" /\s*/ variable_name /\s*/ "$ctag" {
-    Template::Mustache::Token::Variable->new( name => $item{variable_name} ) 
+variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" /\s*/ {
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Variable->new( name => $item{variable_name} ),
+            Template::Mustache::Token::Verbatim->new( content => $item[7] ),
+        ]
+    );
 }
 
 variable_name: /[\w.]+/
 
-verbatim: /^.+?(?=$otag|$)/m {
+verbatim: /^\s*\S*?(?=$otag|\s|$)/ {
     Template::Mustache::Token::Verbatim->new( content => $item[1] );
 }
 
 END_GRAMMAR
+
+    use GraphViz::Parse::RecDescent;
+    my $graph = GraphViz::Parse::RecDescent->new($parser);
+#    open my $png, '>', 'grammar.png';
+#    print $png $graph->as_png;
 
     my $tree = $parser->template( $template );
 
