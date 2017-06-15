@@ -58,13 +58,13 @@ sub compile {
     use Template::Mustache::Token::Verbatim;
     use Template::Mustache::Token::Section;
     use Template::Mustache::Token::Partial;
-    #$::RD_HINT = 0;
+#    $::RD_HINT = 1;
 #    $::RD_TRACE = 20;
-    my $parser = Parse::RecDescent->new(<<'END_GRAMMAR');
+    my $parser = Parse::RecDescent->new(sprintf <<'END_GRAMMAR', @{ $self->delimiters });
 
 <skip:qr//> 
 
-{ my ( $prev_is_standalone, $first_item, $otag, $ctag ) = ( 1, 1, qw/ {{ }} / ); } 
+{ my ( $prev_is_standalone, $first_item, $otag, $ctag ) = ( 1, 1, qw/ %s %s / ); } 
 
 eofile: /^\Z/
 
@@ -78,6 +78,21 @@ template_item:  ( partial | section | delimiter_change | comment | unescaped_var
     $item[1]
 }
 
+delimiter_change: /\s*/ "$otag" /\s*/ '=' /\s*/ /.*?(?=\=\Q$ctag\E)/s '=' "$ctag" /\s*/ {
+    ( $otag, $ctag ) = split /\s+/, $item[6];
+    my $prev = $prev_is_standalone;
+    $prev_is_standalone = 0;
+    if ( $item[1] =~ /\n/ or $prev) {
+        if ( $item[9] =~ /\n/ or length $text == 0 ) {
+            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
+            $item[9] =~ s/^.*?\n//;
+            $prev_is_standalone = 1;
+        }
+    }
+    Template::Mustache::Token::Verbatim->new( content =>
+        $item[1] . $item[9]
+    );
+}
 
 partial: /\s*/ "$otag" '>' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
     my $prev = $prev_is_standalone;
@@ -135,21 +150,6 @@ close_section: /\s*/ "$otag" '/' /\s*/ "$arg[0]" /\s*/ "$ctag" /\s*/ {
     ]
 }
 
-delimiter_change: /\s*/ "$otag" /\s*/ '=' /\s*/ /.*?(?=\=\Q$ctag\E)/s '=' "$ctag" /\s*/ {
-    ( $otag, $ctag ) = split /\s+/, $item[6];
-    my $prev = $prev_is_standalone;
-    $prev_is_standalone = 0;
-    if ( $item[1] =~ /\n/ or $prev) {
-        if ( $item[9] =~ /\n/ or length $text == 0 ) {
-            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
-            $item[9] =~ s/^.*?\n//;
-            $prev_is_standalone = 1;
-        }
-    }
-    Template::Mustache::Token::Verbatim->new( content =>
-        $item[1] . $item[9]
-    );
-}
 
 comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=\Q$ctag\E)/s "$ctag" /\s*/ {
     my $prev = $prev_is_standalone;
@@ -170,18 +170,24 @@ comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=\Q$ctag\E)/s "$ctag" /\s*/ {
 
 inner_section: ...!close_section[ $arg[0] ] template_item 
 
-section: open_section inner_section[ $item[1][0] ](s?) close_section[ $item[1][0] ] {
+section: open_section {$thisoffset} inner_section[ $item[1][0] ](s?) {$thisoffset
+    - $item[2]
+} close_section[ $item[1][0] ] {
+warn $otag;
+    my $raw = substr( $thisparser->{fulltext}, $item[2], $item[4] );
     Template::Mustache::Token::Template->new( items => [
         $item[1]->[2],
         Template::Mustache::Token::Section->new(
+            delimiters => [ $otag, $ctag ],
             variable => $item[1][0],
             inverse => $item[1][1],
+            raw => $raw,
             template => Template::Mustache::Token::Template->new( 
                 items => [ 
-                    $item[1]->[3], @{$item[2]}, $item[3]->[0] ], 
+                    $item[1][3], @{$item[3]}, $item[5][0] ], 
             )
         ),
-        $item[3]->[1]
+        $item[5][1]
         ]
     );
 }

@@ -27,11 +27,6 @@ sub render {
     if( ref $value eq 'CODE' ) {
         my $template = Template::Mustache->new->compile( $value->() );
         $template->escape($self->escape);
-        use Data::Dumper;
-        $template->render(
-            $context, $partials, $indent
-        );
-        warn Dumper($template);
         $value = $template->render(
             $context, $partials, $indent
         );
