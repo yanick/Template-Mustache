@@ -8,7 +8,7 @@ use Template::Mustache;
 
 use Path::Tiny;
 
-use YAML::Syck ();
+use YAML::XS ();
 $YAML::Syck::ImplicitTyping = 1;
 
 
@@ -19,7 +19,7 @@ plan skip_all => "Couldn't find specs; try running `git submodule update --init`
 
 my @specs = @ARGV 
     ? ( map { $specs_dir->child( $_ . '.yml' ) } @ARGV )
-    : $specs_dir->children( qr/\.yml$/ );
+    : $specs_dir->children( qr/^[^~].*\.yml$/ );
 
 # only wrap in a subtest if there are more than one file involved
 
@@ -36,12 +36,15 @@ done_testing;
 sub test_spec { 
     my $file = shift;
 
-    my $spec = YAML::Syck::LoadFile($file);
+    my $spec = YAML::XS::LoadFile($file);
 
     for my $test (@{$spec->{tests}}) {
         (my $name = delete $test->{name}) =~ s/'/"/g;
 
         subtest $name => sub {
+
+            $DB::single = $name =~ /Without P/;
+            
 
             my $expected = delete $test->{expected};
             my $tmpl = $test->{template};

@@ -59,7 +59,7 @@ sub compile {
     use Template::Mustache::Token::Section;
     use Template::Mustache::Token::Partial;
     #$::RD_HINT = 0;
-    # $::RD_TRACE = 20;
+#    $::RD_TRACE = 20;
     my $parser = Parse::RecDescent->new(<<'END_GRAMMAR');
 
 <skip:qr//> 
@@ -74,9 +74,10 @@ template: template_item(s?) eofile {
     );
 } | <error>
 
-template_item:  ( partial | section | comment | unescaped_variable_amp | unescaped_variable | variable | verbatim | <error>) {
+template_item:  ( partial | section | delimiter_change | comment | unescaped_variable_amp | unescaped_variable | variable | verbatim | <error>) {
     $item[1]
 }
+
 
 partial: /\s*/ "$otag" '>' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
     my $prev = $prev_is_standalone;
@@ -134,8 +135,23 @@ close_section: /\s*/ "$otag" '/' /\s*/ "$arg[0]" /\s*/ "$ctag" /\s*/ {
     ]
 }
 
+delimiter_change: /\s*/ "$otag" /\s*/ '=' /\s*/ /.*?(?=\=\Q$ctag\E)/s '=' "$ctag" /\s*/ {
+    ( $otag, $ctag ) = split /\s+/, $item[6];
+    my $prev = $prev_is_standalone;
+    $prev_is_standalone = 0;
+    if ( $item[1] =~ /\n/ or $prev) {
+        if ( $item[9] =~ /\n/ or length $text == 0 ) {
+            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
+            $item[9] =~ s/^.*?\n//;
+            $prev_is_standalone = 1;
+        }
+    }
+    Template::Mustache::Token::Verbatim->new( content =>
+        $item[1] . $item[9]
+    );
+}
 
-comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=$ctag)/s "$ctag" /\s*/ {
+comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=\Q$ctag\E)/s "$ctag" /\s*/ {
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
 
@@ -210,7 +226,7 @@ variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" {
 
 variable_name: /[\w.]+/
 
-verbatim: /^\s*\S*?(?=$otag|\s|$)/ {
+verbatim: /^\s*\S*?(?=\Q$otag\E|\s|$)/ {
     $prev_is_standalone = 0;
     Template::Mustache::Token::Verbatim->new( content => $item[1] );
 }
