@@ -155,23 +155,20 @@ comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=\Q$ctag\E)/s "$ctag" /\s*/ {
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
 
-    if ( $item[1] =~ /\n/ or $thisline == 1 or $prev) {
-        if ( $item[7] =~ /\n/ ) {
-            $item[1] =~ s/(^|\n)\s*?$/$1/;
+    if ( $item[1] =~ /\n/ or $prev) {
+        if ( $item[7] =~ /\n/  or length $text == 0) {
+            $item[1] =~ s/(\r?\n?)\s*?$/$1/;
             $item[7] =~ s/^.*?\n//;
             $prev_is_standalone = 1;
         }
     }
 
-    Template::Mustache::Token::Template->new(
-        items => [
-            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
-            Template::Mustache::Token::Verbatim->new( content => $item[7] ),
-        ]
-    );
+    Template::Mustache::Token::Verbatim->new( 
+        content => $item[1] . $item[7] 
+    ),
 }
 
-inner_section: ...!close_section[ $arg[0] ] template_item
+inner_section: ...!close_section[ $arg[0] ] template_item 
 
 section: open_section inner_section[ $item[1][0] ](s?) close_section[ $item[1][0] ] {
     Template::Mustache::Token::Template->new( items => [
@@ -250,7 +247,7 @@ sub _compile_template {
 
 #    p $tree;
     use Data::Dumper;
-    #warn Dumper($tree);
+#    warn Dumper($tree);
 
     return sub {
         $tree->render(@_)

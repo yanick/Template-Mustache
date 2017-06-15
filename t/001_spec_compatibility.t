@@ -43,13 +43,15 @@ sub test_spec {
 
         subtest $name => sub {
 
-            $DB::single = $name =~ /Without P/;
-            
-
             my $expected = delete $test->{expected};
             my $tmpl = $test->{template};
             my $data = $test->{data};
             my $partials = $test->{partials};
+
+            if ( $data->{lambda} ) {
+                $data->{orig_lambda} = $data->{lambda}{perl};
+                $data->{lambda} = eval $data->{lambda}{perl};
+            }
 
             # Ensure that lambdas are properly setup.
             my @hashes = $data;

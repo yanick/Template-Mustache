@@ -8,10 +8,16 @@ has_ro 'variable';
 has_ro 'template';
 has_ro 'inverse';
 
+use Template::Mustache;
+
 sub render {
     my( $self, $context, $partials ) = @_;
 
     my $cond = Template::Mustache::resolve_context( $self->variable, $context );
+
+    if ( ref $cond eq 'CODE' ) {
+
+    }
 
     if ( $self->inverse ) {
         if ( ref $cond eq 'ARRAY' ) {
