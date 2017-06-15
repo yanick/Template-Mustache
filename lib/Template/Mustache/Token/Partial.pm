@@ -12,7 +12,9 @@ sub render {
 
     my $partial = $partials->{$self->name} or return '';
 
-    return $partial->render( $context, $partials );
+    my $content = $partial->render( $context, $partials, $self->indent );
+
+    return $content;
 }
 
 1;

@@ -11,12 +11,13 @@ has_ro escape => sub { 1 };
 use Escape::Houdini qw/ escape_html /;
 
 sub render {
-    my( $self, $context ) = @_;
+    my( $self, $context,$partials, $indent ) = @_;
 
     my $value = 
         Template::Mustache::resolve_context( $self->name, $context ) // '';
 
     $value = escape_html($value) if $self->escape;
+
 
     return $value;
 }

@@ -39,11 +39,11 @@ sub test_spec {
     my $spec = YAML::Syck::LoadFile($file);
 
     for my $test (@{$spec->{tests}}) {
-        (my $name = $test->{name}) =~ s/'/"/g;
+        (my $name = delete $test->{name}) =~ s/'/"/g;
 
         subtest $name => sub {
 
-            my $expected = $test->{expected};
+            my $expected = delete $test->{expected};
             my $tmpl = $test->{template};
             my $data = $test->{data};
             my $partials = $test->{partials};
@@ -59,7 +59,7 @@ sub test_spec {
 
             my $actual = Template::Mustache->render($tmpl, $data, $partials);
 
-            is($actual, $expected, $test->{desc}) or diag explain $test;
+            is($actual, $expected, delete $test->{desc}) or diag explain $test;
         };
     }
 }

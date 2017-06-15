@@ -11,9 +11,16 @@ sub flatten {
 }
 
 sub render {
-    my( $self, $context, $partials ) = @_;
+    my( $self, $context, $partials, $indent ) = @_;
 
-    return join '', map { $_->render($context, $partials) } flatten( @{ $self->items } );
+    my @nodes = grep { ref $_ ne 'Template::Mustache::Token::Verbatim' or
+        length $_->content } flatten( @{ $self->items } );
+
+    if( @nodes and ref $nodes[-1] eq 'Template::Mustache::Token::Verbatim' ) {
+        $nodes[-1]->last(1);
+    }
+
+    return join '', map { $_->render($context, $partials, $indent ) } @nodes;
 }
 
 1;

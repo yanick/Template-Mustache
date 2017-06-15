@@ -78,9 +78,27 @@ template_item:  ( partial | section | comment | unescaped_variable_amp | unescap
     $item[1]
 }
 
-partial: /\s*/ "$otag" '>'  /[\w.]+/ "$ctag" /\s*/ { 
+partial: /\s*/ "$otag" '>' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
+    my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
-    Template::Mustache::Token::Partial->new( name => $item[4] );
+    my $indent = '';
+    if ( $item[1] =~ /\n/ or $prev ) {
+        if ( $item[8] =~ /\n/  or length $text == 0) {
+            $item[1] =~ /(^|\n)([ \t]*?)$/;
+            $indent = $2;
+            warn "X$indent","X";
+            $item[8] =~ s/^.*?\n//;
+            $prev_is_standalone = 1;
+        }
+    }
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Partial->new( name => $item[5],
+                indent => $indent ),
+            Template::Mustache::Token::Verbatim->new( content => $item[8] ),
+        ],
+        )
 }
 
 open_section: /\s*/ "$otag" /[#^]/ /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
@@ -181,6 +199,7 @@ unescaped_variable_amp: /\s*/ "$otag" '&' /\s*/ variable_name /\s*/ "$ctag" {
 
 
 variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" {
+    $prev_is_standalone = 0;
     Template::Mustache::Token::Template->new(
         items => [
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
