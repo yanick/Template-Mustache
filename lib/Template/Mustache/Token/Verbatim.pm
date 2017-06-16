@@ -14,8 +14,6 @@ sub render {
 
     if( length $indent ) {
         if ( $self->last ) {
-            $DB::single = 1;
-            
             $value =~ s/(\r?\n)/$1$indent/gm;
             $value =~ s/(\r?\n)$indent$/$1/;
         }

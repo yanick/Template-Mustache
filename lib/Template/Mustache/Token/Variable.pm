@@ -1,5 +1,7 @@
-;
 package Template::Mustache::Token::Variable;
+
+use Escape::Houdini qw/ escape_html /;
+use Scalar::Util qw/ looks_like_number /;
 
 use Moo;
 
@@ -9,14 +11,12 @@ use MooseX::MungeHas {
 };
 
 has_ro 'name';
+
 has escape => (
     is => 'rw',
     lazy => 1, default => sub { 1 },
     predicate => 1,
 );
-
-use Escape::Houdini qw/ escape_html /;
-use Scalar::Util qw/ looks_like_number /;
 
 sub render {
     my( $self, $context,$partials, $indent ) = @_;

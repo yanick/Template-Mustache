@@ -2,19 +2,17 @@ package Template::Mustache::Token::Partial;
 
 use Moo;
 
-use MooseX::MungeHas { has_ro => [ 'is_ro' ] };
+use MooseX::MungeHas { has_ro => [ 'is_ro' ], has_rw => [ 'is_rw' ] };
 
 has_ro 'name';
-has_ro 'indent';
+has_rw 'indent';
 
 sub render {
     my( $self, $context, $partials ) = @_;
 
     my $partial = $partials->{$self->name} or return '';
 
-    my $content = $partial->render( $context, $partials, $self->indent );
-
-    return $content;
+    return $partial->render( $context, $partials, $self->indent );
 }
 
 1;

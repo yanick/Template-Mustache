@@ -9,8 +9,6 @@ use Template::Mustache;
 use Path::Tiny;
 
 use YAML::XS ();
-$YAML::Syck::ImplicitTyping = 1;
-
 
 my $specs_dir = path( 'ext', 'spec', 'specs');
 
@@ -19,7 +17,7 @@ plan skip_all => "Couldn't find specs; try running `git submodule update --init`
 
 my @specs = @ARGV 
     ? ( map { $specs_dir->child( $_ . '.yml' ) } @ARGV )
-    : $specs_dir->children( qr/^[^~].*\.yml$/ );
+    : $specs_dir->children( qr/\.yml$/ );
 
 # only wrap in a subtest if there are more than one file involved
 

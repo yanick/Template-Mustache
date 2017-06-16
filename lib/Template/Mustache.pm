@@ -6,6 +6,15 @@ use MooseX::MungeHas { has_rw => [ 'is_rw' ] };
 
 use Text::Balanced qw/ extract_tagged gen_extract_tagged extract_multiple /;
 
+use Template::Mustache::Token::Template;
+use Template::Mustache::Token::Variable;
+use Template::Mustache::Token::Verbatim;
+use Template::Mustache::Token::Section;
+use Template::Mustache::Token::Partial;
+
+use Parse::RecDescent;
+use List::AllUtils qw/ pairmap /;
+
 has_rw template => (
     trigger => sub { $_[0]->_clear_compiled_template },
 );
@@ -19,8 +28,14 @@ has_rw _compiled_template => (
 
 has_rw delimiters => sub { [ '{{', '}}' ] };
 
-use List::AllUtils qw/ pairmap /;
 has_rw _partials => sub { +{} };
+
+has_rw parser => sub {
+    my $self = shift;
+    use Template::Mustache::Parser;
+    return Template::Mustache::Parser->new;
+    #Parse::RecDescent->new( $self->grammar )
+};
 
 sub partials {
     my( $self, $partials ) = @_;
@@ -47,51 +62,94 @@ sub render {
     $self->_compiled_template->([ $context ], $self->_partials);
 }
 
-use Parse::RecDescent;
 
 sub compile {
     my( $self, $template ) = @_;
 
-    use Template::Mustache::Token::Block;
-    use Template::Mustache::Token::Template;
-    use Template::Mustache::Token::Variable;
-    use Template::Mustache::Token::Verbatim;
-    use Template::Mustache::Token::Section;
-    use Template::Mustache::Token::Partial;
-#    $::RD_HINT = 1;
-#    $::RD_TRACE = 20;
-    my $parser = Parse::RecDescent->new(sprintf <<'END_GRAMMAR', @{ $self->delimiters });
+    use Template::Mustache::Parser;
+    my $parser = Parse::RecDescent->new($self->grammar);
+#my    $parser = Template::Mustache::Parser->new;
+
+    return $parser->template( $template, undef, @{ $self->delimiters } );
+}
+
+
+sub _compile_template {  
+    my( $self, $template, $pre ) = @_;
+
+    my $tree = $self->compile($template);
+
+    return sub {
+        $tree->render(@_)
+    };
+}
+
+sub resolve_context {  
+    my ( $key, $context ) = @_;
+
+    no warnings 'uninitialized';
+    return $context->[0] if $key eq '.' or $key eq '';
+
+    my $first;
+    ( $first, $key ) = split '\.', $key, 2;
+
+    CONTEXT:
+    for my $c ( @$context ) {
+        if ( ref $c eq 'HASH' ) {
+            next CONTEXT unless exists $c->{$first};
+            return resolve_context($key,[$c->{$first}]);
+        }
+    }
+
+    return;
+}
+
+sub grammar { 
+
+#    $::RD_TRACE = 2;
+
+    return <<'END_GRAMMAR';
 
 <skip:qr//> 
 
-{ my ( $prev_is_standalone, $first_item, $otag, $ctag ) = ( 1, 1, qw/ %s %s / ); } 
+{ my ( $prev_is_standalone, $first_item ) = ( 1, 1); } 
 
 eofile: /^\Z/
 
-template: template_item(s?) eofile {
+template: <rulevar: local $otag>
+
+template: <rulevar: local $ctag> 
+
+template: { ($otag,$ctag) = @arg ? @arg : ( qw/ {{ }} / );
+    $thisparser->{opening_tag} = $otag;
+    $thisparser->{closing_tag} = $ctag;
+    1;
+} template_item(s?) eofile {
     Template::Mustache::Token::Template->new(
-        items => $item[1]
+        items => $item[2]
     );
 } | <error>
+
+opening_tag: "$thisparser->{opening_tag}"
+
+closing_tag: "$thisparser->{closing_tag}"
 
 template_item:  ( partial | section | delimiter_change | comment | unescaped_variable_amp | unescaped_variable | variable | verbatim | <error>) {
     $item[1]
 }
 
-delimiter_change: /\s*/ "$otag" /\s*/ '=' /\s*/ /.*?(?=\=\Q$ctag\E)/s '=' "$ctag" /\s*/ {
-    ( $otag, $ctag ) = split /\s+/, $item[6];
-    my $prev = $prev_is_standalone;
-    $prev_is_standalone = 0;
-    if ( $item[1] =~ /\n/ or $prev) {
-        if ( $item[9] =~ /\n/ or length $text == 0 ) {
-            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
-            $item[9] =~ s/^.*?\n//;
-            $prev_is_standalone = 1;
-        }
-    }
+delimiter_change: standalone_surround[$item[0]] {
+    ( $otag, $ctag ) = split /\s+/, $item[1][2];
+
+    ( $thisparser->{opening_tag},
+        $thisparser->{closing_tag} ) = (  $otag, $ctag );
     Template::Mustache::Token::Verbatim->new( content =>
-        $item[1] . $item[9]
+        $item[1][0] . $item[1][1]
     );
+}
+
+delimiter_change_inner: '=' /\s*/ /.*?(?=\=\Q$ctag\E)/s '=' {
+    $item[3]
 }
 
 partial: /\s*/ "$otag" '>' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
@@ -102,7 +160,6 @@ partial: /\s*/ "$otag" '>' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ {
         if ( $item[8] =~ /\n/  or length $text == 0) {
             $item[1] =~ /(^|\n)([ \t]*?)$/;
             $indent = $2;
-            warn "X$indent","X";
             $item[8] =~ s/^.*?\n//;
             $prev_is_standalone = 1;
         }
@@ -117,7 +174,7 @@ partial: /\s*/ "$otag" '>' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ {
         )
 }
 
-open_section: /\s*/ "$otag" /[#^]/ /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
+open_section: /\s*/ opening_tag /[#^]/ /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
     if ( $item[1] =~ /\n/ or $prev ) {
@@ -150,30 +207,34 @@ close_section: /\s*/ "$otag" '/' /\s*/ "$arg[0]" /\s*/ "$ctag" /\s*/ {
     ]
 }
 
-
-comment: /\s*/ "$otag" /\s*/ '!' /.*?(?=\Q$ctag\E)/s "$ctag" /\s*/ {
+standalone_surround: /\s*/ "$otag" /\s*/ <matchrule:$arg[0]_inner> "$ctag" /\s*/ {
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
 
     if ( $item[1] =~ /\n/ or $prev) {
-        if ( $item[7] =~ /\n/  or length $text == 0) {
+        if ( $item[6] =~ /\n/  or length $text == 0) {
             $item[1] =~ s/(\r?\n?)\s*?$/$1/;
-            $item[7] =~ s/^.*?\n//;
+            $item[6] =~ s/^.*?\n//;
             $prev_is_standalone = 1;
         }
     }
 
+    [  @item[1,6,4] ],
+}
+
+comment: standalone_surround[$item[0]] { 
     Template::Mustache::Token::Verbatim->new( 
-        content => $item[1] . $item[7] 
+        content => $item[1][0] . $item[1][1]
     ),
 }
+
+comment_inner: '!' /.*?(?=\Q$ctag\E)/s
 
 inner_section: ...!close_section[ $arg[0] ] template_item 
 
 section: open_section {$thisoffset} inner_section[ $item[1][0] ](s?) {$thisoffset
     - $item[2]
 } close_section[ $item[1][0] ] {
-warn $otag;
     my $raw = substr( $thisparser->{fulltext}, $item[2], $item[4] );
     Template::Mustache::Token::Template->new( items => [
         $item[1]->[2],
@@ -235,145 +296,7 @@ verbatim: /^\s*\S*?(?=\Q$otag\E|\s|$)/ {
 }
 
 END_GRAMMAR
-
-    use GraphViz::Parse::RecDescent;
-    my $graph = GraphViz::Parse::RecDescent->new($parser);
-#    open my $png, '>', 'grammar.png';
-#    print $png $graph->as_png;
-
-    return $parser->template( $template );
 }
-
-sub _compile_template {  
-    my( $self, $template, $pre ) = @_;
-
-    my $tree = $self->compile($template);
-
-    use DDP;
-
-#    p $tree;
-    use Data::Dumper;
-#    warn Dumper($tree);
-
-    return sub {
-        $tree->render(@_)
-    };
-
-
-    return sub { $pre } unless length $template;
-
-    my @delim = map { quotemeta $_ } @{ $self->delimiters };
-
-    my $beg = ( length $pre == 0 or  $pre =~ /\n$/ );
-
-    use DDP;
-    my $next = extract_multiple( $template,
-        [
-            { 'Template::Mustache::Section' => sub { 
-                return unless $beg;
-                my $open = '[ \t]*' . $delim[0] . '\s*#\s*';
-                my $close = '\s*'.$delim[1] . '[ \t]_\r?(\n|\$)';
-                (extract_tagged( $_[0], $open, $close, '' ))[4,1]
-            } },
-            { 'Template::Mustache::Section' => sub { 
-                my $open = $delim[0] . '\s*#\s*';
-                my $close = '\s*'.$delim[1];
-                (extract_tagged( $_[0], $open, $close, '' ))[4,1]
-            } },
-            { 'Template::Mustache::Comment' => sub { 
-                return unless $beg;
-                (extract_tagged( $_[0], 
-                    "[ \t]*" . $delim[0] . '\s*!', 
-                    $delim[1] . '[ \t]*\r?(\n|\$)', 
-                    '' ))[4,1]
-            } },
-            { 'Template::Mustache::Comment' => sub { 
-                (extract_tagged( $_[0], $delim[0] . '\s*!', $delim[1], '' ))[4,1]
-            } },
-            { 'Template::Mustache::Partial' => sub { 
-                (extract_tagged( $_[0], $delim[0] . '\s*>\s*', '\s*'.$delim[1], '' ))[4,1]
-            } },
-            { 'Template::Mustache::Block' => sub { 
-                (extract_tagged( $_[0], $delim[0], $delim[1], '' ))[4,1]
-            } },
-            { 'Template::Mustache::Pre' => qr/^(.*(?=$delim[0])|.*\n?)/ },
-        ]
-    );
-
-    use Template::Mustache::Pre;
-    use Template::Mustache::Block;
-    use Template::Mustache::Comment;
-    use Template::Mustache::Partial;
-    use Template::Mustache::Section;
-
-    return $next->compile( $self, $pre, $template );
-
-    unless ( ref $next ) {
-        return $self->_compile_template( $template, $pre . $next );
-    }
-
-    if ( ref $next eq 'Pre' ) {
-        return $self->_compile_template( $template, $pre . $$next );
-    }
-
-    if ( ref $next eq 'Comment' ) {
-        return sub { 
-            my $context = shift;
-
-            warn $template;
-
-            return join '',
-                $pre, 
-                $self->_compile_template($template)->($context);
-        };
-    }
-
-    if ( ref $next eq 'Block' ) {
-        return sub { 
-            my $context = shift;
-
-            my $content = $context->{$$next};
-
-            return join '',
-                $pre, 
-                $content,
-                $self->_compile_template($template)->($context);
-        };
-    }
-
-    p $next;
-    ...;
-
-    warn "'$template'";
-    warn $@;
-
-    die qr/(.*?)($delim[0].*)?/;
-
-    my( undef, $post, undef, $directive );
-
-
-}
-
-sub resolve_context {  
-    my ( $key, $context ) = @_;
-
-    no warnings 'uninitialized';
-    return $context->[0] if $key eq '.' or $key eq '';
-
-    my $first;
-    ( $first, $key ) = split '\.', $key, 2;
-
-    CONTEXT:
-    for my $c ( @$context ) {
-        if ( ref $c eq 'HASH' ) {
-            next CONTEXT unless exists $c->{$first};
-            return resolve_context($key,[$c->{$first}]);
-        }
-    }
-
-    return;
-}
-
 
 1;
 
