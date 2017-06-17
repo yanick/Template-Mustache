@@ -253,7 +253,7 @@ section: open_section {$thisoffset} inner_section[ $item[1][0] ](s?) {$thisoffse
     );
 }
 
-unescaped_variable: /\s*/ "$otag" '{' /\s*/ variable_name /\s*/ '}' "$ctag" {
+unescaped_variable: /\s*/ opening_tag '{' /\s*/ variable_name /\s*/ '}' closing_tag {
     Template::Mustache::Token::Template->new(
         items => [
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
@@ -265,7 +265,7 @@ unescaped_variable: /\s*/ "$otag" '{' /\s*/ variable_name /\s*/ '}' "$ctag" {
     );
 }
 
-unescaped_variable_amp: /\s*/ "$otag" '&' /\s*/ variable_name /\s*/ "$ctag" {
+unescaped_variable_amp: /\s*/ opening_tag '&' /\s*/ variable_name /\s*/ closing_tag {
     Template::Mustache::Token::Template->new(
         items => [
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
@@ -278,7 +278,7 @@ unescaped_variable_amp: /\s*/ "$otag" '&' /\s*/ variable_name /\s*/ "$ctag" {
 }
 
 
-variable: /\s*/ "$otag" /\s*/ variable_name /\s*/ "$ctag" {
+variable: /\s*/ opening_tag /\s*/ variable_name /\s*/ closing_tag {
     $prev_is_standalone = 0;
     Template::Mustache::Token::Template->new(
         items => [
