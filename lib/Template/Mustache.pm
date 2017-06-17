@@ -228,7 +228,7 @@ comment: standalone_surround[$item[0]] {
     ),
 }
 
-comment_inner: '!' /.*?(?=\Q$ctag\E)/s
+comment_inner: '!' { $thisparser->{closing_tag} } /.*?(?=\Q$item[2]\E)/s
 
 inner_section: ...!close_section[ $arg[0] ] template_item 
 
@@ -239,7 +239,7 @@ section: open_section {$thisoffset} inner_section[ $item[1][0] ](s?) {$thisoffse
     Template::Mustache::Token::Template->new( items => [
         $item[1]->[2],
         Template::Mustache::Token::Section->new(
-            delimiters => [ $otag, $ctag ],
+            delimiters => [ map { $thisparser->{$_} } qw/ opening_tag closing_tag / ],
             variable => $item[1][0],
             inverse => $item[1][1],
             raw => $raw,
@@ -290,9 +290,9 @@ variable: /\s*/ opening_tag /\s*/ variable_name /\s*/ closing_tag {
 
 variable_name: /[\w.]+/
 
-verbatim: /^\s*\S*?(?=\Q$otag\E|\s|$)/ {
+verbatim: { $thisparser->{opening_tag} } /^\s*\S*?(?=\Q$item[1]\E|\s|$)/ {
     $prev_is_standalone = 0;
-    Template::Mustache::Token::Verbatim->new( content => $item[1] );
+    Template::Mustache::Token::Verbatim->new( content => $item[2] );
 }
 
 END_GRAMMAR
