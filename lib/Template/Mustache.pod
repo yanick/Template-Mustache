@@ -152,8 +152,24 @@ Returns the instance of L<Template::Mustache::Parser> used by the object.
 
     print $mustache->render; # => partials rock!
 
-Add partial templates to the object. Partial values must be
-strings holding Mustache templates.
+Add partial templates to the object. Partial values can be
+strings holding Mustache templates, or coderefs. If a
+partial is a coderef, it will be invoked with its name
+as an argument and is expected to return a Mustache template.
+
+    sub minimizer {
+        "a little bit of " . shift;
+    }
+
+
+    my $mustache = Template::Mustache->new(
+        template => "{{> this }} and {{> that }}",
+        partials => { 
+            this => \&minimizer,
+            that => \&minimizer,
+        },
+    );
+
 
 =head1 SEE ALSO
 

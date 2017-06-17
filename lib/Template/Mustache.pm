@@ -49,7 +49,8 @@ has_rw partials => (
         while( my ( $name, $template ) = each %$partials ) {
             next if ref $template;
             $partials->{$name} = 
-                Template::Mustache->new( template => $template )->parsed;
+                Template::Mustache->new( template => 
+                    ref $template ? $template->($name) : $template )->parsed;
         }
     },
 );
