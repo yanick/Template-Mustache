@@ -39,23 +39,22 @@ has_rw delimiters => (
     default => sub { [ '{{', '}}' ] },
 );
 
-has_rw _partials => sub { +{} };
+has_rw partials => (
+    lazy => 1,
+    default => sub { +{}  },
+    trigger => sub { 
+        my( $self, $partials ) = @_;
+
+        while( my ( $name, $template ) = each %$partials ) {
+            next if ref $template;
+            $partials->{$name} = 
+                Template::Mustache->new( template => $template )->parsed;
+        }
+    },
+);
 
 has_ro parser => sub { Template::Mustache::Parser->new };
 
-sub partials {
-    my( $self, $partials ) = @_;
-    while( my ( $name, $template ) = each %$partials ) {
-        $self->add_partial( $name, $template );
-    }
-}
-
-sub add_partial {
-    my( $self, $name, $template ) = @_;
-    $self->_partials->{$name} = 
-        Template::Mustache->new( template => $template )->parsed;
-}
-    
 sub render {  
     my $self = shift;
 
@@ -65,7 +64,7 @@ sub render {
         $self->partials( $_[1] ) if @_ == 2;
     }
 
-    $self->parsed->render([ $_[0] ], $self->_partials);
+    $self->parsed->render([ $_[0] ], $self->partials);
 }
 
 

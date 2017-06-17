@@ -5,10 +5,13 @@ use warnings;
 
 use Template::Mustache;
 
-my $mustache = Template::Mustache->new;
+my $mustache = Template::Mustache->new(
+    partials => {
+        inner => 'Yay!'
+    },
+    template => 'x{{> inner}}'
+);
 
-$mustache->partials({
-    inner => 'Yay!'
-});
+is $mustache->render, 'xYay!', 'partial';
 
-is $mustache->render( 'x{{> inner}}' ), 'xYay!', 'partial';
+done_testing;
