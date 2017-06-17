@@ -112,13 +112,12 @@ sub grammar {
 
 <skip:qr//> 
 
-{ my ( $prev_is_standalone, $first_item ) = ( 1, 1); } 
-
 eofile: /^\Z/
 
 template: { my ($otag,$ctag) = @arg ? @arg : ( qw/ {{ }} / );
     $thisparser->{opening_tag} = $otag;
     $thisparser->{closing_tag} = $ctag;
+    $thisparser->{prev_is_standalone} = 1;
     1;
 } template_item(s?) eofile {
     Template::Mustache::Token::Template->new(
@@ -150,15 +149,15 @@ delimiter_change_inner: '=' {
 }
 
 partial: /\s*/ opening_tag '>' /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
-    my $prev = $prev_is_standalone;
-    $prev_is_standalone = 0;
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
     my $indent = '';
     if ( $item[1] =~ /\n/ or $prev ) {
         if ( $item[8] =~ /\n/  or length $text == 0) {
             $item[1] =~ /(^|\n)([ \t]*?)$/;
             $indent = $2;
             $item[8] =~ s/^.*?\n//;
-            $prev_is_standalone = 1;
+            $thisparser->{prev_is_standalone} = 1;
         }
     }
     Template::Mustache::Token::Template->new(
@@ -172,13 +171,13 @@ partial: /\s*/ opening_tag '>' /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ {
 }
 
 open_section: /\s*/ opening_tag /[#^]/ /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
-    my $prev = $prev_is_standalone;
-    $prev_is_standalone = 0;
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
     if ( $item[1] =~ /\n/ or $prev ) {
         if ( $item[8] =~ /\n/ ) {
             $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
             $item[8] =~ s/^.*?\n//;
-            $prev_is_standalone = 1;
+            $thisparser->{prev_is_standalone} = 1;
         }
     }
 
@@ -189,13 +188,13 @@ open_section: /\s*/ opening_tag /[#^]/ /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ {
 }
 
 close_section: /\s*/ opening_tag '/' /\s*/ "$arg[0]" /\s*/ closing_tag /\s*/ {
-    my $prev = $prev_is_standalone;
-    $prev_is_standalone = 0;
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
     if ( $item[1] =~ /\n/ or $prev) {
         if ( $item[8] =~ /\n/ or length $text == 0 ) {
             $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
             $item[8] =~ s/^.*?\n//;
-            $prev_is_standalone = 1;
+            $thisparser->{prev_is_standalone} = 1;
         }
     }
     [
@@ -205,14 +204,14 @@ close_section: /\s*/ opening_tag '/' /\s*/ "$arg[0]" /\s*/ closing_tag /\s*/ {
 }
 
 standalone_surround: /\s*/ opening_tag /\s*/ <matchrule:$arg[0]_inner> closing_tag /\s*/ {
-    my $prev = $prev_is_standalone;
-    $prev_is_standalone = 0;
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
 
     if ( $item[1] =~ /\n/ or $prev) {
         if ( $item[6] =~ /\n/  or length $text == 0) {
             $item[1] =~ s/(\r?\n?)\s*?$/$1/;
             $item[6] =~ s/^.*?\n//;
-            $prev_is_standalone = 1;
+            $thisparser->{prev_is_standalone} = 1;
         }
     }
 
@@ -276,7 +275,7 @@ unescaped_variable_amp: /\s*/ opening_tag '&' /\s*/ variable_name /\s*/ closing_
 
 
 variable: /\s*/ opening_tag /\s*/ variable_name /\s*/ closing_tag {
-    $prev_is_standalone = 0;
+    $thisparser->{prev_is_standalone} = 0;
     Template::Mustache::Token::Template->new(
         items => [
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
@@ -288,7 +287,7 @@ variable: /\s*/ opening_tag /\s*/ variable_name /\s*/ closing_tag {
 variable_name: /[\w.]+/
 
 verbatim: { $thisparser->{opening_tag} } /^\s*\S*?(?=\Q$item[1]\E|\s|$)/ {
-    $prev_is_standalone = 0;
+    $thisparser->{prev_is_standalone} = 0;
     Template::Mustache::Token::Verbatim->new( content => $item[2] );
 }
 
