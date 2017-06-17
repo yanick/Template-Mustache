@@ -5,29 +5,21 @@ use warnings;
 
 use Template::Mustache;
 
-my $mustache = Template::Mustache->new;
+sub render_ok(@) {
+    my $mustache = Template::Mustache->new( template => shift );
+    is $mustache->render( shift ), shift, shift;
+}
 
-is $mustache->render( "Hello {{planet}}", {planet => "World!"})
-    => 'Hello World!';
-
-is $mustache->render( "{{a}} and {{b}}", {a => 'this', b => 'that' })
-    => 'this and that';
-
-is $mustache->render( '123{{! no }}456' ) => '123456', 'comment';
-
-is $mustache->render(<<'END'), "Begin\nEnd\n", "standalone comment";
-Begin
+render_ok @$_ for (
+    [ "Hello {{planet}}", {planet => "World!"}, 'Hello World!' ],
+    [ "{{a}} and {{b}}", {a => 'this', b => 'that' }, 'this and that' ],
+    [ '123{{! no }}456', {}, '123456', 'comment' ],
+    [ q(Begin
 {{!
     blah blah
 }}
-End
-END
-
-is $mustache->render(<<'END'), "Begin\nEnd\n", "two standalones";
-Begin
 {{!  blah blah }}
-{{!  blah blah }}
-End
-END
+End), {}, "Begin\nEnd", "standalone comment" ],
+);
 
 done_testing;

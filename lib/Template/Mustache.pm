@@ -34,7 +34,10 @@ has_rw parsed => (
     },
 );
 
-has_rw delimiters => sub { [ '{{', '}}' ] };
+has_rw delimiters => (
+    lazy => 1, 
+    default => sub { [ '{{', '}}' ] },
+);
 
 has_rw _partials => sub { +{} };
 
