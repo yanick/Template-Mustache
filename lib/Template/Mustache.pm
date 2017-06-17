@@ -116,11 +116,7 @@ sub grammar {
 
 eofile: /^\Z/
 
-template: <rulevar: local $otag>
-
-template: <rulevar: local $ctag> 
-
-template: { ($otag,$ctag) = @arg ? @arg : ( qw/ {{ }} / );
+template: { my ($otag,$ctag) = @arg ? @arg : ( qw/ {{ }} / );
     $thisparser->{opening_tag} = $otag;
     $thisparser->{closing_tag} = $ctag;
     1;
@@ -139,20 +135,21 @@ template_item:  ( partial | section | delimiter_change | comment | unescaped_var
 }
 
 delimiter_change: standalone_surround[$item[0]] {
-    ( $otag, $ctag ) = split /\s+/, $item[1][2];
-
     ( $thisparser->{opening_tag},
-        $thisparser->{closing_tag} ) = (  $otag, $ctag );
+        $thisparser->{closing_tag} ) = split /\s+/, $item[1][2];
+
     Template::Mustache::Token::Verbatim->new( content =>
         $item[1][0] . $item[1][1]
     );
 }
 
-delimiter_change_inner: '=' /\s*/ /.*?(?=\=\Q$ctag\E)/s '=' {
-    $item[3]
+delimiter_change_inner: '=' {
+    $thisparser->{closing_tag}
+} /\s*/ /.*?(?=\=\Q$item[2]\E)/s '=' {
+    $item[4]
 }
 
-partial: /\s*/ "$otag" '>' /\s*/ /[\w.]+/ /\s*/ "$ctag" /\s*/ { 
+partial: /\s*/ opening_tag '>' /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
     my $indent = '';
@@ -191,7 +188,7 @@ open_section: /\s*/ opening_tag /[#^]/ /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ {
     ];
 }
 
-close_section: /\s*/ "$otag" '/' /\s*/ "$arg[0]" /\s*/ "$ctag" /\s*/ {
+close_section: /\s*/ opening_tag '/' /\s*/ "$arg[0]" /\s*/ closing_tag /\s*/ {
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
     if ( $item[1] =~ /\n/ or $prev) {
@@ -207,7 +204,7 @@ close_section: /\s*/ "$otag" '/' /\s*/ "$arg[0]" /\s*/ "$ctag" /\s*/ {
     ]
 }
 
-standalone_surround: /\s*/ "$otag" /\s*/ <matchrule:$arg[0]_inner> "$ctag" /\s*/ {
+standalone_surround: /\s*/ opening_tag /\s*/ <matchrule:$arg[0]_inner> closing_tag /\s*/ {
     my $prev = $prev_is_standalone;
     $prev_is_standalone = 0;
 
