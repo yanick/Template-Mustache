@@ -65,7 +65,9 @@ sub render {
         $self->partials( $_[1] ) if @_ == 2;
     }
 
-    $self->parsed->render([ $_[0] ], $self->partials);
+    my $context = @_ ? shift : $self;
+
+    $self->parsed->render([ $context ], $self->partials);
 }
 
 

@@ -86,6 +86,24 @@ Or an object.
     
     Template::Mustache->render( 'Hello {{ thing }}', $object );  # thing resolves to $object->thing
 
+Or can be C<undef>.
+
+
+If no context is provided, it will default to the mustache object itself.
+Which allows for definining templates as subclasses of I<Template::Mustache>.
+
+    package My::Template;
+    use Moo;
+    extends 'Template::Mustache';
+
+    sub template  { 'Hello {{ planet }}!' }
+
+    sub planet { 'World' }
+
+
+    # later on
+    My::Template->new->render; # => Hello World!
+
 =method render( $template, $context, $partials )
 
     print Template::Mustache->render( $template, $context, $partials );
