@@ -2,7 +2,7 @@ package Template::Mustache;
 # ABSTRACT: Drawing Mustaches on Perl for fun and profit
 
 use Moo;
-use MooseX::MungeHas { has_rw => [ 'is_rw' ] };
+use MooseX::MungeHas { has_rw => [ 'is_rw' ], has_ro => [ 'is_ro' ] };
 
 use Text::Balanced qw/ extract_tagged gen_extract_tagged extract_multiple /;
 
@@ -18,13 +18,12 @@ use Parse::RecDescent;
 use List::AllUtils qw/ pairmap /;
 
 has_rw template => (
-    trigger => sub { $_[0]->_clear_compiled_template },
+    trigger => sub { $_[0]->clear_parsed },
 );
 
-has_rw _compiled_template => (
+has_rw parsed => (
     clearer => 1,
     lazy => 1, 
-    builder => 1,
     default => sub {
         my $self = shift;
         $self->parser->template( 
@@ -39,7 +38,7 @@ has_rw delimiters => sub { [ '{{', '}}' ] };
 
 has_rw _partials => sub { +{} };
 
-has_rw parser => sub { Template::Mustache::Parser->new };
+has_ro parser => sub { Template::Mustache::Parser->new };
 
 sub partials {
     my( $self, $partials ) = @_;
@@ -51,20 +50,19 @@ sub partials {
 sub add_partial {
     my( $self, $name, $template ) = @_;
     $self->_partials->{$name} = 
-        Template::Mustache->new( template => $template )->_compiled_template;
+        Template::Mustache->new( template => $template )->parsed;
 }
     
 sub render {  
     my $self = shift;
 
-    $self = $self->new unless ref $self;
+    unless( ref $self ) {
+        $self = $self->new unless ref $self;
+        $self->template( shift );
+        $self->partials( $_[1] ) if @_ == 2;
+    }
 
-    my( $template, $context, $partials ) = @_;
-
-    $self->template( $template );
-    $self->partials( $partials ) if $partials;
-
-    $self->_compiled_template->render([ $context ], $self->_partials);
+    $self->parsed->render([ $_[0] ], $self->_partials);
 }
 
 
@@ -88,11 +86,7 @@ sub resolve_context {
     return;
 }
 
-sub grammar { 
-
-#    $::RD_TRACE = 2;
-
-    return <<'END_GRAMMAR';
+our $GRAMMAR = <<'END_GRAMMAR';
 
 <skip:qr//> 
 
@@ -276,7 +270,7 @@ verbatim: { $thisparser->{opening_tag} } /^\s*\S*?(?=\Q$item[1]\E|\s|$)/ {
 }
 
 END_GRAMMAR
-}
+
 
 1;
 

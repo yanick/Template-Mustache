@@ -7,7 +7,7 @@ use Template::Mustache;
 use GraphViz::Parse::RecDescent;
 
 my $graph = GraphViz::Parse::RecDescent->new(
-    Template::Mustache->grammar 
+    $Template::Mustache::GRAMMAR
 );
 
 open my $png, '>', 'mustache.png';

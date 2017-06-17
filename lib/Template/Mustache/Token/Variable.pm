@@ -25,7 +25,7 @@ sub render {
         Template::Mustache::resolve_context( $self->name, $context ) // '';
 
     if( ref $value eq 'CODE' ) {
-        my $template = Template::Mustache->new( template => $value->() )->_compiled_template;
+        my $template = Template::Mustache->new( template => $value->() )->parsed;
         $template->escape($self->escape);
         $value = $template->render(
             $context, $partials, $indent

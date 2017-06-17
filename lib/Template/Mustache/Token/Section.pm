@@ -21,7 +21,7 @@ sub render {
         my $value=Template::Mustache->new( 
             delimiters => $self->delimiters,
             template => $cond->($self->raw) 
-        )->_compiled_template->render( $context, $partials );
+        )->parsed->render( $context, $partials );
 
         return '' if $self->inverse;
         return $value;

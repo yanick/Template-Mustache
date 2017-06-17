@@ -2,13 +2,130 @@
 
     use Template::Mustache;
 
+    # one-shot rendering
+
     print Template::Mustache->render(
-        "Hello {{planet}}", {planet => "World!"}), "\n";
+        "Hello {{planet}}", 
+    );
+
+    # compile and re-use template
+
+    my $mustache = Template::Mustache->new(
+        template => "Hello {{planet}}", 
+    );
+
+    print $mustache->render( { planet => "World!" } );
 
 =head1 DESCRIPTION
 
-Template::Mustache is an implementation of the fabulous L<Mustache|https://mustache.github.io/> templating
+Template::Mustache is an implementation of the fabulous 
+L<Mustache|https://mustache.github.io/> templating
 language for Perl.
+
+This version of I<Template::Mustache> conforms to v1.1.3
+of the L<https://github.com/mustache/spec|Mustache specs>.
+
+Templates can be compiled and rendered on the spot via the
+use of C<render> called as a class method.
+
+    print Template::Mustache->render(
+        "Hello {{planet}}", 
+    );
+
+If you are considering re-using the same template many times, it's 
+recommended to create a C<Template::Mustache> object instead,
+which will compile the template only once, and allow to render
+it with different contexts.
+
+    my $mustache = Template::Mustache->new(
+        template => "Hello {{planet}}", 
+    );
+
+    print $mustache->render( { planet => "World!" } );
+
+=head1 CONSTANTS
+
+=head2 $GRAMMAR
+
+    print $Template::Mustache::GRAMMAR;
+
+The L<Parse::ReqDescent> grammar used to parse Mustache templates.
+
+
+=method new( template => $template, delimiters => [ $opening, $closing ], partials => \%partials )
+
+    my $mustache = Template::Mustache->new(
+        template   => "Hello {{planet}}",
+        delimiters => [ qw/ ! ! / ],
+    );
+
+Constructor.  
+
+C<template> is a string containing the Mustache template associated with the
+object.
+
+C<delimiters> is an optional arrayref holding the pair of delimiters used by
+the template. It defaults to C<{{ }}>.
+
+C<partials> is an optional hashref of partials to assign to the object. See
+the method C<partials> for more details on its format.
+
+=method render( $context )
+
+    print $mustache->render( $context );
+
+Returns the rendered template, given the optionally provided context.
+
+=method render( $template, $context, $partials )
+
+    print Template::Mustache->render( $template, $context, $partials );
+
+    # equivalent to
+    Template::Mustache->new->( 
+        template => $template, partials => $partials 
+    )->render( $context );
+
+If invoked as a class method, C<render> takes in the mustache template, and
+an optional context and set of partials.
+
+To pass in partials without a
+context, set the context to C<undef>.
+
+    print Template::Mustache->render( $template, undef, $partials );
+
+
+
+
+=method template( $template )
+
+Accessor to the C<template> attribute.
+
+=method delimiters( [ $opening_tag, $closing_tag ] )
+
+Accessor to the C<delimiters> attribute.
+
+=method parsed
+
+    my $tree = $mustache->parsed;
+
+Returns the L<Template::Mustache::Token::Template> object representing
+the parsed template.
+
+=method parser
+
+Returns the instance of L<Template::Mustache::Parser> used by the object.
+
+=method partials( { partial_name => $partial, ... } )
+
+    my $mustache = Template::Mustache->new(
+        template => "{{> this }}",
+        partials => { this => 'partials rock!' },
+    );
+
+    print $mustache->render; # => partials rock!
+
+Add partial templates to the object. Partial values must be
+strings holding Mustache templates.
 
 =head1 SEE ALSO
 
@@ -29,31 +146,6 @@ is an implementation of it using L<Text::Xslate>.
 
 =back
 
-
-=cut
-=head2 Functions
-
-=over 4
-
-=item build_pattern($otag, $ctag)
-
-Constructs a new regular expression, to be used in the parsing of Mustache
-templates.
-
-=over 4
-
-=item $otag
-
-The tag opening delimiter.
-
-=item $ctag
-
-The tag closing delimiter.
-
-=back
-
-Returns a regular expression that will match tags with the specified
-delimiters.
 
 =cut
 =item read_file($filename)
