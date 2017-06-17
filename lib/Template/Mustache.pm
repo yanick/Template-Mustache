@@ -46,6 +46,8 @@ has_rw partials => (
     trigger => sub { 
         my( $self, $partials ) = @_;
 
+        return if ref $partials eq 'CODE';
+
         while( my ( $name, $template ) = each %$partials ) {
             next if ref $template;
             $partials->{$name} = 

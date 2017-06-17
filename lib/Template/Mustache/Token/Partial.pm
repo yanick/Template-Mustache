@@ -10,7 +10,17 @@ has_rw 'indent';
 sub render {
     my( $self, $context, $partials ) = @_;
 
-    my $partial = $partials->{$self->name} or return '';
+    my $partial;
+
+    if ( ref $partials eq 'CODE' ) {
+        my $template = $partials->($self->name)
+            or return '';
+
+        $partial = Template::Mustache->new( template => $template )->parsed;
+    }
+    else {
+        $partial = $partials->{$self->name} or return '';
+    }
 
     return $partial->render( $context, $partials, $self->indent );
 }
