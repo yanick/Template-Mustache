@@ -76,17 +76,55 @@ the method C<partials> for more details on its format.
 
 Returns the rendered template, given the optionally provided context.
 
-The context can be a hashref. 
+=head3 Context 
+
+=head4 as a hashref
 
     Template::Mustache->render( 'Hello {{ thing }}', { thing => 'World!' } );
 
-Or an object.
+If the value is a coderef, it will be invoked to generate the value
+to be inserted in the template.
+
+    Template::Mustache->render(
+        'it is {{ time }}', 
+        { time => sub { scalar localtime } } 
+    );
+
+If you want the value returned by the coderef to be 
+interpolated as a Mustache template, a helper function is passed
+as the last argument to the coderef.
+
+    Template::Mustache->render(
+        'hello {{ place }}', 
+        {
+            place => sub { pop->('{{ planet }}') },
+            planet => 'World',
+        } 
+    );
+
+The two previous interpolations work both for C<{{variable}}>
+definitions, but also for C<{{#section}}>s.
+
+
+    print Template::Mustache->render(
+        'I am {{#obfuscated}}resu{{/obfuscated}}',
+        {
+            obfuscated   => sub { pop->('{{'.reverse(shift).'}}') },
+            user         => '({{logged_in_as}})',
+            logged_in_as => 'Sam',
+        }
+    );  # => 'I am (Sam)'
+
+
+=head4 as an object
 
     my $object = Something->new( ... );  
     
     Template::Mustache->render( 'Hello {{ thing }}', $object );  # thing resolves to $object->thing
 
-Or can be C<undef>.
+=head4 as a scalar
+
+    Template::Mustache->render( 'Hello {{ . }}', 'World!' );
 
 
 If no context is provided, it will default to the mustache object itself.

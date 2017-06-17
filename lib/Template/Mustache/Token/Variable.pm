@@ -25,14 +25,17 @@ sub render {
         Template::Mustache::resolve_context( $self->name, $context ) // '';
 
     if( ref $value eq 'CODE' ) {
-        my $template = Template::Mustache->new( template => $value->() )->parsed;
+        $value = $value->(
+            sub { Template::Mustache->new( template=> shift )->parsed->render( $context, $partials, $indent )  }
+        );
+        my $template = Template::Mustache->new( template => $value )->parsed;
         $template->escape($self->escape);
         $value = $template->render(
             $context, $partials, $indent
         );
     }
 
-    $value = escape_html($value) if $self->escape;
+    eval { $value = escape_html($value) } if $self->escape;
 
     $value += 0 if looks_like_number($value);
 

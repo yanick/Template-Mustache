@@ -13,14 +13,20 @@ has_ro 'raw';
 use Template::Mustache;
 
 sub render {
-    my( $self, $context, $partials ) = @_;
+    my( $self, $context, $partials, $indent ) = @_;
 
     my $cond = Template::Mustache::resolve_context( $self->variable, $context );
 
     if ( ref $cond eq 'CODE' ) {
         my $value=Template::Mustache->new( 
             delimiters => $self->delimiters,
-            template => $cond->($self->raw) 
+            template => $cond->(
+                $self->raw, 
+                sub { 
+                    Template::Mustache->new( template=> shift )->parsed->render( 
+                        $context, $partials, $indent 
+                    )  }
+            ) 
         )->parsed->render( $context, $partials );
 
         return '' if $self->inverse;

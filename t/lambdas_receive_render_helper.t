@@ -6,7 +6,6 @@ use warnings;
 use Template::Mustache;
 
 {
-    ## no critic (RequireFilenameMatchesPackage)
     package t::LambdasReceiveRenderHelper::Mustache;
     use base 'Template::Mustache';
 
@@ -32,13 +31,6 @@ subtest Interpolation => sub {
         is ($rendered, 'I am (Sam)');
     };
 
-    subtest from_class => sub {
-        my $data = 't::LambdasReceiveRenderHelper::Mustache';
-
-        my $rendered = Template::Mustache->render($self->{tmpl}, $data);
-        is($rendered, 'I am (Sam)');
-    };
-
     subtest from_instance => sub {
         my $data = t::LambdasReceiveRenderHelper::Mustache->new();
 
@@ -56,13 +48,6 @@ subtest SectionTags => sub {
             user         => '({{logged_in_as}})',
             logged_in_as => 'Sam',
         };
-
-        my $rendered = Template::Mustache->render($self->{tmpl}, $data);
-        is($rendered, 'I am (Sam)');
-    };
-
-    subtest from_class => sub {
-        my $data = 't::LambdasReceiveRenderHelper::Mustache';
 
         my $rendered = Template::Mustache->render($self->{tmpl}, $data);
         is($rendered, 'I am (Sam)');
