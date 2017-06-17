@@ -16,6 +16,7 @@ use Template::Mustache::Parser;
 
 use Parse::RecDescent;
 use List::AllUtils qw/ pairmap /;
+use Scalar::Util qw/ blessed /;
 
 has_rw template => (
     trigger => sub { $_[0]->clear_parsed },
@@ -79,6 +80,10 @@ sub resolve_context {
 
     CONTEXT:
     for my $c ( @$context ) {
+        if ( blessed $c ) {
+            next CONTEXT unless $c->can($first);
+            return $c->$first;
+        }
         if ( ref $c eq 'HASH' ) {
             next CONTEXT unless exists $c->{$first};
             return resolve_context($key,[$c->{$first}]);

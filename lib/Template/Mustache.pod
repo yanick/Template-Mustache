@@ -76,6 +76,16 @@ the method C<partials> for more details on its format.
 
 Returns the rendered template, given the optionally provided context.
 
+The context can be a hashref. 
+
+    Template::Mustache->render( 'Hello {{ thing }}', { thing => 'World!' } );
+
+Or an object.
+
+    my $object = Something->new( ... );  
+    
+    Template::Mustache->render( 'Hello {{ thing }}', $object );  # thing resolves to $object->thing
+
 =method render( $template, $context, $partials )
 
     print Template::Mustache->render( $template, $context, $partials );
