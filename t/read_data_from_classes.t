@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 
-
 package Foo;
 
 use Test::More;

@@ -12,6 +12,8 @@ use Template::Mustache::Token::Verbatim;
 use Template::Mustache::Token::Section;
 use Template::Mustache::Token::Partial;
 
+use Template::Mustache::Parser;
+
 use Parse::RecDescent;
 use List::AllUtils qw/ pairmap /;
 
@@ -22,20 +24,22 @@ has_rw template => (
 has_rw _compiled_template => (
     clearer => 1,
     lazy => 1, 
+    builder => 1,
     default => sub {
-        $_[0]->_compile_template( $_[0]->template );
-    });
+        my $self = shift;
+        $self->parser->template( 
+            $self->template, 
+            undef, 
+            @{ $self->delimiters } 
+        );
+    },
+);
 
 has_rw delimiters => sub { [ '{{', '}}' ] };
 
 has_rw _partials => sub { +{} };
 
-has_rw parser => sub {
-    my $self = shift;
-    use Template::Mustache::Parser;
-    return Template::Mustache::Parser->new;
-    #Parse::RecDescent->new( $self->grammar )
-};
+has_rw parser => sub { Template::Mustache::Parser->new };
 
 sub partials {
     my( $self, $partials ) = @_;
@@ -46,7 +50,8 @@ sub partials {
 
 sub add_partial {
     my( $self, $name, $template ) = @_;
-    $self->_partials->{$name} = $self->compile( $template );
+    $self->_partials->{$name} = 
+        Template::Mustache->new( template => $template )->_compiled_template;
 }
     
 sub render {  
@@ -59,30 +64,9 @@ sub render {
     $self->template( $template );
     $self->partials( $partials ) if $partials;
 
-    $self->_compiled_template->([ $context ], $self->_partials);
+    $self->_compiled_template->render([ $context ], $self->_partials);
 }
 
-
-sub compile {
-    my( $self, $template ) = @_;
-
-    use Template::Mustache::Parser;
-    my $parser = Parse::RecDescent->new($self->grammar);
-#my    $parser = Template::Mustache::Parser->new;
-
-    return $parser->template( $template, undef, @{ $self->delimiters } );
-}
-
-
-sub _compile_template {  
-    my( $self, $template, $pre ) = @_;
-
-    my $tree = $self->compile($template);
-
-    return sub {
-        $tree->render(@_)
-    };
-}
 
 sub resolve_context {  
     my ( $key, $context ) = @_;

@@ -18,9 +18,10 @@ sub render {
     my $cond = Template::Mustache::resolve_context( $self->variable, $context );
 
     if ( ref $cond eq 'CODE' ) {
-        my $value=Template::Mustache->new( delimiters => $self->delimiters )->compile(
-            $cond->($self->raw)
-        )->render( $context, $partials );
+        my $value=Template::Mustache->new( 
+            delimiters => $self->delimiters,
+            template => $cond->($self->raw) 
+        )->_compiled_template->render( $context, $partials );
 
         return '' if $self->inverse;
         return $value;
