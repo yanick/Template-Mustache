@@ -1,7 +1,7 @@
 package Template::Mustache;
 # ABSTRACT: Drawing Mustaches on Perl for fun and profit
 
-use 5.10.0;
+use 5.12.0;
 
 use Moo;
 use MooseX::MungeHas { has_rw => [ 'is_rw' ], has_ro => [ 'is_ro' ] };
