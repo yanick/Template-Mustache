@@ -6,7 +6,6 @@ MANIFEST
 META.json
 META.yml
 Makefile.PL
-RD_TRACE
 README.md
 SIGNATURE
 a
