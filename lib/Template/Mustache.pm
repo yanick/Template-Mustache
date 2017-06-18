@@ -17,9 +17,27 @@ use Template::Mustache::Parser;
 use Parse::RecDescent;
 use List::AllUtils qw/ pairmap /;
 use Scalar::Util qw/ blessed /;
+use Path::Tiny;
+
+has_ro template_path => (
+    coerce => sub {
+        return unless defined $_[0];
+        my $path = path($_[0]);
+        $path = $path->child('Mustache.mustache') 
+            if $path->is_dir;
+        die "'$_' does not exist" unless $path->exists;
+        $path;
+    },
+);
 
 has_rw template => (
     trigger => sub { $_[0]->clear_parsed },
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        return unless $self->template_path;
+        path($self->template_path)->slurp;
+    },
 );
 
 has_rw parsed => (
@@ -64,7 +82,8 @@ sub render {
 
     unless( ref $self ) {
         $self = $self->new unless ref $self;
-        $self->template( shift );
+        my $template = shift;
+        $self->template( $template ) if defined $template;
         $self->partials( $_[1] ) if @_ == 2;
     }
 

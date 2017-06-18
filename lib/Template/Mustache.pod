@@ -70,6 +70,10 @@ the template. It defaults to C<{{ }}>.
 C<partials> is an optional hashref of partials to assign to the object. See
 the method C<partials> for more details on its format.
 
+Instead of C<template>, a C<template_path> can be provided to read
+the template and the partials from the fielsystem instead. See
+the method C<template_path> to see how this works.
+
 =method render( $context )
 
     print $mustache->render( $context );
@@ -165,6 +169,22 @@ context, set the context to C<undef>.
 =method template( $template )
 
 Accessor to the C<template> attribute.
+
+=method template_path( $path )
+
+Accessor to the C<template_path> attribute. If this attribute is 
+set, the template will be set to the content of the provided file 
+(if C<$path> is a directory, the file is assumed to be the 
+C<Mustache.mustache> file local to that directory).
+
+=method partials_path( $path ) 
+
+Accessor the C<partials_path> attribute. If partials were
+not given as part of the object construction, when encountered
+partials will be attempted to be read from that directory. 
+The filename for a partial is its name with C<.mustache> appended to it.
+
+If C<template_path> is defined, C<partials_path> defaults to it.
 
 =method delimiters( [ $opening_tag, $closing_tag ] )
 
