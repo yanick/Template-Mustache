@@ -2,6 +2,7 @@ Revision history for Template-Mustache
 
 {{$NEXT}}
   [ API CHANGES ]
+  - Major rewrite to support all of the specs (as of v1.1.3).
 
   [ BUG FIXES ]
 
