@@ -23,9 +23,23 @@ has_ro template_path => (
     coerce => sub {
         return unless defined $_[0];
         my $path = path($_[0]);
+        die "'$_[0]' does not exist" unless $path->exists;
         $path = $path->child('Mustache.mustache') 
-            if $path->is_dir;
-        die "'$_' does not exist" unless $path->exists;
+            if $path->is_dir ;
+        $path;
+    },
+);
+
+has_ro partials_path => (
+    lazy => 1,
+    default => sub { 
+        return unless $_[0]->template_path;
+        $_[0]->template_path->parent;
+    },
+    coerce => sub {
+        return unless defined $_[0];
+        my $path = path($_[0]);
+        die "'$_[0]' does not exist" unless $path->exists;
         $path;
     },
 );
@@ -60,20 +74,40 @@ has_rw delimiters => (
 
 has_rw partials => (
     lazy => 1,
-    default => sub { +{}  },
-    trigger => sub { 
-        my( $self, $partials ) = @_;
-
-        return if ref $partials eq 'CODE';
-
-        while( my ( $name, $template ) = each %$partials ) {
-            next if ref $template;
-            $partials->{$name} = 
-                Template::Mustache->new( template => 
-                    ref $template ? $template->($name) : $template )->parsed;
+    default => sub { 
+        my $self = shift;
+        
+        # TODO I can probably do better than that
+        if ( my $path = $self->partials_path ) {
+            return $self->_parse_partials( {
+                map { 
+                    my $name = $_->basename;
+                    $name =~ s/\.mustache$//;
+                    $name => $_->slurp;
+                }
+                $self->partials_path->children( qr/\.mustache$/ )
+            } );
         }
+
+        return +{}  
     },
+    trigger => \&_parse_partials
 );
+
+sub _parse_partials {
+    my( $self, $partials ) = @_;
+
+    return if ref $partials eq 'CODE';
+
+    while( my ( $name, $template ) = each %$partials ) {
+        next if ref $template;
+        $partials->{$name} = 
+            Template::Mustache->new( template => 
+                ref $template ? $template->($name) : $template )->parsed;
+    }
+
+    return $partials;
+}
 
 has_ro parser => sub { Template::Mustache::Parser->new };
 
