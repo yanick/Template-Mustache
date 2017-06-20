@@ -1,3 +1,4 @@
+requires "Carp" => "0";
 requires "Escape::Houdini" => "0";
 requires "List::AllUtils" => "0";
 requires "Moo" => "0";
@@ -22,6 +23,7 @@ on 'test' => sub {
   requires "Test::Exception" => "0";
   requires "Test::More" => "0.88";
   requires "Test::Most" => "0";
+  requires "Test::Requires" => "0";
   requires "YAML::XS" => "0";
   requires "base" => "0";
 };
