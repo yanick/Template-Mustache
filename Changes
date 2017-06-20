@@ -10,6 +10,8 @@ Revision history for Template-Mustache
   [ DOCUMENTATION ]
 
   [ ENHANCEMENTS ]
+  - new 'context' attribute for Template::Mustache objects.
+    (GH#43)
 
   [ NEW FEATURES ]
 
