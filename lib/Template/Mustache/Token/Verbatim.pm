@@ -8,7 +8,7 @@ has_ro 'content';
 has_rw 'last';
 
 sub render {
-    my( $self, $context, $partials, $indent ) = @_;
+    my( $self, undef, undef, $indent ) = @_;
     
     my $value = $self->content;
 
