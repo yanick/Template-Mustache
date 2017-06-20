@@ -1,24 +1,352 @@
 package Template::Mustache;
 # ABSTRACT: Drawing Mustaches on Perl for fun and profit
 
+use 5.12.0;
+
+use Moo;
+use MooseX::MungeHas { has_rw => [ 'is_rw' ], has_ro => [ 'is_ro' ] };
+
+use Text::Balanced qw/ extract_tagged gen_extract_tagged extract_multiple /;
+
+use Template::Mustache::Token::Template;
+use Template::Mustache::Token::Variable;
+use Template::Mustache::Token::Verbatim;
+use Template::Mustache::Token::Section;
+use Template::Mustache::Token::Partial;
+
+use Template::Mustache::Parser;
+
+use Parse::RecDescent 1.967015;
+
+use List::AllUtils qw/ pairmap /;
+use Scalar::Util qw/ blessed /;
+use Path::Tiny;
+
+has_ro template_path => (
+    coerce => sub {
+        return unless defined $_[0];
+        my $path = path($_[0]);
+        die "'$_[0]' does not exist" unless $path->exists;
+        $path = $path->child('Mustache.mustache') 
+            if $path->is_dir ;
+        $path;
+    },
+);
+
+has_ro partials_path => (
+    lazy => 1,
+    default => sub { 
+        return unless $_[0]->template_path;
+        $_[0]->template_path->parent;
+    },
+    coerce => sub {
+        return unless defined $_[0];
+        my $path = path($_[0]);
+        die "'$_[0]' does not exist" unless $path->exists;
+        $path;
+    },
+);
+
+has_rw template => (
+    trigger => sub { $_[0]->clear_parsed },
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        return unless $self->template_path;
+        path($self->template_path)->slurp;
+    },
+);
+
+has_rw parsed => (
+    clearer => 1,
+    lazy => 1, 
+    default => sub {
+        my $self = shift;
+        $self->parser->template( 
+            $self->template, 
+            undef, 
+            @{ $self->delimiters } 
+        );
+    },
+);
+
+has_rw delimiters => (
+    lazy => 1, 
+    default => sub { [ '{{', '}}' ] },
+);
+
+has_rw partials => (
+    lazy => 1,
+    default => sub { 
+        my $self = shift;
+        
+        # TODO I can probably do better than that
+        if ( my $path = $self->partials_path ) {
+            return $self->_parse_partials( {
+                map { 
+                    my $name = $_->basename;
+                    $name =~ s/\.mustache$//;
+                    $name => $_->slurp;
+                }
+                $self->partials_path->children( qr/\.mustache$/ )
+            } );
+        }
+
+        return +{}  
+    },
+    trigger => \&_parse_partials
+);
+
+sub _parse_partials {
+    my( $self, $partials ) = @_;
+
+    return if ref $partials eq 'CODE';
+
+    while( my ( $name, $template ) = each %$partials ) {
+        next if ref $template;
+        $partials->{$name} = 
+            Template::Mustache->new( template => 
+                ref $template ? $template->($name) : $template )->parsed;
+    }
+
+    return $partials;
+}
+
+has_ro parser => sub { Template::Mustache::Parser->new };
+
+sub render {  
+    my $self = shift;
+
+    unless( ref $self ) {
+        $self = $self->new unless ref $self;
+        my $template = shift;
+        $self->template( $template ) if defined $template;
+        $self->partials( $_[1] ) if @_ == 2;
+    }
+
+    my $context = @_ ? shift : $self;
+
+    $self->parsed->render([ $context ], $self->partials);
+}
+
+
+sub resolve_context {  
+    my ( $key, $context ) = @_;
+
+    no warnings 'uninitialized';
+    return $context->[0] if $key eq '.' or $key eq '';
+
+    my $first;
+    ( $first, $key ) = split '\.', $key, 2;
+
+    CONTEXT:
+    for my $c ( @$context ) {
+        if ( blessed $c ) {
+            next CONTEXT unless $c->can($first);
+            return $c->$first;
+        }
+        if ( ref $c eq 'HASH' ) {
+            next CONTEXT unless exists $c->{$first};
+            return resolve_context($key,[$c->{$first}]);
+        }
+    }
+
+    return;
+}
+
+our $GRAMMAR = <<'END_GRAMMAR';
+
+<skip:qr//> 
+
+eofile: /^\Z/
+
+template: { my ($otag,$ctag) = @arg ? @arg : ( qw/ {{ }} / );
+    $thisparser->{opening_tag} = $otag;
+    $thisparser->{closing_tag} = $ctag;
+    $thisparser->{prev_is_standalone} = 1;
+    1;
+} template_item(s?) eofile {
+    Template::Mustache::Token::Template->new(
+        items => $item[2]
+    );
+} | <error>
+
+opening_tag: "$thisparser->{opening_tag}"
+
+closing_tag: "$thisparser->{closing_tag}"
+
+template_item:  ( partial | section | delimiter_change | comment | unescaped_variable_amp | unescaped_variable | variable | verbatim | <error>) {
+    $item[1]
+}
+
+delimiter_change: standalone_surround[$item[0]] {
+    ( $thisparser->{opening_tag},
+        $thisparser->{closing_tag} ) = split /\s+/, $item[1][2];
+
+    Template::Mustache::Token::Verbatim->new( content =>
+        $item[1][0] . $item[1][1]
+    );
+}
+
+delimiter_change_inner: '=' {
+    $thisparser->{closing_tag}
+} /\s*/ /.*?(?=\=\Q$item[2]\E)/s '=' {
+    $item[4]
+}
+
+partial: /\s*/ opening_tag '>' /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
+    my $indent = '';
+    if ( $item[1] =~ /\n/ or $prev ) {
+        if ( $item[8] =~ /\n/  or length $text == 0) {
+            $item[1] =~ /(^|\n)([ \t]*?)$/;
+            $indent = $2;
+            $item[8] =~ s/^.*?\n//;
+            $thisparser->{prev_is_standalone} = 1;
+        }
+    }
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Partial->new( name => $item[5],
+                indent => $indent ),
+            Template::Mustache::Token::Verbatim->new( content => $item[8] ),
+        ],
+        )
+}
+
+open_section: /\s*/ opening_tag /[#^]/ /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
+    if ( $item[1] =~ /\n/ or $prev ) {
+        if ( $item[8] =~ /\n/ ) {
+            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
+            $item[8] =~ s/^.*?\n//;
+            $thisparser->{prev_is_standalone} = 1;
+        }
+    }
+
+    [ $item[5], $item[3] eq '^',
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Verbatim->new( content => $item[8] )
+    ];
+}
+
+close_section: /\s*/ opening_tag '/' /\s*/ "$arg[0]" /\s*/ closing_tag /\s*/ {
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
+    if ( $item[1] =~ /\n/ or $prev) {
+        if ( $item[8] =~ /\n/ or length $text == 0 ) {
+            $item[1] =~ s/(^|\n)[ \t]*?$/$1/;
+            $item[8] =~ s/^.*?\n//;
+            $thisparser->{prev_is_standalone} = 1;
+        }
+    }
+    [
+        Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+        Template::Mustache::Token::Verbatim->new( content => $item[8] ),
+    ]
+}
+
+standalone_surround: /\s*/ opening_tag /\s*/ <matchrule:$arg[0]_inner> closing_tag /\s*/ {
+    my $prev = $thisparser->{prev_is_standalone};
+    $thisparser->{prev_is_standalone} = 0;
+
+    if ( $item[1] =~ /\n/ or $prev) {
+        if ( $item[6] =~ /\n/  or length $text == 0) {
+            $item[1] =~ s/(\r?\n?)\s*?$/$1/;
+            $item[6] =~ s/^.*?\n//;
+            $thisparser->{prev_is_standalone} = 1;
+        }
+    }
+
+    [  @item[1,6,4] ],
+}
+
+comment: standalone_surround[$item[0]] { 
+    Template::Mustache::Token::Verbatim->new( 
+        content => $item[1][0] . $item[1][1]
+    ),
+}
+
+comment_inner: '!' { $thisparser->{closing_tag} } /.*?(?=\Q$item[2]\E)/s
+
+inner_section: ...!close_section[ $arg[0] ] template_item 
+
+section: open_section {$thisoffset} inner_section[ $item[1][0] ](s?) {$thisoffset
+    - $item[2]
+} close_section[ $item[1][0] ] {
+    my $raw = substr( $thisparser->{fulltext}, $item[2], $item[4] );
+    Template::Mustache::Token::Template->new( items => [
+        $item[1]->[2],
+        Template::Mustache::Token::Section->new(
+            delimiters => [ map { $thisparser->{$_} } qw/ opening_tag closing_tag / ],
+            variable => $item[1][0],
+            inverse => $item[1][1],
+            raw => $raw,
+            template => Template::Mustache::Token::Template->new( 
+                items => [ 
+                    $item[1][3], @{$item[3]}, $item[5][0] ], 
+            )
+        ),
+        $item[5][1]
+        ]
+    );
+}
+
+unescaped_variable: /\s*/ opening_tag '{' /\s*/ variable_name /\s*/ '}' closing_tag {
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Variable->new( 
+                name => $item{variable_name},
+                escape => 0,
+            ),
+        ]
+    );
+}
+
+unescaped_variable_amp: /\s*/ opening_tag '&' /\s*/ variable_name /\s*/ closing_tag {
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Variable->new( 
+                name => $item{variable_name},
+                escape => 0,
+            ),
+        ]
+    );
+}
+
+
+variable: /\s*/ opening_tag /\s*/ variable_name /\s*/ closing_tag {
+    $thisparser->{prev_is_standalone} = 0;
+    Template::Mustache::Token::Template->new(
+        items => [
+            Template::Mustache::Token::Verbatim->new( content => $item[1] ),
+            Template::Mustache::Token::Variable->new( name => $item{variable_name} ),
+        ]
+    );
+}
+
+variable_name: /[\w.]+/
+
+verbatim: { $thisparser->{opening_tag} } /^\s*\S*?(?=\Q$item[1]\E|\s|$)/ {
+    $thisparser->{prev_is_standalone} = 0;
+    Template::Mustache::Token::Verbatim->new( content => $item[2] );
+}
+
+END_GRAMMAR
+
+
+1;
+
+__END__
+
 use strict;
 use warnings;
 
-=head1 SYNOPSIS
-
-    use Template::Mustache;
-
-    print Template::Mustache->render(
-        "Hello {{planet}}", {planet => "World!"}), "\n";
-
-=head1 DESCRIPTION
-
-Template::Mustache is an implementation of the fabulous Mustache templating
-language for Perl 5.8 and later.
-
-See L<http://mustache.github.com>.
-
-=cut
 
 use HTML::Entities;
 use File::Spec;
@@ -26,63 +354,22 @@ use Scalar::Util 'blessed';
 
 my %TemplateCache;
 
-=head2 Functions
-
-=over 4
-
-=item build_pattern($otag, $ctag)
-
-Constructs a new regular expression, to be used in the parsing of Mustache
-templates.
-
-=over 4
-
-=item $otag
-
-The tag opening delimiter.
-
-=item $ctag
-
-The tag closing delimiter.
-
-=back
-
-Returns a regular expression that will match tags with the specified
-delimiters.
-
-=cut
 
 sub build_pattern {
     my ($otag, $ctag) = @_;
     return qr/
-        (.*?)                       # Capture the pre-tag content
-        ([ \t]*)                    # Capture the pre-tag whitespace
-        (?:\Q$otag\E \s*)           # Match the opening of the tag
+        (?<pretag_content>.*?)                  # Capture the pre-tag content
+        (?<pretag_whitespace>[ \t]*)            # Capture the pre-tag whitespace
+        (?<opening_tag>\Q$otag\E \s*)           # Match the opening of the tag
         (?:
-            (=)   \s* (.+?) \s* = | # Capture Set Delimiters
-            ({)   \s* (.+?) \s* } | # Capture Triple Mustaches
-            (\W?) \s* (.+?)         # Capture everything else
+            (?<type>=)   \s* (?<tag>.+?) \s* = | # Capture Set Delimiters
+            (?<type>{)   \s* (?<tag>.+?) \s* } | # Capture Triple Mustaches
+            (?<type>\W?) \s* (?<tag>.*?)         # Capture everything else
         )
-        (?:\s* \Q$ctag\E)           # Match the closing of the tag
+        (?<closing_tag>\s* \Q$ctag\E)           # Match the closing of the tag
     /xsm;
 }
 
-=item read_file($filename)
-
-Reads a file into a string, returning the empty string if the file does not
-exist.
-
-=over 4
-
-=item $filename
-
-The name of the file to read.
-
-=back
-
-Returns the contents of the given filename, or the empty string.
-
-=cut
 
 sub read_file {
     my ($filename) = @_;
@@ -95,79 +382,12 @@ sub read_file {
     return $data;
 }
 
-=item parse($tmpl, [$delims, [$section, $start]])
-
-Can be called in one of three forms:
-
-=over 4
-
-=item parse($tmpl)
-
-Creates an AST from the given template.
-
-=over 4
-
-=item $tmpl
-
-The template to parse.
-
-=back
-
-An array reference to the AST represented by the given template.
-
-=item parse($tmpl, $delims)
-
-Creates an AST from the given template, with non-standard delimiters.
-
-=over 4
-
-=item $tmpl
-
-The template to parse.
-
-=item $delims
-
-An array reference to the delimiter pair with which to begin parsing.
-
-=back
-
-Returns an array reference to the AST represented by the given template.
-
-=item parse($tmpl, $delims, $section, $start)
-
-Parses out a section tag from the given template.
-
-=over 4
-
-=item $tmpl
-
-The template to parse.
-
-=item $delims
-
-An array reference to the delimiter pair with which to begin parsing.
-
-=item $section
-
-The name of the section we're parsing.
-
-=item $start
-
-The index of the first character of the section.
-
-=back
-
-Returns an array reference to the raw text of the section (first element),
-and the index of the character immediately following the close section tag
-(last element).
-
-=back
-
-=cut
 
 sub parse {
     my ($tmpl, $delims, $section, $start) = @_;
     my @buffer;
+
+    $tmpl =~ s/\r(?=\n)//g;  # change \r\n to \n
 
     # Pull the parse tree out of the cache, if we can...
     $delims ||= [qw'{{ }}'];
@@ -187,9 +407,11 @@ sub parse {
 
     # Begin parsing out tags
     while ($tmpl =~ m/\G$pattern/gc) {
-        my ($content, $whitespace) = ($1, $2);
-        my $type = $3 || $5 || $7;
-        my $tag  = $4 || $6 || $8;
+        my ($content, $whitespace, $type, $tag) = @+{qw/ pretag_content pretag_whitespace type tag /};
+
+        if( $type eq '.' and $tag eq '' ) {
+            ($tag,$type) = ($type, $tag );
+        }
 
         # Buffer any non-tag content we have.
         push @buffer, $content if $content;
@@ -268,30 +490,6 @@ sub parse {
     return \@buffer;
 }
 
-=item generate($parse_tree, $partials, @context)
-
-Produces an expanded version of the template represented by the given parse
-tree.
-
-=over 4
-
-=item $parse_tree
-
-The AST of a Mustache template.
-
-=item $partials
-
-A subroutine that looks up partials by name.
-
-=item @context
-
-The context stack to perform key lookups against.
-
-=back
-
-Returns the fully rendered template as a string.
-
-=cut
 
 sub generate {
     my ($parse_tree, $partials, @context) = @_;
@@ -316,6 +514,7 @@ sub generate {
             my ($ctx, $value) = lookup($tag, @context) unless $type eq '>';
 
             if ($type eq '{' || $type eq '&' || $type eq '') {
+                $DB::single = 1;
                 # Interpolation Tags
                 # If the value is a code reference, we should treat it
                 # according to Mustache's lambda rules.  Specifically, we
@@ -342,6 +541,8 @@ sub generate {
                 #    and a rendering function are passed to the sub; the return
                 #    value is then automatically rendered.
                 #  * Otherwise, the section is rendered using given value.
+                $DB::single = 1;
+                
                 if (ref $value eq 'ARRAY') {
                     @result = map { $build->(@$data, $_) } @$value;
                 } elsif ($value) {
@@ -369,27 +570,24 @@ sub generate {
     } @$parse_tree;
 }
 
-=item lookup($field, @context)
 
-Performs a lookup of a C<$field> in a context stack.
 
-=over 4
+sub _can_run_field {
+    my ($ctx, $field) = @_;
 
-=item $field
+    my $can_run_field;
+    if ( $] < 5.018 ) {
+        eval { $ctx->can($field) };
+        $can_run_field = not $@;
+    }
+    else {
+        $can_run_field = $ctx->can($field);
+    }
 
-The field to look up.
+    return $can_run_field;
+}
 
-=item @context
-
-The context stack.
-
-=back
-
-Returns the context element and value for the given C<$field>.
-
-=back
-
-=cut
+use namespace::clean;
 
 sub lookup {
     my ($field, @context) = @_;
@@ -400,6 +598,10 @@ sub lookup {
         my $blessed_or_not_ref = blessed($ctx) || !ref $ctx;
 
         if($field =~ /\./) {
+            if ( $field eq '.' ) {
+                return ($ctx,$ctx);
+            }
+
             # Dotted syntax foo.bar
             my ($var, $field) = $field =~ /(.+?)\.(.+)/;
 
@@ -432,42 +634,6 @@ sub lookup {
     return ($ctx, $value);
 }
 
-sub _can_run_field {
-    my ($ctx, $field) = @_;
-
-    my $can_run_field;
-    if ( $] < 5.018 ) {
-        eval { $ctx->can($field) };
-        $can_run_field = not $@;
-    }
-    else {
-        $can_run_field = $ctx->can($field);
-    }
-
-    return $can_run_field;
-}
-
-use namespace::clean;
-
-=head2 Methods
-
-=over 4
-
-=item new(%args)
-
-Standard hash constructor.
-
-=over 4
-
-=item %args
-
-Initialization data.
-
-=back
-
-Returns A new C<Template::Mustache> instance.
-
-=cut
 
 sub new {
     my ($class, %args) = @_;
@@ -476,93 +642,19 @@ sub new {
 
 our $template_path = '.';
 
-=item template_path
-
-Filesystem path for template and partial lookups.
-
-Returns a string containing the template path (defaults to '.').
-
-=cut
 
 sub template_path { $Template::Mustache::template_path }
 
 our $template_extension = 'mustache';
 
-=item template_extension
-
-File extension for templates and partials.
-
-Returns the file extension as a string (defaults to 'mustache').
-
-=cut
 
 sub template_extension { $Template::Mustache::template_extension }
 
-=item template_namespace
-
-Package namespace to ignore during template lookups.
-
-As an example, if you subclass C<Template::Mustache> as the class
-C<My::Heavily::Namepaced::Views::SomeView>, calls to C<render> will
-automatically try to load the template
-C<./My/Heavily/Namespaced/Views/SomeView.mustache> under the
-C<template_path>.  Since views will very frequently all live in a common
-namespace, you can override this method in your subclass, and save yourself
-some headaches.
-
-   Setting template_namespace to:      yields template name:
-     My::Heavily::Namespaced::Views => SomeView.mustache
-     My::Heavily::Namespaced        => Views/SomeView.mustache
-     Heavily::Namespaced            => My/Heavily/Namespaced/Views/SomeView.mustache
-
-As noted by the last example, namespaces will only be removed from the
-beginning of the package name.
-
-Returns the empty string.
-
-=cut
 
 sub template_namespace { '' }
 
 our $template_file;
 
-=item template_file
-
-The template filename to read.  The filename follows standard Perl module
-lookup practices (e.g. C<My::Module> becomes C<My/Module.pm>) with the
-following differences:
-
-=over 4
-
-=item *
-
-Templates have the extension given by C<template_extension> ('mustache' by
-default).
-
-=item *
-
-Templates will have C<template_namespace> removed, if it appears at the
-beginning of the package name.
-
-=item *
-
-Template filename resolution will short circuit if
-C<$Template::Mustache::template_file> is set.
-
-=item *
-
-Template filename resolution may be overriden in subclasses.
-
-=item *
-
-Template files will be resolved against C<template_path>, not C<$PERL5LIB>.
-
-=back
-
-Returns The path to the template file, relative to C<template_path> as a
-string.  See L<template>.
-
-=cut
 
 sub template_file {
     my ($receiver) = @_;
@@ -575,13 +667,6 @@ sub template_file {
     return File::Spec->catfile(split(/::/, "${class}.${ext}"));
 };
 
-=item template
-
-Reads the template off disk.
-
-Returns the contents of the C<template_file> under C<template_path>.
-
-=cut
 
 sub template {
     my ($receiver) = @_;
@@ -590,22 +675,6 @@ sub template {
     return read_file(File::Spec->catfile($path, $template_file));
 }
 
-=item partial($name)
-
-Reads a named partial off disk.
-
-=over 4
-
-=item $name
-
-The name of the partial to lookup.
-
-=back
-
-Returns the contents of the partial (in C<template_path> of type
-C<template_extension>), or the empty string, if the partial does not exist.
-
-=cut
 
 sub partial {
     my ($receiver, $name) = @_;
@@ -614,129 +683,6 @@ sub partial {
     return read_file(File::Spec->catfile($path, "${name}.${ext}"));
 }
 
-=item render
-
-Render a class or instances data, in each case returning the fully rendered
-template as a string; can be called in one of the following forms:
-
-=over 4
-
-=item render()
-
-Renders a class or instance's template with data from the receiver.  The
-template will be retrieved by calling the C<template> method.  Partials will
-be fetched by C<partial>.
-
-=item render($tmpl)
-
-Renders the given template with data from the receiver.  Partials will be
-fetched by C<partial>.
-
-=over 4
-
-=item $tmpl
-
-The template to render.
-
-=back
-
-=item render($data)
-
-Renders a class or instance's template with data from the receiver.  The
-template will be retrieved by calling the C<template> method.  Partials
-will be fetched by C<partial>.
-
-=over 4
-
-=item $data
-
-Data (as hash or object) to be interpolated into the template.
-
-=back
-
-=item render($tmpl, $data)
-
-Renders the given template with the given data.  Partials will be fetched
-by C<partial>.
-
-=over 4
-
-=item $tmpl
-
-The template to render.
-
-=item $data
-
-Data (as a hash, class, or object) to be interpolated into the template.
-
-=back
-
-=item render($tmpl, $data, $partials)
-
-Renders the given template with the given data.  Partials will be looked up
-by calling the given code reference with the partial's name.
-
-=over 4
-
-=item $tmpl
-
-The template to render.
-
-=item $data
-
-Data (as a hash, class, or object) to be interpolated into the template.
-
-=item $partials
-
-A function used to lookup partials.
-
-=back
-
-=item render($tmpl, $data, $partials)
-
-Renders the given template with the given data.  Partials will be looked up
-by calling the partial's name as a method on the given class or object.
-
-=over 4
-
-=item $tmpl
-
-The template to render.
-
-=item $data
-
-Data (as a hash, class, or object) to be interpolated into the template.
-
-=item $partials
-
-A thing (class or object) that responds to partial names.
-
-=back
-
-=item render($tmpl, $data, $partials)
-
-Renders the given template with the given data.  Partials will be looked up
-in the given hash.
-
-=over 4
-
-=item $tmpl
-
-The template to render.
-
-=item $data
-
-Data (as a hash, class, or object) to be interpolated into the template.
-
-=item $partials
-
-A hash containing partials.
-
-=back
-
-=back
-
-=cut
 
 sub render {
     my ($receiver, $tmpl, $data, $partials) = @_;
@@ -756,8 +702,5 @@ sub render {
     return generate($parsed, $part, $data);
 }
 
-=back
-
-=cut
 
 1;

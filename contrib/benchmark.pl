@@ -6,7 +6,7 @@ use warnings;
 use Benchmark;
 use Template::Mustache;
 
-timethese(1_000_000,{
+timethese(100,{
     "Plain String (No Interpolation)" => <<'    PERL',
         Template::Mustache->render(<<'        MUSTACHE');
             I am the very model of a modern Major-General,

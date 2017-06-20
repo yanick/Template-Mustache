@@ -9,7 +9,6 @@ package t::ReadDataFromSubclass;
 use Test::More;
 
     {
-        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadDataFromSubclass::Mustache;
         use base 'Template::Mustache';
 
@@ -25,13 +24,12 @@ use Test::More;
         my $rendered = t::ReadDataFromSubclass::Mustache->render(
             $self->{template},
         );
-        is($rendered, "Joe the Plumber (no)");
+        is($rendered, "Joe the Plumber (yes)");
     };
 
     subtest instance_render => sub {
-        my $rendered = t::ReadDataFromSubclass::Mustache->new()->render(
-            $self->{template},
-        );
+        my $rendered = t::ReadDataFromSubclass::Mustache->new(
+            template => $self->{template} )->render;
         is($rendered, "Joe the Plumber (yes)");
     };
 

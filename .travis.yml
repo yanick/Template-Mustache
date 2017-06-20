@@ -1,17 +1,33 @@
-sudo: required
-
 language: perl
-
 perl:
-    - "5.22"
-    - "5.20"
-    - "5.18"
-    - "5.16"
-    - "5.14"
-    - "5.12"
-    - "5.10"
-    - "5.8"
-
+      - "5.12"
+      - "5.14"
+      - "5.16"
+      - "5.18"
+      - "5.22"
+      - "5.24"
+      - "5.26"
+      - "dev"
+matrix:
+  include:
+    - perl: 5.20
+      env: 
+          COVERAGE: 1
+  allow_failures:
+    - perl: "dev"
+sudo: false
+before_install:
+  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+  - source ~/travis-perl-helpers/init
+  - build-perl
+  - perl -V
 install:
-    - cpanm --installdeps .
-    - git submodule update --init
+  - cpanm --installdeps -n .
+  - cpan-install --coverage   # installs converage prereqs, if enabled
+  - git submodule update --init
+before_script:
+  - coverage-setup
+script:
+  - prove -l -j$(test-jobs) t   # parallel testing
+after_success:
+  - coverage-report

@@ -1,44 +1,55 @@
 use Test::More;
+use Test::Most;
 
 use strict;
 use warnings;
 
 use Template::Mustache;
 
-use File::Basename        qw/ basename dirname /;
-use File::Spec::Functions qw/ catfile /;
+use Path::Tiny;
 
-use YAML::Syck ();
-$YAML::Syck::ImplicitTyping = 1;
+use YAML::XS ();
 
-use Data::Dumper;
-$Data::Dumper::Terse = 1;
-$Data::Dumper::Useqq = 1;
-$Data::Dumper::Quotekeys = 0;
-$Data::Dumper::Indent = 0;
-$Data::Dumper::Sortkeys = 1;
-$Data::Dumper::Deparse = 1;
-
-
-my $specs = catfile(dirname(__FILE__), '..', 'ext', 'spec', 'specs');
+my $specs_dir = path( 'ext', 'spec', 'specs');
 
 plan skip_all => "Couldn't find specs; try running `git submodule update --init`"
-    unless glob catfile($specs, '*.yml');
+    unless $specs_dir->is_dir;
 
-for my $file (glob catfile($specs, '*.yml')) {
-    my $spec = YAML::Syck::LoadFile($file);
-    ($file = basename($file)) =~ s/[^\w.]//g;
+my @specs = @ARGV 
+    ? ( map { $specs_dir->child( $_ . '.yml' ) } @ARGV )
+    : $specs_dir->children( qr/\.yml$/ );
+
+# only wrap in a subtest if there are more than one file involved
+
+if ( @specs == 1 ) {
+    bail_on_fail;
+    test_spec( @specs );
+}
+else {
+    subtest $_ => sub{ test_spec($_) } for @specs;
+}
+
+done_testing;
+
+sub test_spec { 
+    my $file = shift;
+
+    my $spec = YAML::XS::LoadFile($file);
 
     for my $test (@{$spec->{tests}}) {
-        (my $name = $test->{name}) =~ s/'/"/g;
+        (my $name = delete $test->{name}) =~ s/'/"/g;
 
         subtest $name => sub {
-            my ($self) = @_;
 
-            my $expected = $test->{expected};
+            my $expected = delete $test->{expected};
             my $tmpl = $test->{template};
             my $data = $test->{data};
             my $partials = $test->{partials};
+
+            if ( $data->{lambda} ) {
+                $data->{orig_lambda} = $data->{lambda}{perl};
+                $data->{lambda} = eval $data->{lambda}{perl};
+            }
 
             # Ensure that lambdas are properly setup.
             my @hashes = $data;
@@ -51,15 +62,7 @@ for my $file (glob catfile($specs, '*.yml')) {
 
             my $actual = Template::Mustache->render($tmpl, $data, $partials);
 
-            is($actual, $expected,
-                "$test->{desc}\n".
-                "Data:     @{[ Dumper $test->{data} ]}\n".
-                "Template: @{[ Dumper $test->{template} ]}\n".
-                "Partials: @{[ Dumper ($test->{partials} || {}) ]}\n"
-            );
+            is($actual, $expected, delete $test->{desc}) or diag explain $test;
         };
     }
 }
-
-done_testing;
-

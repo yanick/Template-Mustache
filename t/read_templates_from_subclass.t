@@ -5,7 +5,6 @@ use Template::Mustache;
 use Test::More;
 
     {
-        ## no critic (RequireFilenameMatchesPackage)
         package t::ReadTemplatesFromSubclass::Mustache;
         use base 'Template::Mustache';
 
@@ -20,7 +19,7 @@ use Test::More;
 
     subtest class_render => sub {
         my $rendered = t::ReadTemplatesFromSubclass::Mustache->render();
-        is($rendered, "Joe the Plumber (no)");
+        is($rendered, "Joe the Plumber (yes)");
     };
 
     subtest instance_render => sub {
