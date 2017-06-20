@@ -86,6 +86,12 @@ templates.
 An optional arrayref holding the pair of delimiters used by
 the template. Defaults to C<{{ }}>.
 
+=item context => $context
+
+Context to use when rendering if not provided
+as a parameter to C<render>. Defaults to the object
+itself.
+
 =item partials => $partials
 
 An optional hashref of partials to assign to the object. See
@@ -98,7 +104,8 @@ the method C<partials> for more details on its format.
 
     print $mustache->render( $context );
 
-Returns the rendered template, given the optionally provided context.
+Returns the rendered template, given the optionally provided context. Uses 
+the object's C<context attribute> if not provided.
 
 =head3 Context 
 
@@ -205,6 +212,10 @@ partials will be attempted to be read from that directory.
 The filename for a partial is its name with C<.mustache> appended to it.
 
 If C<template_path> is defined, C<partials_path> defaults to it.
+
+=method context( $context )
+
+Accessor to the C<context> attribute.
 
 =method delimiters( [ $opening_tag, $closing_tag ] )
 
