@@ -2,12 +2,13 @@ requires "Escape::Houdini" => "0";
 requires "List::AllUtils" => "0";
 requires "Moo" => "0";
 requires "MooseX::MungeHas" => "0";
-requires "Parse::RecDescent" => "0";
+requires "Parse::RecDescent" => "1.967015";
 requires "Path::Tiny" => "0";
 requires "Scalar::Util" => "0";
 requires "Text::Balanced" => "0";
 requires "YAML::Syck" => "0";
 requires "autodie" => "0";
+requires "perl" => "v5.12.0";
 requires "strict" => "0";
 requires "vars" => "0";
 requires "warnings" => "0";
@@ -23,7 +24,6 @@ on 'test' => sub {
   requires "Test::Most" => "0";
   requires "YAML::XS" => "0";
   requires "base" => "0";
-  requires "perl" => "5.006";
 };
 
 on 'test' => sub {
