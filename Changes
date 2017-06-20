@@ -1,26 +1,19 @@
 Revision history for Template-Mustache
 
-{{$NEXT}}
+1.0.0_0 2017-06-20
   [ API CHANGES ]
-  - Major rewrite to support all of the specs (as of v1.1.3).
-    (GH#14, GH#16)
-
-  [ BUG FIXES ]
-
-  [ DOCUMENTATION ]
+    - Major rewrite to support all of the specs (as of v1.1.3). (GH#14,
+      GH#16)
 
   [ ENHANCEMENTS ]
-  - new 'context' attribute for Template::Mustache objects.
-    (GH#43)
-
-  - add Template::Mustache::Trait. (GH#44)
-
-  [ NEW FEATURES ]
+    - new 'context' attribute for Template::Mustache objects. (GH#43)
+    - add Template::Mustache::Trait. (GH#44)
 
   [ MISC ]
-  - remove dist.ini for distribution. (GH#41)
+    - remove dist.ini for distribution. (GH#41)
 
   [ STATISTICS ]
+    - code churn: 36 files changed, 8509 insertions(+), 674 deletions(-)
 
 0.5.6 2016-11-17
   [ DISTRIBUTION MAINTENANCE ]
