@@ -47,6 +47,10 @@ has_ro partials_path => (
     },
 );
 
+has_rw context => sub {
+    $_[0],
+};
+
 has_rw template => (
     trigger => sub { $_[0]->clear_parsed },
     lazy => 1,
@@ -124,7 +128,7 @@ sub render {
         $self->partials( $_[1] ) if @_ == 2;
     }
 
-    my $context = @_ ? shift : $self;
+    my $context = @_ ? shift : $self->context;
 
     $self->parsed->render([ $context ], $self->partials);
 }
