@@ -21,12 +21,14 @@ lib/Template/Mustache/Token/Section.pm
 lib/Template/Mustache/Token/Template.pm
 lib/Template/Mustache/Token/Variable.pm
 lib/Template/Mustache/Token/Verbatim.pm
+lib/Template/Mustache/Trait.pm
 t/00-compile.t
 t/00-report-prereqs.dd
 t/00-report-prereqs.t
 t/001_spec_compatibility.t
 t/basic.t
 t/lambdas_receive_render_helper.t
+t/moose-trait.t
 t/parse_errors.t
 t/partials.t
 t/read_data_from_classes.t
