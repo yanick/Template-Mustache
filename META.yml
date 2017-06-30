@@ -1,0 +1,89 @@
+---
+abstract: 'Drawing Mustaches on Perl for fun and profit'
+author:
+  - 'Pieter van de Bruggen <pvande@cpan.org>'
+  - 'Yanick Champoux <yanick@cpan.org>'
+  - 'Ricardo Signes <rjbs@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: '0'
+  File::Spec: '0'
+  File::Temp: '0'
+  IO::Handle: '0'
+  IPC::Open3: '0'
+  Test::Exception: '0'
+  Test::More: '0.88'
+  Test::Most: '0'
+  Test::Requires: '0'
+  YAML::XS: '0'
+  base: '0'
+configure_requires:
+  ExtUtils::MakeMaker: '0'
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 5.043, CPAN::Meta::Converter version 2.150001'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: Template-Mustache
+provides:
+  Moose::Meta::Attribute::Custom::Trait::Mustache:
+    file: lib/Template/Mustache/Trait.pm
+    version: v1.0.1_0
+  Parse::RecDescent::Template::Mustache::Parser:
+    file: lib/Template/Mustache/Parser.pm
+    version: v1.0.1_0
+  Template::Mustache:
+    file: lib/Template/Mustache.pm
+    version: v1.0.1_0
+  Template::Mustache::Parser:
+    file: lib/Template/Mustache/Parser.pm
+    version: v1.0.1_0
+  Template::Mustache::Token::Partial:
+    file: lib/Template/Mustache/Token/Partial.pm
+    version: v1.0.1_0
+  Template::Mustache::Token::Section:
+    file: lib/Template/Mustache/Token/Section.pm
+    version: v1.0.1_0
+  Template::Mustache::Token::Template:
+    file: lib/Template/Mustache/Token/Template.pm
+    version: v1.0.1_0
+  Template::Mustache::Token::Variable:
+    file: lib/Template/Mustache/Token/Variable.pm
+    version: v1.0.1_0
+  Template::Mustache::Token::Verbatim:
+    file: lib/Template/Mustache/Token/Verbatim.pm
+    version: v1.0.1_0
+  Template::Mustache::Trait:
+    file: lib/Template/Mustache/Trait.pm
+    version: v1.0.1_0
+requires:
+  Carp: '0'
+  Escape::Houdini: '0'
+  List::AllUtils: '0'
+  Moo: '0'
+  MooseX::MungeHas: '0'
+  Parse::RecDescent: '1.967015'
+  Path::Tiny: '0'
+  Scalar::Util: '0'
+  Text::Balanced: '0'
+  YAML::Syck: '0'
+  autodie: '0'
+  perl: v5.12.0
+  strict: '0'
+  vars: '0'
+  warnings: '0'
+resources:
+  bugtracker: https://github.com/yanick/Template-Mustache/issues
+  homepage: https://github.com/yanick/Template-Mustache
+  repository: https://github.com/yanick/Template-Mustache.git
+version: 1.0.1_0
+x_authority: cpan:YANICK
+x_contributors:
+  - 'Chris Christensen <christianchristensen@gmail.com>'
+  - 'Jean-Francois Paris <jfparis84@gmail.com>'
+  - 'Josh Lavin <jlavin@endpoint.com>'
+  - 'Paul Cochrane <paul@liekut.de>'
+  - 'Pieter Vande Bruggen <pvande@gmail.com>'
+  - 'Pieter van de Bruggen <pvande@gmail.com>'
+  - 'ReadmeCritic <frankensteinbot@gmail.com>'
+  - 'Yanick Champoux <yanick@babyl.dyndns.org>'
