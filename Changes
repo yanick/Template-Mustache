@@ -4,8 +4,6 @@ Revision history for Template-Mustache
   [ API CHANGES ]
 
   [ BUG FIXES ]
-  - don't compile-test Template::Mustache::Trait (will fail if Moose is not
-    installed). (GH#45)
 
   [ DOCUMENTATION ]
 
@@ -14,6 +12,14 @@ Revision history for Template-Mustache
   [ NEW FEATURES ]
 
   [ STATISTICS ]
+
+1.0.1_0 2017-06-30
+  [ BUG FIXES ]
+    - don't compile-test Template::Mustache::Trait (will fail if Moose is
+      not installed). (GH#45)
+
+  [ STATISTICS ]
+    - code churn: 2 files changed, 16 insertions(+), 7 deletions(-)
 
 1.0.0_0 2017-06-20
   [ API CHANGES ]
