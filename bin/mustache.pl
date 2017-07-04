@@ -8,7 +8,7 @@ use warnings;
 use autodie;
 
 use Template::Mustache;
-use YAML::Syck;
+use YAML::XS qw/ Load /;
 
 my ($self, $args) = @_;
 my @args = $args ? @$args : @ARGV;

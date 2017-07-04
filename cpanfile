@@ -7,7 +7,7 @@ requires "Parse::RecDescent" => "1.967015";
 requires "Path::Tiny" => "0";
 requires "Scalar::Util" => "0";
 requires "Text::Balanced" => "0";
-requires "YAML::Syck" => "0";
+requires "YAML::XS" => "0";
 requires "autodie" => "0";
 requires "perl" => "v5.12.0";
 requires "strict" => "0";
@@ -24,8 +24,8 @@ on 'test' => sub {
   requires "Test::More" => "0.88";
   requires "Test::Most" => "0";
   requires "Test::Requires" => "0";
-  requires "YAML::XS" => "0";
   requires "base" => "0";
+  requires "blib" => "1.01";
 };
 
 on 'test' => sub {
