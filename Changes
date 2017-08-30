@@ -4,6 +4,7 @@ Revision history for Template-Mustache
  [API CHANGES]
 
  [BUG FIXES]
+ - resolve variable correctly if the context is an object or an array. (GH#48)
 
  [DOCUMENTATION]
 

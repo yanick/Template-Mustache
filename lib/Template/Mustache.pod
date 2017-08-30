@@ -147,6 +147,11 @@ definitions, but also for C<{{#section}}>s.
     );  # => 'I am (Sam)'
 
 
+=head4 as an arrayref
+
+    Template::Mustache->render( 'Hello {{ 1 }}', [ 'Earth', 'World!' ] );
+    # => 'Hello World!
+
 =head4 as an object
 
     my $object = Something->new( ... );  
@@ -157,6 +162,7 @@ definitions, but also for C<{{#section}}>s.
 
     Template::Mustache->render( 'Hello {{ . }}', 'World!' );
 
+=head4 no context
 
 If no context is provided, it will default to the mustache object itself.
 Which allows for definining templates as subclasses of I<Template::Mustache>.
@@ -172,6 +178,17 @@ Which allows for definining templates as subclasses of I<Template::Mustache>.
 
     # later on
     My::Template->new->render; # => Hello World!
+
+=head4 multi-level variable
+
+If the variable to be rendered is multi-level (e.g., C<foo.bar>), it is
+resolved recursively on the context.
+
+    # $foo->bar returns `{ baz => [ 'quux' ] }`
+
+    Template::Mustache->render( '{{ bar.baz.0 }}', $foo );  # => 'quux'
+
+
 
 =method render( $template, $context, $partials )
 

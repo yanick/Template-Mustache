@@ -42,4 +42,5 @@ t/read_partials_from_subs.t
 t/read_templates_from_file_system.t
 t/read_templates_from_subclass.t
 t/sections.t
+t/variable-resolution.t
 xt/release/unused-vars.t
