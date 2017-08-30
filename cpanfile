@@ -25,7 +25,6 @@ on 'test' => sub {
   requires "Test::Most" => "0";
   requires "Test::Requires" => "0";
   requires "base" => "0";
-  requires "blib" => "1.01";
 };
 
 on 'test' => sub {
