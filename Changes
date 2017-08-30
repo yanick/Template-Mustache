@@ -1,84 +1,79 @@
 Revision history for Template-Mustache
 
-{{$NEXT}}
- [API CHANGES]
+1.0.3 2017-08-30
+  [ BUG FIXES ]
+    - resolve variable correctly if the context is an object or an array.
+      (GH#48)
 
- [BUG FIXES]
- - resolve variable correctly if the context is an object or an array. (GH#48)
-
- [DOCUMENTATION]
-
- [ENHANCEMENTS]
-
- [NEW FEATURES]
-
- [STATISTICS]
-
-1.0.1_0 2017-06-30
- [BUG FIXES]
- - don't compile-test Template::Mustache::Trait (will fail if Moose is not
-   installed). (GH#45)
-
- [STATISTICS]
- - code churn: 2 files changed, 16 insertions(+), 7 deletions(-)
- - code churn: 3 files changed, 10 insertions(+), 12 deletions(-)
+  [ STATISTICS ]
+    - code churn: 8 files changed, 108 insertions(+), 352 deletions(-)
 
 1.0.2 2017-07-03
- - Promote to general release.
+  - Promote to general release.
+
+1.0.1_0 2017-06-30
+  [ BUG FIXES ]
+    - don't compile-test Template::Mustache::Trait (will fail if Moose is
+      not installed). (GH#45)
+
+  [ STATISTICS ]
+    - code churn: 2 files changed, 16 insertions(+), 7 deletions(-)
+    - code churn: 3 files changed, 10 insertions(+), 12 deletions(-)
 
 1.0.0_0 2017-06-20
- [API CHANGES]
- - Major rewrite to support all of the specs (as of v1.1.3). (GH#14, GH#16)
+  [ API CHANGES ]
+    - Major rewrite to support all of the specs (as of v1.1.3). (GH#14,
+      GH#16)
 
- [ENHANCEMENTS]
- - new 'context' attribute for Template::Mustache objects. (GH#43)
- - add Template::Mustache::Trait. (GH#44)
+  [ ENHANCEMENTS ]
+    - new 'context' attribute for Template::Mustache objects. (GH#43)
+    - add Template::Mustache::Trait. (GH#44)
 
- [MISC]
- - remove dist.ini for distribution. (GH#41)
+  [ MISC ]
+    - remove dist.ini for distribution. (GH#41)
 
- [STATISTICS]
- - code churn: 36 files changed, 8509 insertions(+), 674 deletions(-)
+  [ STATISTICS ]
+    - code churn: 36 files changed, 8509 insertions(+), 674 deletions(-)
 
 0.5.6 2016-11-17
- [DISTRIBUTION MAINTENANCE]
- - Maintenance passed to Yanick, github repo moved in consequence.
+  [ DISTRIBUTION MAINTENANCE ]
+    - Maintenance passed to Yanick, github repo moved in consequence.
 
- [FEATURES]
- - Support dotted names (GH#38, jfparis84)
+  [ FEATURES ]
+    - Support dotted names (GH#38, jfparis84)
 
- [STATISTICS]
- - code churn: 25 files changed, 1242 insertions(+), 556 deletions(-)
+  [ STATISTICS ]
+    - code churn: 25 files changed, 1242 insertions(+), 556 deletions(-)
 
 v0.5.5 2016-11-13
- - Add Test::Exception as dependency.
+  - Add Test::Exception as dependency.
 
 v0.5.4 2016-11-06
- - Update link to Mustache main site. (GH#29, paultcochrane)
- - Lots of maintance work by paultcochrane
-   (GH#23,GH#25,GH#26,GH#27,GH#30,GH#31,GH#32 paultcochrane)
- - Convert internal docs to POD (GH#24, paultcochrane)
- - Fix spec test suite breakages. (GH#33, paultcochrane)
- - Add Travis config (GH#34, paultcochrane)
- - Convert tests away from Test::Mini.
+  - Update link to Mustache main site. (GH#29, paultcochrane)
+  - Lots of maintance work by paultcochrane
+    (GH#23,GH#25,GH#26,GH#27,GH#30,GH#31,GH#32 paultcochrane)
+  - Convert internal docs to POD (GH#24, paultcochrane)
+  - Fix spec test suite breakages. (GH#33, paultcochrane)
+  - Add Travis config (GH#34, paultcochrane)
+  - Convert tests away from Test::Mini.
 
 v0.5.3 2015-12-10
- - Update master GitHub Mustache project url. (ReadmeCritic, GH#22)
- - Use HTML::Entities instead of CGI::escapeHTML. (Josh Lavin, GH#21)
- - add script 'mustache.pl'. (Chris Christensen, GH#15)
- - add 'namespace::clean' as a dependency. (mskott, GH#7)
+  - Update master GitHub Mustache project url. (ReadmeCritic, GH#22)
+  - Use HTML::Entities instead of CGI::escapeHTML. (Josh Lavin, GH#21)
+  - add script 'mustache.pl'. (Chris Christensen, GH#15)
+  - add 'namespace::clean' as a dependency. (mskott, GH#7)
 
 v0.5.2 2015-06-12
- - don't use length(@arr) when scalar(@arr) is meant!
- - use tr/// for counting, not split
- - don't die if provided context object is a non-object ref
+  - don't use length(@arr) when scalar(@arr) is meant!
+  - use tr/// for counting, not split
+  - don't die if provided context object is a non-object ref
 
 v0.5.1 2011-02-13
- - Updating dependency on Test::Mini::Unit.  Solves build problems on Perl
- - 5.13+.
- - An optional second argument, `$render`, is now passed to lambdas.  This
- - code reference will render the template it's given against the current
- - context stack.
+  - Updating dependency on Test::Mini::Unit.  Solves build problems on Perl
+  - 5.13+.
+  - An optional second argument, `$render`, is now passed to lambdas.  This
+  - code reference will render the template it's given against the current
+  - context stack.
 
 v0.5.0 2011-01-10
- - Initial release to CPAN.
+  - Initial release to CPAN.
