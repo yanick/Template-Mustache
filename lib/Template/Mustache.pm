@@ -7,6 +7,7 @@ use Moo;
 use MooseX::MungeHas { has_rw => [ 'is_rw' ], has_ro => [ 'is_ro' ] };
 
 use Text::Balanced qw/ extract_tagged gen_extract_tagged extract_multiple /;
+use Scalar::Util qw/ looks_like_number /;
 
 use Template::Mustache::Token::Template;
 use Template::Mustache::Token::Variable;
@@ -147,11 +148,16 @@ sub resolve_context {
     for my $c ( @$context ) {
         if ( blessed $c ) {
             next CONTEXT unless $c->can($first);
-            return $c->$first;
+            return resolve_context($key,[$c->$first]);
         }
         if ( ref $c eq 'HASH' ) {
             next CONTEXT unless exists $c->{$first};
             return resolve_context($key,[$c->{$first}]);
+        }
+
+        if ( ref $c eq 'ARRAY' ) {
+            next CONTEXT unless looks_like_number($first);
+            return resolve_context( $key, [ $c->[$first] ] );
         }
     }
 
