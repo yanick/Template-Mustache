@@ -6,7 +6,7 @@ MANIFEST
 META.json
 META.yml
 Makefile.PL
-README.md
+README.mkdn
 SIGNATURE
 bin/mustache.pl
 contrib/benchmark.pl
