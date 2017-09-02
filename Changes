@@ -4,7 +4,6 @@ Revision history for Template-Mustache
   [ API CHANGES ]
 
   [ BUG FIXES ]
-  - A test was requiring Moose.
 
   [ DOCUMENTATION ]
 
@@ -13,6 +12,13 @@ Revision history for Template-Mustache
   [ NEW FEATURES ]
 
   [ STATISTICS ]
+
+1.0.4 2017-09-02
+  [ BUG FIXES ]
+    - A test was requiring Moose.
+
+  [ STATISTICS ]
+    - code churn: 2 files changed, 61 insertions(+), 53 deletions(-)
 
 1.0.3 2017-08-30
   [ BUG FIXES ]
