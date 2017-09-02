@@ -6,11 +6,10 @@ is( Template::Mustache->render( '{{ foo.1 }}', { foo => [ 'potato', 'banana' ] }
 
 {
     package Decs;
-    use Moose;
+    use Moo;
 
     has some_hash => (
         is      => 'rw',
-        isa     => 'HashRef',
         default => sub { { 'k1' => 'v1', 'k2' => 'v2' } }
     );
 

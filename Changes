@@ -4,6 +4,7 @@ Revision history for Template-Mustache
   [ API CHANGES ]
 
   [ BUG FIXES ]
+  - A test was requiring Moose.
 
   [ DOCUMENTATION ]
 
