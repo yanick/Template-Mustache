@@ -6,6 +6,7 @@ Revision history for Template-Mustache
   [ BUG FIXES ]
 
   [ DOCUMENTATION ]
+    - add abstracts to the Token objects. (GH#46)
 
   [ ENHANCEMENTS ]
     - allow hyphen for variable/partial name. (karupanerura)
@@ -13,7 +14,7 @@ Revision history for Template-Mustache
   [ NEW FEATURES ]
 
   [ MISC ]
-  - put a newline after package definition for #47
+  - put a newline after package definition. (GH#47)
 
   [ STATISTICS ]
 
