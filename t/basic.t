@@ -13,6 +13,7 @@ sub render_ok(@) {
 render_ok @$_ for (
     [ "Hello {{planet}}", {planet => "World!"}, 'Hello World!' ],
     [ "{{a}} and {{b}}", {a => 'this', b => 'that' }, 'this and that' ],
+    [ "{{c-d}} and {{e.f}}", {'c-d' => 'this', 'e' => { f => 'that' } }, 'this and that' ],
     [ '123{{! no }}456', {}, '123456', 'comment' ],
     [ q(Begin
 {{!
