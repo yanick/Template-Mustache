@@ -204,7 +204,7 @@ delimiter_change_inner: '=' {
     $item[4]
 }
 
-partial: /\s*/ opening_tag '>' /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
+partial: /\s*/ opening_tag '>' /\s*/ /[-\w.]+/ /\s*/ closing_tag /\s*/ {
     my $prev = $thisparser->{prev_is_standalone};
     $thisparser->{prev_is_standalone} = 0;
     my $indent = '';
@@ -226,7 +226,7 @@ partial: /\s*/ opening_tag '>' /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ {
         )
 }
 
-open_section: /\s*/ opening_tag /[#^]/ /\s*/ /[\w.]+/ /\s*/ closing_tag /\s*/ { 
+open_section: /\s*/ opening_tag /[#^]/ /\s*/ /[-\w.]+/ /\s*/ closing_tag /\s*/ {
     my $prev = $thisparser->{prev_is_standalone};
     $thisparser->{prev_is_standalone} = 0;
     if ( $item[1] =~ /\n/ or $prev ) {
@@ -340,7 +340,7 @@ variable: /\s*/ opening_tag /\s*/ variable_name /\s*/ closing_tag {
     );
 }
 
-variable_name: /[\w.]+/
+variable_name: /[-\w.]+/
 
 verbatim: { $thisparser->{opening_tag} } /^\s*\S*?(?=\Q$item[1]\E|\s|$)/ {
     $thisparser->{prev_is_standalone} = 0;

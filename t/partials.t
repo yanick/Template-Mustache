@@ -14,4 +14,14 @@ my $mustache = Template::Mustache->new(
 
 is $mustache->render, 'xYay!', 'partial';
 
+
+$mustache = Template::Mustache->new(
+    partials => {
+        'inner-hyphen' => 'Yay!Yay!'
+    },
+    template => 'x{{> inner-hyphen}}'
+);
+
+is $mustache->render, 'xYay!Yay!', 'hyphen';
+
 done_testing;

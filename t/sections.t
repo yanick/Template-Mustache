@@ -12,6 +12,9 @@ is( Template::Mustache->render( "{{#foo}}{{.}}{{/foo}}", {foo => "World!"})
 is( Template::Mustache->render( "{{#foo }}{{.}}{{/foo}}", {foo => "World!"})
     => 'World!', 'spaces' );
 
+is( Template::Mustache->render( "{{#foo-bar}}{{.}}{{/foo-bar}}", {'foo-bar' => "World!"})
+    => 'World!', 'hyphen' );
+
 
 is ''.Template::Mustache->render( "{{#foo }}{{.}}{{/foo }}", {foo => "World!"})
     => 'World!', 'spaces';

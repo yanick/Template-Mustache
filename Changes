@@ -8,6 +8,7 @@ Revision history for Template-Mustache
   [ DOCUMENTATION ]
 
   [ ENHANCEMENTS ]
+    - allow hyphen for variable/partial name (karupanerura)
 
   [ NEW FEATURES ]
 
