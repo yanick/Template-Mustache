@@ -4,11 +4,15 @@
 #
 
 package Template::Mustache::Parser;
+
+
 use Parse::RecDescent;
 { my $ERRORS;
 
 
 package Parse::RecDescent::Template::Mustache::Parser;
+
+
 use strict;
 use vars qw($skip $AUTOLOAD  );
 @Parse::RecDescent::Template::Mustache::Parser::ISA = ();
@@ -2556,7 +2560,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::open_section
                         if defined $::RD_TRACE;
         
 
-        $_tok = ($_noactions) ? 0 : do { 
+        $_tok = ($_noactions) ? 0 : do {
     my $prev = $thisparser->{prev_is_standalone};
     $thisparser->{prev_is_standalone} = 0;
     if ( $item[1] =~ /\n/ or $prev ) {
@@ -3069,7 +3073,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::partial
                         if defined $::RD_TRACE;
         
 
-        $_tok = ($_noactions) ? 0 : do { 
+        $_tok = ($_noactions) ? 0 : do {
     my $prev = $thisparser->{prev_is_standalone};
     $thisparser->{prev_is_standalone} = 0;
     my $indent = '';
@@ -5559,7 +5563,9 @@ sub Parse::RecDescent::Template::Mustache::Parser::verbatim
     return $return;
 }
 }
-package Template::Mustache::Parser; sub new { my $self = bless( {
+package Template::Mustache::Parser;
+
+ sub new { my $self = bless( {
                  '_AUTOACTION' => undef,
                  '_AUTOTREE' => undef,
                  '_check' => {
@@ -6294,7 +6300,7 @@ package Template::Mustache::Parser; sub new { my $self = bless( {
                                                                                                      'rdelim' => '/'
                                                                                                    }, 'Parse::RecDescent::Token' ),
                                                                                             bless( {
-                                                                                                     'code' => '{ 
+                                                                                                     'code' => '{
     my $prev = $thisparser->{prev_is_standalone};
     $thisparser->{prev_is_standalone} = 0;
     if ( $item[1] =~ /\\n/ or $prev ) {
@@ -6444,7 +6450,7 @@ package Template::Mustache::Parser; sub new { my $self = bless( {
                                                                                                 'rdelim' => '/'
                                                                                               }, 'Parse::RecDescent::Token' ),
                                                                                        bless( {
-                                                                                                'code' => '{ 
+                                                                                                'code' => '{
     my $prev = $thisparser->{prev_is_standalone};
     $thisparser->{prev_is_standalone} = 0;
     my $indent = \'\';

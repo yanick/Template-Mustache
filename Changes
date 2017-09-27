@@ -8,9 +8,12 @@ Revision history for Template-Mustache
   [ DOCUMENTATION ]
 
   [ ENHANCEMENTS ]
-    - allow hyphen for variable/partial name (karupanerura)
+    - allow hyphen for variable/partial name. (karupanerura)
 
   [ NEW FEATURES ]
+
+  [ MISC ]
+  - put a newline after package definition for #47
 
   [ STATISTICS ]
 
