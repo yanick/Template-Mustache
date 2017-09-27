@@ -2314,7 +2314,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::open_section
     while (!$_matched && !$commit)
     {
         
-        Parse::RecDescent::_trace(q{Trying production: [/\\s*/ opening_tag /[#^]/ /\\s*/ /[\\w.]+/ /\\s*/ closing_tag /\\s*/]},
+        Parse::RecDescent::_trace(q{Trying production: [/\\s*/ opening_tag /[#^]/ /\\s*/ /[-\\w.]+/ /\\s*/ closing_tag /\\s*/]},
                       Parse::RecDescent::_tracefirst($_[1]),
                       q{open_section},
                       $tracelevel)
@@ -2438,15 +2438,15 @@ sub Parse::RecDescent::Template::Mustache::Parser::open_section
         push @item, $item{__PATTERN3__}=$current_match;
         
 
-        Parse::RecDescent::_trace(q{Trying terminal: [/[\\w.]+/]}, Parse::RecDescent::_tracefirst($text),
+        Parse::RecDescent::_trace(q{Trying terminal: [/[-\\w.]+/]}, Parse::RecDescent::_tracefirst($text),
                       q{open_section},
                       $tracelevel)
                         if defined $::RD_TRACE;
         undef $lastsep;
-        $expectation->is(q{/[\\w.]+/})->at($text);
+        $expectation->is(q{/[-\\w.]+/})->at($text);
         
 
-        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[\w.]+)/)
+        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[-\w.]+)/)
         {
             $text = $lastsep . $text if defined $lastsep;
             $expectation->failed();
@@ -2586,7 +2586,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::open_section
         $item{__ACTION1__}=$_tok;
         
 
-        Parse::RecDescent::_trace(q{>>Matched production: [/\\s*/ opening_tag /[#^]/ /\\s*/ /[\\w.]+/ /\\s*/ closing_tag /\\s*/]<<},
+        Parse::RecDescent::_trace(q{>>Matched production: [/\\s*/ opening_tag /[#^]/ /\\s*/ /[-\\w.]+/ /\\s*/ closing_tag /\\s*/]<<},
                       Parse::RecDescent::_tracefirst($text),
                       q{open_section},
                       $tracelevel)
@@ -2826,7 +2826,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::partial
     while (!$_matched && !$commit)
     {
         
-        Parse::RecDescent::_trace(q{Trying production: [/\\s*/ opening_tag '>' /\\s*/ /[\\w.]+/ /\\s*/ closing_tag /\\s*/]},
+        Parse::RecDescent::_trace(q{Trying production: [/\\s*/ opening_tag '>' /\\s*/ /[-\\w.]+/ /\\s*/ closing_tag /\\s*/]},
                       Parse::RecDescent::_tracefirst($_[1]),
                       q{partial},
                       $tracelevel)
@@ -2951,15 +2951,15 @@ sub Parse::RecDescent::Template::Mustache::Parser::partial
         push @item, $item{__PATTERN2__}=$current_match;
         
 
-        Parse::RecDescent::_trace(q{Trying terminal: [/[\\w.]+/]}, Parse::RecDescent::_tracefirst($text),
+        Parse::RecDescent::_trace(q{Trying terminal: [/[-\\w.]+/]}, Parse::RecDescent::_tracefirst($text),
                       q{partial},
                       $tracelevel)
                         if defined $::RD_TRACE;
         undef $lastsep;
-        $expectation->is(q{/[\\w.]+/})->at($text);
+        $expectation->is(q{/[-\\w.]+/})->at($text);
         
 
-        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[\w.]+)/)
+        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[-\w.]+)/)
         {
             $text = $lastsep . $text if defined $lastsep;
             $expectation->failed();
@@ -3104,7 +3104,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::partial
         $item{__ACTION1__}=$_tok;
         
 
-        Parse::RecDescent::_trace(q{>>Matched production: [/\\s*/ opening_tag '>' /\\s*/ /[\\w.]+/ /\\s*/ closing_tag /\\s*/]<<},
+        Parse::RecDescent::_trace(q{>>Matched production: [/\\s*/ opening_tag '>' /\\s*/ /[-\\w.]+/ /\\s*/ closing_tag /\\s*/]<<},
                       Parse::RecDescent::_tracefirst($text),
                       q{partial},
                       $tracelevel)
@@ -5268,7 +5268,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::variable_name
     my $text;
     my $lastsep;
     my $current_match;
-    my $expectation = new Parse::RecDescent::Expectation(q{/[\\w.]+/});
+    my $expectation = new Parse::RecDescent::Expectation(q{/[-\\w.]+/});
     $expectation->at($_[1]);
     
     my $thisoffset;
@@ -5282,7 +5282,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::variable_name
     while (!$_matched && !$commit)
     {
         
-        Parse::RecDescent::_trace(q{Trying production: [/[\\w.]+/]},
+        Parse::RecDescent::_trace(q{Trying production: [/[-\\w.]+/]},
                       Parse::RecDescent::_tracefirst($_[1]),
                       q{variable_name},
                       $tracelevel)
@@ -5295,7 +5295,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::variable_name
         my $repcount = 0;
 
 
-        Parse::RecDescent::_trace(q{Trying terminal: [/[\\w.]+/]}, Parse::RecDescent::_tracefirst($text),
+        Parse::RecDescent::_trace(q{Trying terminal: [/[-\\w.]+/]}, Parse::RecDescent::_tracefirst($text),
                       q{variable_name},
                       $tracelevel)
                         if defined $::RD_TRACE;
@@ -5303,7 +5303,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::variable_name
         $expectation->is(q{})->at($text);
         
 
-        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[\w.]+)/)
+        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[-\w.]+)/)
         {
             $text = $lastsep . $text if defined $lastsep;
             $expectation->failed();
@@ -5322,7 +5322,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::variable_name
         push @item, $item{__PATTERN1__}=$current_match;
         
 
-        Parse::RecDescent::_trace(q{>>Matched production: [/[\\w.]+/]<<},
+        Parse::RecDescent::_trace(q{>>Matched production: [/[-\\w.]+/]<<},
                       Parse::RecDescent::_tracefirst($text),
                       q{variable_name},
                       $tracelevel)
@@ -6256,13 +6256,13 @@ package Template::Mustache::Parser; sub new { my $self = bless( {
                                                                                                      'rdelim' => '/'
                                                                                                    }, 'Parse::RecDescent::Token' ),
                                                                                             bless( {
-                                                                                                     'description' => '/[\\\\w.]+/',
+                                                                                                     'description' => '/[-\\\\w.]+/',
                                                                                                      'hashname' => '__PATTERN4__',
                                                                                                      'ldelim' => '/',
                                                                                                      'line' => 62,
                                                                                                      'lookahead' => 0,
                                                                                                      'mod' => '',
-                                                                                                     'pattern' => '[\\w.]+',
+                                                                                                     'pattern' => '[-\\w.]+',
                                                                                                      'rdelim' => '/'
                                                                                                    }, 'Parse::RecDescent::Token' ),
                                                                                             bless( {
@@ -6406,13 +6406,13 @@ package Template::Mustache::Parser; sub new { my $self = bless( {
                                                                                                 'rdelim' => '/'
                                                                                               }, 'Parse::RecDescent::Token' ),
                                                                                        bless( {
-                                                                                                'description' => '/[\\\\w.]+/',
+                                                                                                'description' => '/[-\\\\w.]+/',
                                                                                                 'hashname' => '__PATTERN3__',
                                                                                                 'ldelim' => '/',
                                                                                                 'line' => 40,
                                                                                                 'lookahead' => 0,
                                                                                                 'mod' => '',
-                                                                                                'pattern' => '[\\w.]+',
+                                                                                                'pattern' => '[-\\w.]+',
                                                                                                 'rdelim' => '/'
                                                                                               }, 'Parse::RecDescent::Token' ),
                                                                                        bless( {
@@ -7119,13 +7119,13 @@ package Template::Mustache::Parser; sub new { my $self = bless( {
                                                                                 'error' => undef,
                                                                                 'items' => [
                                                                                              bless( {
-                                                                                                      'description' => '/[\\\\w.]+/',
+                                                                                                      'description' => '/[-\\\\w.]+/',
                                                                                                       'hashname' => '__PATTERN1__',
                                                                                                       'ldelim' => '/',
                                                                                                       'line' => 176,
                                                                                                       'lookahead' => 0,
                                                                                                       'mod' => '',
-                                                                                                      'pattern' => '[\\w.]+',
+                                                                                                      'pattern' => '[-\\w.]+',
                                                                                                       'rdelim' => '/'
                                                                                                     }, 'Parse::RecDescent::Token' )
                                                                                            ],
