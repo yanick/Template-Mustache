@@ -1,4 +1,5 @@
 package Template::Mustache::Token::Variable;
+# ABSTRACT: Object representing a Variable block
 
 use Escape::Houdini qw/ escape_html /;
 use Scalar::Util qw/ looks_like_number /;

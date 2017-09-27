@@ -1,4 +1,5 @@
 package Template::Mustache::Token::Verbatim;
+# ABSTRACT: Object representing a Verbatim block
 
 use Moo;
 

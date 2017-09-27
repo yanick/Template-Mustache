@@ -1,4 +1,5 @@
 package Template::Mustache::Token::Partial;
+# ABSTRACT: Object representing a Partial block
 
 use Moo;
 

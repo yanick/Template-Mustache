@@ -1,4 +1,5 @@
 package Template::Mustache::Token::Section;
+# ABSTRACT: Object representing a Section block
 
 use Moo;
 

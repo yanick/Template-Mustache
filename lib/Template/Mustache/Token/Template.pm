@@ -1,4 +1,5 @@
 package Template::Mustache::Token::Template;
+# ABSTRACT: Object representing a Template block
 
 use Moo;
 
