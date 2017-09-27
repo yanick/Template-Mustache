@@ -6,17 +6,25 @@ Revision history for Template-Mustache
   [ BUG FIXES ]
 
   [ DOCUMENTATION ]
+
+  [ ENHANCEMENTS ]
+
+  [ NEW FEATURES ]
+
+  [ STATISTICS ]
+
+1.1.0 2017-09-27
+  [ DOCUMENTATION ]
     - add abstracts to the Token objects. (GH#46)
 
   [ ENHANCEMENTS ]
     - allow hyphen for variable/partial name. (karupanerura)
 
-  [ NEW FEATURES ]
-
   [ MISC ]
-  - put a newline after package definition. (GH#47)
+    - put a newline after package definition. (GH#47)
 
   [ STATISTICS ]
+    - code churn: 12 files changed, 74 insertions(+), 30 deletions(-)
 
 1.0.4 2017-09-02
   [ BUG FIXES ]
