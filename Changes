@@ -10,6 +10,7 @@ Revision history for Template-Mustache
   [ ENHANCEMENTS ]
   - silence expected warnings in tests. (GH#51)
   - parser now requires exactly two delimiters in '{= =}'. (GH#52)
+  - In Template::Mustache::Trait, the template's default can be a sub.
 
   [ NEW FEATURES ]
 
