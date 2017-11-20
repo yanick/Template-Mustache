@@ -8,6 +8,7 @@ Revision history for Template-Mustache
   [ DOCUMENTATION ]
 
   [ ENHANCEMENTS ]
+  - silence expected warnings in tests. (GH#51)
 
   [ NEW FEATURES ]
 
