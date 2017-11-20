@@ -20,6 +20,14 @@ use warnings;
         handles => [ 'render' ],
     );
 
+    has bar => (
+        is => 'ro',
+        traits => [ 'Mustache' ],
+        default => sub { 'Hello {{ name }}' },
+        lazy => 1,
+        handles => { render_bar => 'render' },
+    );
+
     has name => (
         is => 'rw',
         default => 'world'
@@ -28,6 +36,7 @@ use warnings;
 
 my $foo = Foo->new;
 
-is $foo->render => 'Hello world';
+is $foo->render     => 'Hello world', 'default as a string';
+is $foo->render_bar => 'Hello world', 'default as a coderef';
 
 done_testing;

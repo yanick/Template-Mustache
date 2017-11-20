@@ -75,17 +75,17 @@ before _process_options => sub {
 
     my $default = $options->{default} or return;
 
-    croak "expecting default to be a string" if ref $default;
-
     $options->{default} = sub {
         my $self = shift;
-        Template::Mustache->new( template => $default, context => $self );
+        Template::Mustache->new(
+            template => ref $default ? $default->($self) : $default,
+            context => $self 
+        );
     };
 };
 
 package Moose::Meta::Attribute::Custom::Trait::Mustache;
 
 sub register_implementation { 'Template::Mustache::Trait' }
-
 
 1;
