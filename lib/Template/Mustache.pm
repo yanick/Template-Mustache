@@ -117,7 +117,15 @@ sub _parse_partials {
     return $partials;
 }
 
-has_ro parser => sub { Template::Mustache::Parser->new };
+has_ro parser => sub {
+    if ( $ENV{MUSTACHE_DEBUG} ) {
+        return Parse::RecDescent->new( 
+            $Template::Mustache::GRAMMAR
+        );
+    }
+
+    return Template::Mustache::Parser->new 
+};
 
 sub render {  
     my $self = shift;
@@ -190,8 +198,9 @@ template_item:  ( partial | section | delimiter_change | comment | unescaped_var
 }
 
 delimiter_change: standalone_surround[$item[0]] {
+    die "needs two delimiters\n" unless @{ $item[1][2] } == 2;
     ( $thisparser->{opening_tag},
-        $thisparser->{closing_tag} ) = split /\s+/, $item[1][2];
+        $thisparser->{closing_tag} ) = @{ $item[1][2] };
 
     Template::Mustache::Token::Verbatim->new( content =>
         $item[1][0] . $item[1][1]
@@ -201,7 +210,7 @@ delimiter_change: standalone_surround[$item[0]] {
 delimiter_change_inner: '=' {
     $thisparser->{closing_tag}
 } /\s*/ /.*?(?=\=\Q$item[2]\E)/s '=' {
-    $item[4]
+    [ split ' ', $item[4] ]
 }
 
 partial: /\s*/ opening_tag '>' /\s*/ /[-\w.]+/ /\s*/ closing_tag /\s*/ {

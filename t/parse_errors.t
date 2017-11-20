@@ -42,17 +42,16 @@ subtest closing_a_section_at_the_top_level => sub {
 };
 
 subtest delimiters => sub { 
-    local $TODO = 'TODO';
-    # TODO
-
     subtest specifying_too_few_delimiters => sub {
         dies_ok {
+            local *STDERR;
             Template::Mustache->render('{{= $$$ =}}')
         } 'Set Delimiters tags must have exactly two values!';
     };
 
     subtest specifying_too_many_delimiters => sub {
         dies_ok {
+            local *STDERR;
             Template::Mustache->render('{{= $ $ $ =}}')
         } 'Set Delimiters tags must have exactly two values!';
     };

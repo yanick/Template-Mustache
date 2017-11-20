@@ -9,6 +9,7 @@ Revision history for Template-Mustache
 
   [ ENHANCEMENTS ]
   - silence expected warnings in tests. (GH#51)
+  - parser now requires exactly two delimiters in '{= =}'. (GH#52)
 
   [ NEW FEATURES ]
 

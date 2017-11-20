@@ -1617,8 +1617,9 @@ sub Parse::RecDescent::Template::Mustache::Parser::delimiter_change
         
 
         $_tok = ($_noactions) ? 0 : do {
+    die "needs two delimiters\n" unless @{ $item[1][2] } == 2;
     ( $thisparser->{opening_tag},
-        $thisparser->{closing_tag} ) = split /\s+/, $item[1][2];
+        $thisparser->{closing_tag} ) = @{ $item[1][2] };
 
     Template::Mustache::Token::Verbatim->new( content =>
         $item[1][0] . $item[1][1]
@@ -1892,7 +1893,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::delimiter_change_inner
         
 
         $_tok = ($_noactions) ? 0 : do {
-    $item[4]
+    [ split ' ', $item[4] ]
 };
         unless (defined $_tok)
         {
@@ -5592,7 +5593,7 @@ package Template::Mustache::Parser;
                                                                                                             ],
                                                                                                  'changed' => 0,
                                                                                                  'impcount' => 0,
-                                                                                                 'line' => 183,
+                                                                                                 'line' => 184,
                                                                                                  'name' => '_alternation_1_of_production_1_of_rule_template_item',
                                                                                                  'opcount' => 0,
                                                                                                  'prods' => [
@@ -5604,7 +5605,7 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'partial'
@@ -5624,13 +5625,13 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'section'
                                                                                                                                            }, 'Parse::RecDescent::Subrule' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 1,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5644,13 +5645,13 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'delimiter_change'
                                                                                                                                            }, 'Parse::RecDescent::Subrule' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 2,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5664,13 +5665,13 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'comment'
                                                                                                                                            }, 'Parse::RecDescent::Subrule' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 3,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5684,13 +5685,13 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'unescaped_variable_amp'
                                                                                                                                            }, 'Parse::RecDescent::Subrule' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 4,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5704,13 +5705,13 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'unescaped_variable'
                                                                                                                                            }, 'Parse::RecDescent::Subrule' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 5,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5724,13 +5725,13 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'variable'
                                                                                                                                            }, 'Parse::RecDescent::Subrule' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 6,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5744,13 +5745,13 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'argcode' => undef,
                                                                                                                                              'implicit' => undef,
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'matchrule' => 0,
                                                                                                                                              'subrule' => 'verbatim'
                                                                                                                                            }, 'Parse::RecDescent::Subrule' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 7,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5764,12 +5765,12 @@ package Template::Mustache::Parser;
                                                                                                                                     bless( {
                                                                                                                                              'commitonly' => '',
                                                                                                                                              'hashname' => '__DIRECTIVE1__',
-                                                                                                                                             'line' => 183,
+                                                                                                                                             'line' => 184,
                                                                                                                                              'lookahead' => 0,
                                                                                                                                              'msg' => ''
                                                                                                                                            }, 'Parse::RecDescent::Error' )
                                                                                                                                   ],
-                                                                                                                       'line' => 183,
+                                                                                                                       'line' => 184,
                                                                                                                        'number' => 8,
                                                                                                                        'patcount' => 0,
                                                                                                                        'strcount' => 0,
@@ -5785,7 +5786,7 @@ package Template::Mustache::Parser;
                                                                      ],
                                                           'changed' => 0,
                                                           'impcount' => 0,
-                                                          'line' => 79,
+                                                          'line' => 80,
                                                           'name' => 'close_section',
                                                           'opcount' => 0,
                                                           'prods' => [
@@ -5798,7 +5799,7 @@ package Template::Mustache::Parser;
                                                                                                       'description' => '/\\\\s*/',
                                                                                                       'hashname' => '__PATTERN1__',
                                                                                                       'ldelim' => '/',
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'mod' => '',
                                                                                                       'pattern' => '\\s*',
@@ -5807,7 +5808,7 @@ package Template::Mustache::Parser;
                                                                                              bless( {
                                                                                                       'argcode' => undef,
                                                                                                       'implicit' => undef,
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'matchrule' => 0,
                                                                                                       'subrule' => 'opening_tag'
@@ -5815,7 +5816,7 @@ package Template::Mustache::Parser;
                                                                                              bless( {
                                                                                                       'description' => '\'/\'',
                                                                                                       'hashname' => '__STRING1__',
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'pattern' => '/'
                                                                                                     }, 'Parse::RecDescent::Literal' ),
@@ -5823,7 +5824,7 @@ package Template::Mustache::Parser;
                                                                                                       'description' => '/\\\\s*/',
                                                                                                       'hashname' => '__PATTERN2__',
                                                                                                       'ldelim' => '/',
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'mod' => '',
                                                                                                       'pattern' => '\\s*',
@@ -5832,7 +5833,7 @@ package Template::Mustache::Parser;
                                                                                              bless( {
                                                                                                       'description' => '\'$arg[0]\'',
                                                                                                       'hashname' => '__STRING2__',
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'pattern' => '$arg[0]'
                                                                                                     }, 'Parse::RecDescent::InterpLit' ),
@@ -5840,7 +5841,7 @@ package Template::Mustache::Parser;
                                                                                                       'description' => '/\\\\s*/',
                                                                                                       'hashname' => '__PATTERN3__',
                                                                                                       'ldelim' => '/',
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'mod' => '',
                                                                                                       'pattern' => '\\s*',
@@ -5849,7 +5850,7 @@ package Template::Mustache::Parser;
                                                                                              bless( {
                                                                                                       'argcode' => undef,
                                                                                                       'implicit' => undef,
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'matchrule' => 0,
                                                                                                       'subrule' => 'closing_tag'
@@ -5858,7 +5859,7 @@ package Template::Mustache::Parser;
                                                                                                       'description' => '/\\\\s*/',
                                                                                                       'hashname' => '__PATTERN4__',
                                                                                                       'ldelim' => '/',
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0,
                                                                                                       'mod' => '',
                                                                                                       'pattern' => '\\s*',
@@ -5881,7 +5882,7 @@ package Template::Mustache::Parser;
     ]
 }',
                                                                                                       'hashname' => '__ACTION1__',
-                                                                                                      'line' => 79,
+                                                                                                      'line' => 80,
                                                                                                       'lookahead' => 0
                                                                                                     }, 'Parse::RecDescent::Action' )
                                                                                            ],
@@ -5930,7 +5931,7 @@ package Template::Mustache::Parser;
                                                                ],
                                                     'changed' => 0,
                                                     'impcount' => 0,
-                                                    'line' => 110,
+                                                    'line' => 111,
                                                     'name' => 'comment',
                                                     'opcount' => 0,
                                                     'prods' => [
@@ -5942,7 +5943,7 @@ package Template::Mustache::Parser;
                                                                                        bless( {
                                                                                                 'argcode' => '[$item[0]]',
                                                                                                 'implicit' => undef,
-                                                                                                'line' => 110,
+                                                                                                'line' => 111,
                                                                                                 'lookahead' => 0,
                                                                                                 'matchrule' => 0,
                                                                                                 'subrule' => 'standalone_surround'
@@ -5954,7 +5955,7 @@ package Template::Mustache::Parser;
     ),
 }',
                                                                                                 'hashname' => '__ACTION1__',
-                                                                                                'line' => 110,
+                                                                                                'line' => 111,
                                                                                                 'lookahead' => 0
                                                                                               }, 'Parse::RecDescent::Action' )
                                                                                      ],
@@ -5971,7 +5972,7 @@ package Template::Mustache::Parser;
                                                           'calls' => [],
                                                           'changed' => 0,
                                                           'impcount' => 0,
-                                                          'line' => 116,
+                                                          'line' => 117,
                                                           'name' => 'comment_inner',
                                                           'opcount' => 0,
                                                           'prods' => [
@@ -5983,21 +5984,21 @@ package Template::Mustache::Parser;
                                                                                              bless( {
                                                                                                       'description' => '\'!\'',
                                                                                                       'hashname' => '__STRING1__',
-                                                                                                      'line' => 116,
+                                                                                                      'line' => 117,
                                                                                                       'lookahead' => 0,
                                                                                                       'pattern' => '!'
                                                                                                     }, 'Parse::RecDescent::Literal' ),
                                                                                              bless( {
                                                                                                       'code' => '{ $thisparser->{closing_tag} }',
                                                                                                       'hashname' => '__ACTION1__',
-                                                                                                      'line' => 116,
+                                                                                                      'line' => 117,
                                                                                                       'lookahead' => 0
                                                                                                     }, 'Parse::RecDescent::Action' ),
                                                                                              bless( {
                                                                                                       'description' => '/.*?(?=\\\\Q$item[2]\\\\E)/s',
                                                                                                       'hashname' => '__PATTERN1__',
                                                                                                       'ldelim' => '/',
-                                                                                                      'line' => 116,
+                                                                                                      'line' => 117,
                                                                                                       'lookahead' => 0,
                                                                                                       'mod' => 's',
                                                                                                       'pattern' => '.*?(?=\\Q$item[2]\\E)',
@@ -6038,8 +6039,9 @@ package Template::Mustache::Parser;
                                                                                                        }, 'Parse::RecDescent::Subrule' ),
                                                                                                 bless( {
                                                                                                          'code' => '{
+    die "needs two delimiters\\n" unless @{ $item[1][2] } == 2;
     ( $thisparser->{opening_tag},
-        $thisparser->{closing_tag} ) = split /\\s+/, $item[1][2];
+        $thisparser->{closing_tag} ) = @{ $item[1][2] };
 
     Template::Mustache::Token::Verbatim->new( content =>
         $item[1][0] . $item[1][1]
@@ -6063,7 +6065,7 @@ package Template::Mustache::Parser;
                                                                    'calls' => [],
                                                                    'changed' => 0,
                                                                    'impcount' => 0,
-                                                                   'line' => 34,
+                                                                   'line' => 35,
                                                                    'name' => 'delimiter_change_inner',
                                                                    'opcount' => 0,
                                                                    'prods' => [
@@ -6075,7 +6077,7 @@ package Template::Mustache::Parser;
                                                                                                       bless( {
                                                                                                                'description' => '\'=\'',
                                                                                                                'hashname' => '__STRING1__',
-                                                                                                               'line' => 34,
+                                                                                                               'line' => 35,
                                                                                                                'lookahead' => 0,
                                                                                                                'pattern' => '='
                                                                                                              }, 'Parse::RecDescent::Literal' ),
@@ -6084,14 +6086,14 @@ package Template::Mustache::Parser;
     $thisparser->{closing_tag}
 }',
                                                                                                                'hashname' => '__ACTION1__',
-                                                                                                               'line' => 34,
+                                                                                                               'line' => 35,
                                                                                                                'lookahead' => 0
                                                                                                              }, 'Parse::RecDescent::Action' ),
                                                                                                       bless( {
                                                                                                                'description' => '/\\\\s*/',
                                                                                                                'hashname' => '__PATTERN1__',
                                                                                                                'ldelim' => '/',
-                                                                                                               'line' => 36,
+                                                                                                               'line' => 37,
                                                                                                                'lookahead' => 0,
                                                                                                                'mod' => '',
                                                                                                                'pattern' => '\\s*',
@@ -6101,7 +6103,7 @@ package Template::Mustache::Parser;
                                                                                                                'description' => '/.*?(?=\\\\=\\\\Q$item[2]\\\\E)/s',
                                                                                                                'hashname' => '__PATTERN2__',
                                                                                                                'ldelim' => '/',
-                                                                                                               'line' => 36,
+                                                                                                               'line' => 37,
                                                                                                                'lookahead' => 0,
                                                                                                                'mod' => 's',
                                                                                                                'pattern' => '.*?(?=\\=\\Q$item[2]\\E)',
@@ -6110,16 +6112,16 @@ package Template::Mustache::Parser;
                                                                                                       bless( {
                                                                                                                'description' => '\'=\'',
                                                                                                                'hashname' => '__STRING2__',
-                                                                                                               'line' => 36,
+                                                                                                               'line' => 37,
                                                                                                                'lookahead' => 0,
                                                                                                                'pattern' => '='
                                                                                                              }, 'Parse::RecDescent::Literal' ),
                                                                                                       bless( {
                                                                                                                'code' => '{
-    $item[4]
+    [ split \' \', $item[4] ]
 }',
                                                                                                                'hashname' => '__ACTION2__',
-                                                                                                               'line' => 36,
+                                                                                                               'line' => 37,
                                                                                                                'lookahead' => 0
                                                                                                              }, 'Parse::RecDescent::Action' )
                                                                                                     ],
@@ -6172,7 +6174,7 @@ package Template::Mustache::Parser;
                                                                      ],
                                                           'changed' => 0,
                                                           'impcount' => 0,
-                                                          'line' => 118,
+                                                          'line' => 119,
                                                           'name' => 'inner_section',
                                                           'opcount' => 0,
                                                           'prods' => [
@@ -6184,7 +6186,7 @@ package Template::Mustache::Parser;
                                                                                              bless( {
                                                                                                       'argcode' => '[ $arg[0] ]',
                                                                                                       'implicit' => undef,
-                                                                                                      'line' => 118,
+                                                                                                      'line' => 119,
                                                                                                       'lookahead' => -1,
                                                                                                       'matchrule' => 0,
                                                                                                       'subrule' => 'close_section'
@@ -6192,7 +6194,7 @@ package Template::Mustache::Parser;
                                                                                              bless( {
                                                                                                       'argcode' => undef,
                                                                                                       'implicit' => undef,
-                                                                                                      'line' => 118,
+                                                                                                      'line' => 119,
                                                                                                       'lookahead' => 0,
                                                                                                       'matchrule' => 0,
                                                                                                       'subrule' => 'template_item'
@@ -6214,7 +6216,7 @@ package Template::Mustache::Parser;
                                                                     ],
                                                          'changed' => 0,
                                                          'impcount' => 0,
-                                                         'line' => 62,
+                                                         'line' => 63,
                                                          'name' => 'open_section',
                                                          'opcount' => 0,
                                                          'prods' => [
@@ -6227,7 +6229,7 @@ package Template::Mustache::Parser;
                                                                                                      'description' => '/\\\\s*/',
                                                                                                      'hashname' => '__PATTERN1__',
                                                                                                      'ldelim' => '/',
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'mod' => '',
                                                                                                      'pattern' => '\\s*',
@@ -6236,7 +6238,7 @@ package Template::Mustache::Parser;
                                                                                             bless( {
                                                                                                      'argcode' => undef,
                                                                                                      'implicit' => undef,
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'matchrule' => 0,
                                                                                                      'subrule' => 'opening_tag'
@@ -6245,7 +6247,7 @@ package Template::Mustache::Parser;
                                                                                                      'description' => '/[#^]/',
                                                                                                      'hashname' => '__PATTERN2__',
                                                                                                      'ldelim' => '/',
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'mod' => '',
                                                                                                      'pattern' => '[#^]',
@@ -6255,7 +6257,7 @@ package Template::Mustache::Parser;
                                                                                                      'description' => '/\\\\s*/',
                                                                                                      'hashname' => '__PATTERN3__',
                                                                                                      'ldelim' => '/',
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'mod' => '',
                                                                                                      'pattern' => '\\s*',
@@ -6265,7 +6267,7 @@ package Template::Mustache::Parser;
                                                                                                      'description' => '/[-\\\\w.]+/',
                                                                                                      'hashname' => '__PATTERN4__',
                                                                                                      'ldelim' => '/',
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'mod' => '',
                                                                                                      'pattern' => '[-\\w.]+',
@@ -6275,7 +6277,7 @@ package Template::Mustache::Parser;
                                                                                                      'description' => '/\\\\s*/',
                                                                                                      'hashname' => '__PATTERN5__',
                                                                                                      'ldelim' => '/',
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'mod' => '',
                                                                                                      'pattern' => '\\s*',
@@ -6284,7 +6286,7 @@ package Template::Mustache::Parser;
                                                                                             bless( {
                                                                                                      'argcode' => undef,
                                                                                                      'implicit' => undef,
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'matchrule' => 0,
                                                                                                      'subrule' => 'closing_tag'
@@ -6293,7 +6295,7 @@ package Template::Mustache::Parser;
                                                                                                      'description' => '/\\\\s*/',
                                                                                                      'hashname' => '__PATTERN6__',
                                                                                                      'ldelim' => '/',
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0,
                                                                                                      'mod' => '',
                                                                                                      'pattern' => '\\s*',
@@ -6317,7 +6319,7 @@ package Template::Mustache::Parser;
     ];
 }',
                                                                                                      'hashname' => '__ACTION1__',
-                                                                                                     'line' => 62,
+                                                                                                     'line' => 63,
                                                                                                      'lookahead' => 0
                                                                                                    }, 'Parse::RecDescent::Action' )
                                                                                           ],
@@ -6367,7 +6369,7 @@ package Template::Mustache::Parser;
                                                                ],
                                                     'changed' => 0,
                                                     'impcount' => 0,
-                                                    'line' => 40,
+                                                    'line' => 41,
                                                     'name' => 'partial',
                                                     'opcount' => 0,
                                                     'prods' => [
@@ -6380,7 +6382,7 @@ package Template::Mustache::Parser;
                                                                                                 'description' => '/\\\\s*/',
                                                                                                 'hashname' => '__PATTERN1__',
                                                                                                 'ldelim' => '/',
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'mod' => '',
                                                                                                 'pattern' => '\\s*',
@@ -6389,7 +6391,7 @@ package Template::Mustache::Parser;
                                                                                        bless( {
                                                                                                 'argcode' => undef,
                                                                                                 'implicit' => undef,
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'matchrule' => 0,
                                                                                                 'subrule' => 'opening_tag'
@@ -6397,7 +6399,7 @@ package Template::Mustache::Parser;
                                                                                        bless( {
                                                                                                 'description' => '\'>\'',
                                                                                                 'hashname' => '__STRING1__',
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'pattern' => '>'
                                                                                               }, 'Parse::RecDescent::Literal' ),
@@ -6405,7 +6407,7 @@ package Template::Mustache::Parser;
                                                                                                 'description' => '/\\\\s*/',
                                                                                                 'hashname' => '__PATTERN2__',
                                                                                                 'ldelim' => '/',
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'mod' => '',
                                                                                                 'pattern' => '\\s*',
@@ -6415,7 +6417,7 @@ package Template::Mustache::Parser;
                                                                                                 'description' => '/[-\\\\w.]+/',
                                                                                                 'hashname' => '__PATTERN3__',
                                                                                                 'ldelim' => '/',
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'mod' => '',
                                                                                                 'pattern' => '[-\\w.]+',
@@ -6425,7 +6427,7 @@ package Template::Mustache::Parser;
                                                                                                 'description' => '/\\\\s*/',
                                                                                                 'hashname' => '__PATTERN4__',
                                                                                                 'ldelim' => '/',
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'mod' => '',
                                                                                                 'pattern' => '\\s*',
@@ -6434,7 +6436,7 @@ package Template::Mustache::Parser;
                                                                                        bless( {
                                                                                                 'argcode' => undef,
                                                                                                 'implicit' => undef,
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'matchrule' => 0,
                                                                                                 'subrule' => 'closing_tag'
@@ -6443,7 +6445,7 @@ package Template::Mustache::Parser;
                                                                                                 'description' => '/\\\\s*/',
                                                                                                 'hashname' => '__PATTERN5__',
                                                                                                 'ldelim' => '/',
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0,
                                                                                                 'mod' => '',
                                                                                                 'pattern' => '\\s*',
@@ -6472,7 +6474,7 @@ package Template::Mustache::Parser;
         )
 }',
                                                                                                 'hashname' => '__ACTION1__',
-                                                                                                'line' => 40,
+                                                                                                'line' => 41,
                                                                                                 'lookahead' => 0
                                                                                               }, 'Parse::RecDescent::Action' )
                                                                                      ],
@@ -6493,7 +6495,7 @@ package Template::Mustache::Parser;
                                                                ],
                                                     'changed' => 0,
                                                     'impcount' => 0,
-                                                    'line' => 120,
+                                                    'line' => 121,
                                                     'name' => 'section',
                                                     'opcount' => 0,
                                                     'prods' => [
@@ -6505,7 +6507,7 @@ package Template::Mustache::Parser;
                                                                                        bless( {
                                                                                                 'argcode' => undef,
                                                                                                 'implicit' => undef,
-                                                                                                'line' => 120,
+                                                                                                'line' => 121,
                                                                                                 'lookahead' => 0,
                                                                                                 'matchrule' => 0,
                                                                                                 'subrule' => 'open_section'
@@ -6513,13 +6515,13 @@ package Template::Mustache::Parser;
                                                                                        bless( {
                                                                                                 'code' => '{$thisoffset}',
                                                                                                 'hashname' => '__ACTION1__',
-                                                                                                'line' => 120,
+                                                                                                'line' => 121,
                                                                                                 'lookahead' => 0
                                                                                               }, 'Parse::RecDescent::Action' ),
                                                                                        bless( {
                                                                                                 'argcode' => '[ $item[1][0] ]',
                                                                                                 'expected' => undef,
-                                                                                                'line' => 120,
+                                                                                                'line' => 121,
                                                                                                 'lookahead' => 0,
                                                                                                 'matchrule' => 0,
                                                                                                 'max' => 100000000,
@@ -6532,13 +6534,13 @@ package Template::Mustache::Parser;
     - $item[2]
 }',
                                                                                                 'hashname' => '__ACTION2__',
-                                                                                                'line' => 120,
+                                                                                                'line' => 121,
                                                                                                 'lookahead' => 0
                                                                                               }, 'Parse::RecDescent::Action' ),
                                                                                        bless( {
                                                                                                 'argcode' => '[ $item[1][0] ]',
                                                                                                 'implicit' => undef,
-                                                                                                'line' => 122,
+                                                                                                'line' => 123,
                                                                                                 'lookahead' => 0,
                                                                                                 'matchrule' => 0,
                                                                                                 'subrule' => 'close_section'
@@ -6563,7 +6565,7 @@ package Template::Mustache::Parser;
     );
 }',
                                                                                                 'hashname' => '__ACTION3__',
-                                                                                                'line' => 122,
+                                                                                                'line' => 123,
                                                                                                 'lookahead' => 0
                                                                                               }, 'Parse::RecDescent::Action' )
                                                                                      ],
@@ -6583,7 +6585,7 @@ package Template::Mustache::Parser;
                                                                            ],
                                                                 'changed' => 0,
                                                                 'impcount' => 0,
-                                                                'line' => 95,
+                                                                'line' => 96,
                                                                 'name' => 'standalone_surround',
                                                                 'opcount' => 0,
                                                                 'prods' => [
@@ -6596,7 +6598,7 @@ package Template::Mustache::Parser;
                                                                                                             'description' => '/\\\\s*/',
                                                                                                             'hashname' => '__PATTERN1__',
                                                                                                             'ldelim' => '/',
-                                                                                                            'line' => 95,
+                                                                                                            'line' => 96,
                                                                                                             'lookahead' => 0,
                                                                                                             'mod' => '',
                                                                                                             'pattern' => '\\s*',
@@ -6605,7 +6607,7 @@ package Template::Mustache::Parser;
                                                                                                    bless( {
                                                                                                             'argcode' => undef,
                                                                                                             'implicit' => undef,
-                                                                                                            'line' => 95,
+                                                                                                            'line' => 96,
                                                                                                             'lookahead' => 0,
                                                                                                             'matchrule' => 0,
                                                                                                             'subrule' => 'opening_tag'
@@ -6614,7 +6616,7 @@ package Template::Mustache::Parser;
                                                                                                             'description' => '/\\\\s*/',
                                                                                                             'hashname' => '__PATTERN2__',
                                                                                                             'ldelim' => '/',
-                                                                                                            'line' => 95,
+                                                                                                            'line' => 96,
                                                                                                             'lookahead' => 0,
                                                                                                             'mod' => '',
                                                                                                             'pattern' => '\\s*',
@@ -6623,7 +6625,7 @@ package Template::Mustache::Parser;
                                                                                                    bless( {
                                                                                                             'argcode' => undef,
                                                                                                             'implicit' => undef,
-                                                                                                            'line' => 95,
+                                                                                                            'line' => 96,
                                                                                                             'lookahead' => 0,
                                                                                                             'matchrule' => 1,
                                                                                                             'subrule' => '$arg[0]_inner'
@@ -6631,7 +6633,7 @@ package Template::Mustache::Parser;
                                                                                                    bless( {
                                                                                                             'argcode' => undef,
                                                                                                             'implicit' => undef,
-                                                                                                            'line' => 95,
+                                                                                                            'line' => 96,
                                                                                                             'lookahead' => 0,
                                                                                                             'matchrule' => 0,
                                                                                                             'subrule' => 'closing_tag'
@@ -6640,7 +6642,7 @@ package Template::Mustache::Parser;
                                                                                                             'description' => '/\\\\s*/',
                                                                                                             'hashname' => '__PATTERN3__',
                                                                                                             'ldelim' => '/',
-                                                                                                            'line' => 95,
+                                                                                                            'line' => 96,
                                                                                                             'lookahead' => 0,
                                                                                                             'mod' => '',
                                                                                                             'pattern' => '\\s*',
@@ -6662,7 +6664,7 @@ package Template::Mustache::Parser;
     [  @item[1,6,4] ],
 }',
                                                                                                             'hashname' => '__ACTION1__',
-                                                                                                            'line' => 95,
+                                                                                                            'line' => 96,
                                                                                                             'lookahead' => 0
                                                                                                           }, 'Parse::RecDescent::Action' )
                                                                                                  ],
@@ -6809,7 +6811,7 @@ package Template::Mustache::Parser;
                                                                           ],
                                                                'changed' => 0,
                                                                'impcount' => 0,
-                                                               'line' => 141,
+                                                               'line' => 142,
                                                                'name' => 'unescaped_variable',
                                                                'opcount' => 0,
                                                                'prods' => [
@@ -6822,7 +6824,7 @@ package Template::Mustache::Parser;
                                                                                                            'description' => '/\\\\s*/',
                                                                                                            'hashname' => '__PATTERN1__',
                                                                                                            'ldelim' => '/',
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'mod' => '',
                                                                                                            'pattern' => '\\s*',
@@ -6831,7 +6833,7 @@ package Template::Mustache::Parser;
                                                                                                   bless( {
                                                                                                            'argcode' => undef,
                                                                                                            'implicit' => undef,
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'matchrule' => 0,
                                                                                                            'subrule' => 'opening_tag'
@@ -6839,7 +6841,7 @@ package Template::Mustache::Parser;
                                                                                                   bless( {
                                                                                                            'description' => '\'\\{\'',
                                                                                                            'hashname' => '__STRING1__',
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'pattern' => '{'
                                                                                                          }, 'Parse::RecDescent::Literal' ),
@@ -6847,7 +6849,7 @@ package Template::Mustache::Parser;
                                                                                                            'description' => '/\\\\s*/',
                                                                                                            'hashname' => '__PATTERN2__',
                                                                                                            'ldelim' => '/',
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'mod' => '',
                                                                                                            'pattern' => '\\s*',
@@ -6856,7 +6858,7 @@ package Template::Mustache::Parser;
                                                                                                   bless( {
                                                                                                            'argcode' => undef,
                                                                                                            'implicit' => undef,
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'matchrule' => 0,
                                                                                                            'subrule' => 'variable_name'
@@ -6865,7 +6867,7 @@ package Template::Mustache::Parser;
                                                                                                            'description' => '/\\\\s*/',
                                                                                                            'hashname' => '__PATTERN3__',
                                                                                                            'ldelim' => '/',
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'mod' => '',
                                                                                                            'pattern' => '\\s*',
@@ -6874,14 +6876,14 @@ package Template::Mustache::Parser;
                                                                                                   bless( {
                                                                                                            'description' => '\'\\}\'',
                                                                                                            'hashname' => '__STRING2__',
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'pattern' => '}'
                                                                                                          }, 'Parse::RecDescent::Literal' ),
                                                                                                   bless( {
                                                                                                            'argcode' => undef,
                                                                                                            'implicit' => undef,
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0,
                                                                                                            'matchrule' => 0,
                                                                                                            'subrule' => 'closing_tag'
@@ -6899,7 +6901,7 @@ package Template::Mustache::Parser;
     );
 }',
                                                                                                            'hashname' => '__ACTION1__',
-                                                                                                           'line' => 141,
+                                                                                                           'line' => 142,
                                                                                                            'lookahead' => 0
                                                                                                          }, 'Parse::RecDescent::Action' )
                                                                                                 ],
@@ -6920,7 +6922,7 @@ package Template::Mustache::Parser;
                                                                               ],
                                                                    'changed' => 0,
                                                                    'impcount' => 0,
-                                                                   'line' => 153,
+                                                                   'line' => 154,
                                                                    'name' => 'unescaped_variable_amp',
                                                                    'opcount' => 0,
                                                                    'prods' => [
@@ -6933,7 +6935,7 @@ package Template::Mustache::Parser;
                                                                                                                'description' => '/\\\\s*/',
                                                                                                                'hashname' => '__PATTERN1__',
                                                                                                                'ldelim' => '/',
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0,
                                                                                                                'mod' => '',
                                                                                                                'pattern' => '\\s*',
@@ -6942,7 +6944,7 @@ package Template::Mustache::Parser;
                                                                                                       bless( {
                                                                                                                'argcode' => undef,
                                                                                                                'implicit' => undef,
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0,
                                                                                                                'matchrule' => 0,
                                                                                                                'subrule' => 'opening_tag'
@@ -6950,7 +6952,7 @@ package Template::Mustache::Parser;
                                                                                                       bless( {
                                                                                                                'description' => '\'&\'',
                                                                                                                'hashname' => '__STRING1__',
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0,
                                                                                                                'pattern' => '&'
                                                                                                              }, 'Parse::RecDescent::Literal' ),
@@ -6958,7 +6960,7 @@ package Template::Mustache::Parser;
                                                                                                                'description' => '/\\\\s*/',
                                                                                                                'hashname' => '__PATTERN2__',
                                                                                                                'ldelim' => '/',
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0,
                                                                                                                'mod' => '',
                                                                                                                'pattern' => '\\s*',
@@ -6967,7 +6969,7 @@ package Template::Mustache::Parser;
                                                                                                       bless( {
                                                                                                                'argcode' => undef,
                                                                                                                'implicit' => undef,
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0,
                                                                                                                'matchrule' => 0,
                                                                                                                'subrule' => 'variable_name'
@@ -6976,7 +6978,7 @@ package Template::Mustache::Parser;
                                                                                                                'description' => '/\\\\s*/',
                                                                                                                'hashname' => '__PATTERN3__',
                                                                                                                'ldelim' => '/',
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0,
                                                                                                                'mod' => '',
                                                                                                                'pattern' => '\\s*',
@@ -6985,7 +6987,7 @@ package Template::Mustache::Parser;
                                                                                                       bless( {
                                                                                                                'argcode' => undef,
                                                                                                                'implicit' => undef,
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0,
                                                                                                                'matchrule' => 0,
                                                                                                                'subrule' => 'closing_tag'
@@ -7003,7 +7005,7 @@ package Template::Mustache::Parser;
     );
 }',
                                                                                                                'hashname' => '__ACTION1__',
-                                                                                                               'line' => 153,
+                                                                                                               'line' => 154,
                                                                                                                'lookahead' => 0
                                                                                                              }, 'Parse::RecDescent::Action' )
                                                                                                     ],
@@ -7024,7 +7026,7 @@ package Template::Mustache::Parser;
                                                                 ],
                                                      'changed' => 0,
                                                      'impcount' => 0,
-                                                     'line' => 166,
+                                                     'line' => 167,
                                                      'name' => 'variable',
                                                      'opcount' => 0,
                                                      'prods' => [
@@ -7037,7 +7039,7 @@ package Template::Mustache::Parser;
                                                                                                  'description' => '/\\\\s*/',
                                                                                                  'hashname' => '__PATTERN1__',
                                                                                                  'ldelim' => '/',
-                                                                                                 'line' => 166,
+                                                                                                 'line' => 167,
                                                                                                  'lookahead' => 0,
                                                                                                  'mod' => '',
                                                                                                  'pattern' => '\\s*',
@@ -7046,7 +7048,7 @@ package Template::Mustache::Parser;
                                                                                         bless( {
                                                                                                  'argcode' => undef,
                                                                                                  'implicit' => undef,
-                                                                                                 'line' => 166,
+                                                                                                 'line' => 167,
                                                                                                  'lookahead' => 0,
                                                                                                  'matchrule' => 0,
                                                                                                  'subrule' => 'opening_tag'
@@ -7055,7 +7057,7 @@ package Template::Mustache::Parser;
                                                                                                  'description' => '/\\\\s*/',
                                                                                                  'hashname' => '__PATTERN2__',
                                                                                                  'ldelim' => '/',
-                                                                                                 'line' => 166,
+                                                                                                 'line' => 167,
                                                                                                  'lookahead' => 0,
                                                                                                  'mod' => '',
                                                                                                  'pattern' => '\\s*',
@@ -7064,7 +7066,7 @@ package Template::Mustache::Parser;
                                                                                         bless( {
                                                                                                  'argcode' => undef,
                                                                                                  'implicit' => undef,
-                                                                                                 'line' => 166,
+                                                                                                 'line' => 167,
                                                                                                  'lookahead' => 0,
                                                                                                  'matchrule' => 0,
                                                                                                  'subrule' => 'variable_name'
@@ -7073,7 +7075,7 @@ package Template::Mustache::Parser;
                                                                                                  'description' => '/\\\\s*/',
                                                                                                  'hashname' => '__PATTERN3__',
                                                                                                  'ldelim' => '/',
-                                                                                                 'line' => 166,
+                                                                                                 'line' => 167,
                                                                                                  'lookahead' => 0,
                                                                                                  'mod' => '',
                                                                                                  'pattern' => '\\s*',
@@ -7082,7 +7084,7 @@ package Template::Mustache::Parser;
                                                                                         bless( {
                                                                                                  'argcode' => undef,
                                                                                                  'implicit' => undef,
-                                                                                                 'line' => 166,
+                                                                                                 'line' => 167,
                                                                                                  'lookahead' => 0,
                                                                                                  'matchrule' => 0,
                                                                                                  'subrule' => 'closing_tag'
@@ -7098,7 +7100,7 @@ package Template::Mustache::Parser;
     );
 }',
                                                                                                  'hashname' => '__ACTION1__',
-                                                                                                 'line' => 166,
+                                                                                                 'line' => 167,
                                                                                                  'lookahead' => 0
                                                                                                }, 'Parse::RecDescent::Action' )
                                                                                       ],
@@ -7115,7 +7117,7 @@ package Template::Mustache::Parser;
                                                           'calls' => [],
                                                           'changed' => 0,
                                                           'impcount' => 0,
-                                                          'line' => 176,
+                                                          'line' => 177,
                                                           'name' => 'variable_name',
                                                           'opcount' => 0,
                                                           'prods' => [
@@ -7128,7 +7130,7 @@ package Template::Mustache::Parser;
                                                                                                       'description' => '/[-\\\\w.]+/',
                                                                                                       'hashname' => '__PATTERN1__',
                                                                                                       'ldelim' => '/',
-                                                                                                      'line' => 176,
+                                                                                                      'line' => 177,
                                                                                                       'lookahead' => 0,
                                                                                                       'mod' => '',
                                                                                                       'pattern' => '[-\\w.]+',
@@ -7148,7 +7150,7 @@ package Template::Mustache::Parser;
                                                      'calls' => [],
                                                      'changed' => 0,
                                                      'impcount' => 0,
-                                                     'line' => 178,
+                                                     'line' => 179,
                                                      'name' => 'verbatim',
                                                      'opcount' => 0,
                                                      'prods' => [
@@ -7160,14 +7162,14 @@ package Template::Mustache::Parser;
                                                                                         bless( {
                                                                                                  'code' => '{ $thisparser->{opening_tag} }',
                                                                                                  'hashname' => '__ACTION1__',
-                                                                                                 'line' => 178,
+                                                                                                 'line' => 179,
                                                                                                  'lookahead' => 0
                                                                                                }, 'Parse::RecDescent::Action' ),
                                                                                         bless( {
                                                                                                  'description' => '/^\\\\s*\\\\S*?(?=\\\\Q$item[1]\\\\E|\\\\s|$)/',
                                                                                                  'hashname' => '__PATTERN1__',
                                                                                                  'ldelim' => '/',
-                                                                                                 'line' => 178,
+                                                                                                 'line' => 179,
                                                                                                  'lookahead' => 0,
                                                                                                  'mod' => '',
                                                                                                  'pattern' => '^\\s*\\S*?(?=\\Q$item[1]\\E|\\s|$)',
@@ -7179,7 +7181,7 @@ package Template::Mustache::Parser;
     Template::Mustache::Token::Verbatim->new( content => $item[2] );
 }',
                                                                                                  'hashname' => '__ACTION2__',
-                                                                                                 'line' => 178,
+                                                                                                 'line' => 179,
                                                                                                  'lookahead' => 0
                                                                                                }, 'Parse::RecDescent::Action' )
                                                                                       ],
