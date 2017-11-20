@@ -22,7 +22,10 @@ is ''.Template::Mustache->render( "{{#foo }}{{.}}{{/foo }}", {foo => "World!"})
 is ''.Template::Mustache->render( "{{#foo }}{{.}}{{/ foo }}", {foo => "World!"})
     => 'World!', 'spaces';
 
-dies_ok { Template::Mustache->render( "{{#foo}}{{.}}{{#/foo}}", {foo => "World!"}) } 'bad closure';
+dies_ok { 
+    local *STDERR;
+    Template::Mustache->render( "{{#foo}}{{.}}{{#/foo}}", {foo => "World!"}) 
+}  'bad closure';
 
 is ''.Template::Mustache->render( "{{#foo.bar}}{{.}}{{/foo.bar}}", {foo => { bar => "World!" } })
     => 'World!';
