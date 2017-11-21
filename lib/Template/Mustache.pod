@@ -49,7 +49,7 @@ it with different contexts.
 
     print $Template::Mustache::GRAMMAR;
 
-The L<Parse::ReqDescent> grammar used to parse Mustache templates.
+The L<Parse::RecDescent> grammar used to parse Mustache templates.
 
 
 =method new( %arguments )
