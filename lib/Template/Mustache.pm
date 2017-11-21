@@ -638,7 +638,7 @@ sub with the name of the partial as its argument.
 
     print $Template::Mustache::GRAMMAR;
 
-The L<Parse::ReqDescent> grammar used to parse Mustache templates.
+The L<Parse::RecDescent> grammar used to parse Mustache templates.
 
 =head1 SEE ALSO
 
