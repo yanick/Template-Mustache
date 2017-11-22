@@ -6,6 +6,7 @@ Revision history for Template-Mustache
   [ BUG FIXES ]
 
   [ DOCUMENTATION ]
+    - Fixed broken link in pod. (GH#53, Mohammad S Anwar)
 
   [ ENHANCEMENTS ]
 
