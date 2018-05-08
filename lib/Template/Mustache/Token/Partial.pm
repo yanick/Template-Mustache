@@ -17,7 +17,7 @@ sub render {
         my $template = $partials->($self->name)
             or return '';
 
-        $partial = Template::Mustache->new( template => $template )->parsed;
+        $partial = ref $template ? $template : Template::Mustache->new( template => $template )->parsed;
     }
     else {
         $partial = $partials->{$self->name} or return '';

@@ -1,35 +1,26 @@
 use strict;
 use warnings;
 
-use Template::Mustache;
-
-use File::Temp qw/ tempdir /;
-$::tmpdir = tempdir(CLEANUP => 0); 
-
 use Test::More;
 
-open my $fh, '+>', "$::tmpdir/list1.mustache";
-print $fh "a, b, c";
-close $fh;
-
-open $fh, '+>', "$::tmpdir/list2.mustache";
-print $fh "d, e, f";
-close $fh;
-
-my $self = {};
-
-$self->{template} = '[ {{> list1}}, {{> list2}} ]';
-$self->{expected} = '[ a, b, c, d, e, f ]';
+use Template::Mustache;
 
 subtest 'from template_path' => sub {
     my $rendered = Template::Mustache->new(
-        template_path => $::tmpdir,
-        template => $self->{template},
-    )->render(
-        $self->{data},
-    );
+        template_path => 't/corpus/',
+        template      => '[ {{> ./partials/list1}}, {{> partials/list2}} ]',
+    )->render;
 
-    is($rendered, $self->{expected});
+    is $rendered, '[ a, b, c, d, e, f ]';
 };
 
-done_testing
+subtest 'from template_path, partial_path' => sub {
+    my $rendered = Template::Mustache->new(
+        partials_path => 't/corpus/',
+        template      => '[ {{> ./partials/list1}}, {{> partials/list2}} ]',
+    )->render;
+
+    is $rendered, '[ a, b, c, d, e, f ]';
+};
+
+done_testing;
