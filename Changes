@@ -9,6 +9,7 @@ Revision history for Template-Mustache
     - Fixed broken link in pod. (GH#53, Mohammad S Anwar)
 
   [ ENHANCEMENTS ]
+  - Partials can now be in different directories. (GH#57)
 
   [ NEW FEATURES ]
 
