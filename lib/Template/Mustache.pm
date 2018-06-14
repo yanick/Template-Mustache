@@ -84,20 +84,30 @@ has_rw partials => (
     lazy => 1,
     default => sub { 
         my $self = shift;
-        
-        # TODO I can probably do better than that
-        if ( my $path = $self->partials_path ) {
-            return $self->_parse_partials( {
-                map { 
-                    my $name = $_->basename;
-                    $name =~ s/\.mustache$//;
-                    $name => $_->slurp;
-                }
-                $self->partials_path->children( qr/\.mustache$/ )
-            } );
-        }
 
-        return +{}  
+        return sub {
+            state $partials = {};
+
+            my $name = shift;
+
+            return $partials->{$name} if defined $partials->{$name};
+
+            # TODO also deal with many paths?
+
+            my $partial = '';
+
+            if ( my $path = $self->partials_path ) {
+                my $path = $self->partials_path->child($name . '.mustache');
+
+                if( $path->is_file ) {
+                    $partial = Template::Mustache->new(
+                        template_path => $path
+                    );
+                }
+            }
+
+            return $partials->{$name} = $partial;
+        }
     },
     trigger => \&_parse_partials
 );
@@ -213,7 +223,7 @@ delimiter_change_inner: '=' {
     [ split ' ', $item[4] ]
 }
 
-partial: /\s*/ opening_tag '>' /\s*/ /[-\w.]+/ /\s*/ closing_tag /\s*/ {
+partial: /\s*/ opening_tag '>' /\s*/ /[\/-\w.]+/ /\s*/ closing_tag /\s*/ {
     my $prev = $thisparser->{prev_is_standalone};
     $thisparser->{prev_is_standalone} = 0;
     my $indent = '';

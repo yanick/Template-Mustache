@@ -27,6 +27,9 @@ t/00-report-prereqs.dd
 t/00-report-prereqs.t
 t/001_spec_compatibility.t
 t/basic.t
+t/corpus/partials/list1.mustache
+t/corpus/partials/list2.mustache
+t/corpus/partials/sub/list3.mustache
 t/lambdas_receive_render_helper.t
 t/moose-trait.t
 t/parse_errors.t

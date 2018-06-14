@@ -97,6 +97,18 @@ itself.
 An optional hashref of partials to assign to the object. See
 the method C<partials> for more details on its format.
 
+By default, if C<partials_path> (or C<template_path> is defined,
+the template will try to resolve the partials as filenames with 
+the file extension C<.mustache>
+relative to that path.
+
+
+    my $mustache = Template::Mustache->new( 
+        partials => './root',
+        template => '{{ > ./my/partial }}',  # => file ./root/my/partial.mustache
+    );
+
+
 =back
 
 
