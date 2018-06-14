@@ -302,5 +302,9 @@ Specs of the I<Mustache> DSL.
 I<Handlebars> is another templating language heavily inspired and very similar to I<Mustache>. L<Text::Handlebars>
 is an implementation of it using L<Text::Xslate>.
 
+=item L<Mustache::Simple>
+
+Another module implementing Mustache templates.
+
 =back
 

@@ -7,6 +7,7 @@ Revision history for Template-Mustache
 
   [ DOCUMENTATION ]
     - Fixed broken link in pod. (GH#53, Mohammad S Anwar)
+    - Mention Mustache::Simple in SEE ALSO (GH#54).
 
   [ ENHANCEMENTS ]
   - Partials can now be in different directories. (GH#57)
