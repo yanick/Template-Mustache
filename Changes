@@ -6,15 +6,23 @@ Revision history for Template-Mustache
   [ BUG FIXES ]
 
   [ DOCUMENTATION ]
-    - Fixed broken link in pod. (GH#53, Mohammad S Anwar)
-    - Mention Mustache::Simple in SEE ALSO (GH#54).
 
   [ ENHANCEMENTS ]
-  - Partials can now be in different directories. (GH#57)
 
   [ NEW FEATURES ]
 
   [ STATISTICS ]
+
+1.3.0 2018-06-13
+  [ DOCUMENTATION ]
+    - Fixed broken link in pod. (GH#53, Mohammad S Anwar)
+    - Mention Mustache::Simple in SEE ALSO (GH#54).
+
+  [ ENHANCEMENTS ]
+    - Partials can now be in different directories. (GH#57)
+
+  [ STATISTICS ]
+    - code churn: 11 files changed, 81 insertions(+), 49 deletions(-)
 
 1.2.0 2017-11-20
   [ ENHANCEMENTS ]
