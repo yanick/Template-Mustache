@@ -27,6 +27,7 @@ t/00-report-prereqs.dd
 t/00-report-prereqs.t
 t/001_spec_compatibility.t
 t/basic.t
+t/corpus/partials/inner.mustache
 t/corpus/partials/list1.mustache
 t/corpus/partials/list2.mustache
 t/corpus/partials/sub/list3.mustache
