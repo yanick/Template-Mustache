@@ -4,6 +4,7 @@ Revision history for Template-Mustache
   [ API CHANGES ]
 
   [ BUG FIXES ]
+  - partials were incorrectly inherited for file-based partials.
 
   [ DOCUMENTATION ]
 

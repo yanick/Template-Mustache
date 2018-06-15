@@ -23,6 +23,11 @@ sub render {
         $partial = $partials->{$self->name} or return '';
     }
 
+    if( ref $partial eq 'Template::Mustache' ) {
+        $partials = $partial->partials;
+        $partial = $partial->parsed;
+    }
+
     return $partial->render( $context, $partials, $self->indent );
 }
 

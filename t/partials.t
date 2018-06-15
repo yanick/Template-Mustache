@@ -24,4 +24,24 @@ $mustache = Template::Mustache->new(
 
 is $mustache->render, 'xYay!Yay!', 'hyphen';
 
+subtest "passing of context" => sub {
+    my $mustache = Template::Mustache->new(
+        partials => {
+            'inner' => '.{{ foo }}'
+        },
+        template => '{{foo}}{{> inner}}'
+    );
+
+    is $mustache->render({ foo => '!' }), '!.!';
+};
+
+subtest "passing of context with path" => sub {
+    my $mustache = Template::Mustache->new(
+        partials_path => 't/corpus/partials',
+        template => '{{foo}}{{> inner}}'
+    );
+
+    is $mustache->render({ foo => '!' }), "!.!\n";
+};
+
 done_testing;
