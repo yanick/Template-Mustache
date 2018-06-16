@@ -1,0 +1,353 @@
+# NAME
+
+Template::Mustache - Drawing Mustaches on Perl for fun and profit
+
+# VERSION
+
+version 1.3.1
+
+# SYNOPSIS
+
+```perl
+use Template::Mustache;
+
+# one-shot rendering
+
+print Template::Mustache->render(
+    "Hello {{planet}}", 
+);
+
+# compile and re-use template
+
+my $mustache = Template::Mustache->new(
+    template => "Hello {{planet}}", 
+);
+
+print $mustache->render( { planet => "World!" } );
+```
+
+# DESCRIPTION
+
+Template::Mustache is an implementation of the fabulous 
+[Mustache](https://mustache.github.io/) templating
+language for Perl.
+
+This version of _Template::Mustache_ conforms to v1.1.3
+of the [Mustache specs](https://github.com/mustache/spec).
+
+Templates can be compiled and rendered on the spot via the
+use of `render` called as a class method.
+
+```
+print Template::Mustache->render(
+    "Hello {{planet}}", 
+);
+```
+
+If you are considering re-using the same template many times, it's 
+recommended to create a `Template::Mustache` object instead,
+which will compile the template only once, and allow to render
+it with different contexts.
+
+```perl
+my $mustache = Template::Mustache->new(
+    template => "Hello {{planet}}", 
+);
+
+print $mustache->render( { planet => "World!" } );
+```
+
+# METHODS
+
+## new( %arguments )
+
+```perl
+my $mustache = Template::Mustache->new(
+    template   => "Hello {{planet}}",
+    delimiters => [ qw/ ! ! / ],
+);
+```
+
+Constructor.  
+
+### arguments
+
+- template => $string
+
+    A Mustache template.
+
+- template\_path => $path
+
+    Instead of `template`, a `template_path` can be provided to read
+    the template and the partials from the fielsystem instead. See
+    the method `template_path` to see how this works.
+
+- partials\_path => $path
+
+    An optional filesystem path from which to gather partial
+    templates.
+
+- delimiters => \[ $opening\_tag, $closing\_tag \]
+
+    An optional arrayref holding the pair of delimiters used by
+    the template. Defaults to `{{ }}`.
+
+- context => $context
+
+    Context to use when rendering if not provided
+    as a parameter to `render`. Defaults to the object
+    itself.
+
+- partials => $partials
+
+    An optional hashref of partials to assign to the object. See
+    the method `partials` for more details on its format.
+
+    By default, if `partials_path` (or `template_path` is defined,
+    the template will try to resolve the partials as filenames with 
+    the file extension `.mustache`
+    relative to that path.
+
+    ```perl
+    my $mustache = Template::Mustache->new( 
+        partials => './root',
+        template => '{{ > ./my/partial }}',  # => file ./root/my/partial.mustache
+    );
+    ```
+
+## render( $context )
+
+```
+print $mustache->render( $context );
+```
+
+Returns the rendered template, given the optionally provided context. Uses 
+the object's `context attribute` if not provided.
+
+### Context 
+
+#### as a hashref
+
+```perl
+Template::Mustache->render( 'Hello {{ thing }}', { thing => 'World!' } );
+```
+
+If the value is a coderef, it will be invoked to generate the value
+to be inserted in the template.
+
+```perl
+Template::Mustache->render(
+    'it is {{ time }}', 
+    { time => sub { scalar localtime } } 
+);
+```
+
+If you want the value returned by the coderef to be 
+interpolated as a Mustache template, a helper function is passed
+as the last argument to the coderef.
+
+```perl
+Template::Mustache->render(
+    'hello {{ place }}', 
+    {
+        place => sub { pop->('{{ planet }}') },
+        planet => 'World',
+    } 
+);
+```
+
+The two previous interpolations work both for `{{variable}}`
+definitions, but also for `{{#section}}`s.
+
+```perl
+print Template::Mustache->render(
+    'I am {{#obfuscated}}resu{{/obfuscated}}',
+    {
+        obfuscated   => sub { pop->('{{'.reverse(shift).'}}') },
+        user         => '({{logged_in_as}})',
+        logged_in_as => 'Sam',
+    }
+);  # => 'I am (Sam)'
+```
+
+#### as an arrayref
+
+```perl
+Template::Mustache->render( 'Hello {{ 1 }}', [ 'Earth', 'World!' ] );
+# => 'Hello World!
+```
+
+#### as an object
+
+```perl
+my $object = Something->new( ... );  
+
+Template::Mustache->render( 'Hello {{ thing }}', $object );  # thing resolves to $object->thing
+```
+
+#### as a scalar
+
+```
+Template::Mustache->render( 'Hello {{ . }}', 'World!' );
+```
+
+#### no context
+
+If no context is provided, it will default to the mustache object itself.
+Which allows for definining templates as subclasses of _Template::Mustache_.
+
+```perl
+package My::Template;
+use Moo;
+extends 'Template::Mustache';
+
+sub template  { 'Hello {{ planet }}!' }
+
+sub planet { 'World' }
+
+
+# later on
+My::Template->new->render; # => Hello World!
+```
+
+#### multi-level variable
+
+If the variable to be rendered is multi-level (e.g., `foo.bar`), it is
+resolved recursively on the context.
+
+```perl
+# $foo->bar returns `{ baz => [ 'quux' ] }`
+
+Template::Mustache->render( '{{ bar.baz.0 }}', $foo );  # => 'quux'
+```
+
+## render( $template, $context, $partials )
+
+```perl
+print Template::Mustache->render( $template, $context, $partials );
+
+# equivalent to
+Template::Mustache->new->( 
+    template => $template, partials => $partials 
+)->render( $context );
+```
+
+If invoked as a class method, `render` takes in the mustache template, and
+an optional context and set of partials.
+
+To pass in partials without a
+context, set the context to `undef`.
+
+```
+print Template::Mustache->render( $template, undef, $partials );
+```
+
+## template( $template )
+
+Accessor to the `template` attribute.
+
+## template\_path( $path )
+
+Accessor to the `template_path` attribute. If this attribute is 
+set, the template will be set to the content of the provided file 
+(if `$path` is a directory, the file is assumed to be the 
+`Mustache.mustache` file local to that directory).
+
+## partials\_path( $path ) 
+
+Accessor the `partials_path` attribute. If partials were
+not given as part of the object construction, when encountered
+partials will be attempted to be read from that directory. 
+The filename for a partial is its name with `.mustache` appended to it.
+
+If `template_path` is defined, `partials_path` defaults to it.
+
+## context( $context )
+
+Accessor to the `context` attribute.
+
+## delimiters( \[ $opening\_tag, $closing\_tag \] )
+
+Accessor to the `delimiters` attribute.
+
+## parsed
+
+```perl
+my $tree = $mustache->parsed;
+```
+
+Returns the [Template::Mustache::Token::Template](https://metacpan.org/pod/Template::Mustache::Token::Template) object representing
+the parsed template.
+
+## parser
+
+Returns the instance of [Template::Mustache::Parser](https://metacpan.org/pod/Template::Mustache::Parser) used by the object.
+
+## partials( { partial\_name => $partial, ... } )
+
+```perl
+my $mustache = Template::Mustache->new(
+    template => "{{> this }}",
+    partials => { this => 'partials rock!' },
+);
+
+print $mustache->render; # => partials rock!
+```
+
+Add partial templates to the object. 
+
+Partial values can be
+strings holding Mustache templates;
+
+A coderef can also be set instead of a hashref. In that
+case, partial templates will be generated by invoking that
+sub with the name of the partial as its argument.
+
+```perl
+my $mustache = Template::Mustache->new(
+    template => "{{> this }} and {{> that }}",
+    partials => sub { "a little bit of " . shift }
+);
+```
+
+# CONSTANTS
+
+## $GRAMMAR
+
+```
+print $Template::Mustache::GRAMMAR;
+```
+
+The [Parse::RecDescent](https://metacpan.org/pod/Parse::RecDescent) grammar used to parse Mustache templates.
+
+# SEE ALSO
+
+- [https://mustache.github.io](https://mustache.github.io)
+
+    The main, pan-language site for _Mustache_.
+
+- [https://mustache.github.io/mustache.5.html](https://mustache.github.io/mustache.5.html)
+
+    Specs of the _Mustache_ DSL.
+
+- [Text::Handlebars](https://metacpan.org/pod/Text::Handlebars)
+
+    _Handlebars_ is another templating language heavily inspired and very similar to _Mustache_. [Text::Handlebars](https://metacpan.org/pod/Text::Handlebars)
+    is an implementation of it using [Text::Xslate](https://metacpan.org/pod/Text::Xslate).
+
+- [Mustache::Simple](https://metacpan.org/pod/Mustache::Simple)
+
+    Another module implementing Mustache templates.
+
+# AUTHORS
+
+- Pieter van de Bruggen <pvande@cpan.org>
+- Yanick Champoux <yanick@cpan.org> [![endorse](http://api.coderwall.com/yanick/endorsecount.png)](http://coderwall.com/yanick)
+- Ricardo Signes <rjbs@cpan.org>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2017, 2016, 2015, 2011 by Pieter van de Bruggen.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
