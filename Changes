@@ -4,7 +4,6 @@ Revision history for Template-Mustache
   [ API CHANGES ]
 
   [ BUG FIXES ]
-  - weaken reference in partials to break memory cycle. (GH#59)
 
   [ DOCUMENTATION ]
 
@@ -13,6 +12,13 @@ Revision history for Template-Mustache
   [ NEW FEATURES ]
 
   [ STATISTICS ]
+
+1.3.2 2019-06-26
+  [ BUG FIXES ]
+    - weaken reference in partials to break memory cycle. (GH#59)
+
+  [ STATISTICS ]
+    - code churn: 10 files changed, 144 insertions(+), 64 deletions(-)
 
 1.3.1 2018-06-15
   [ BUG FIXES ]
