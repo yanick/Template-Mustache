@@ -28,7 +28,7 @@ has_ro template_path => (
         return unless defined $_[0];
         my $path = path($_[0]);
         die "'$_[0]' does not exist" unless $path->exists;
-        $path = $path->child('Mustache.mustache') 
+        $path = $path->child('Mustache.mustache')
             if $path->is_dir ;
         $path;
     },
@@ -36,7 +36,7 @@ has_ro template_path => (
 
 has_ro partials_path => (
     lazy => 1,
-    default => sub { 
+    default => sub {
         return unless $_[0]->template_path;
         $_[0]->template_path->parent;
     },
@@ -64,26 +64,29 @@ has_rw template => (
 
 has_rw parsed => (
     clearer => 1,
-    lazy => 1, 
+    lazy => 1,
     default => sub {
         my $self = shift;
-        $self->parser->template( 
-            $self->template, 
-            undef, 
-            @{ $self->delimiters } 
+        $self->parser->template(
+            $self->template,
+            undef,
+            @{ $self->delimiters }
         );
     },
 );
 
 has_rw delimiters => (
-    lazy => 1, 
+    lazy => 1,
     default => sub { [ '{{', '}}' ] },
 );
 
+use Scalar::Util qw/ weaken /;
+
 has_rw partials => (
     lazy => 1,
-    default => sub { 
+    default => sub {
         my $self = shift;
+        weaken $self;
 
         return sub {
             state $partials = {};
@@ -119,8 +122,8 @@ sub _parse_partials {
 
     while( my ( $name, $template ) = each %$partials ) {
         next if ref $template;
-        $partials->{$name} = 
-            Template::Mustache->new( template => 
+        $partials->{$name} =
+            Template::Mustache->new( template =>
                 ref $template ? $template->($name) : $template )->parsed;
     }
 
@@ -129,15 +132,15 @@ sub _parse_partials {
 
 has_ro parser => sub {
     if ( $ENV{MUSTACHE_DEBUG} ) {
-        return Parse::RecDescent->new( 
+        return Parse::RecDescent->new(
             $Template::Mustache::GRAMMAR
         );
     }
 
-    return Template::Mustache::Parser->new 
+    return Template::Mustache::Parser->new
 };
 
-sub render {  
+sub render {
     my $self = shift;
 
     unless( ref $self ) {
@@ -153,7 +156,7 @@ sub render {
 }
 
 
-sub resolve_context {  
+sub resolve_context {
     my ( $key, $context ) = @_;
 
     no warnings 'uninitialized';
@@ -184,7 +187,7 @@ sub resolve_context {
 
 our $GRAMMAR = <<'END_GRAMMAR';
 
-<skip:qr//> 
+<skip:qr//>
 
 eofile: /^\Z/
 
@@ -293,15 +296,15 @@ standalone_surround: /\s*/ opening_tag /\s*/ <matchrule:$arg[0]_inner> closing_t
     [  @item[1,6,4] ],
 }
 
-comment: standalone_surround[$item[0]] { 
-    Template::Mustache::Token::Verbatim->new( 
+comment: standalone_surround[$item[0]] {
+    Template::Mustache::Token::Verbatim->new(
         content => $item[1][0] . $item[1][1]
     ),
 }
 
 comment_inner: '!' { $thisparser->{closing_tag} } /.*?(?=\Q$item[2]\E)/s
 
-inner_section: ...!close_section[ $arg[0] ] template_item 
+inner_section: ...!close_section[ $arg[0] ] template_item
 
 section: open_section {$thisoffset} inner_section[ $item[1][0] ](s?) {$thisoffset
     - $item[2]
@@ -314,9 +317,9 @@ section: open_section {$thisoffset} inner_section[ $item[1][0] ](s?) {$thisoffse
             variable => $item[1][0],
             inverse => $item[1][1],
             raw => $raw,
-            template => Template::Mustache::Token::Template->new( 
-                items => [ 
-                    $item[1][3], @{$item[3]}, $item[5][0] ], 
+            template => Template::Mustache::Token::Template->new(
+                items => [
+                    $item[1][3], @{$item[3]}, $item[5][0] ],
             )
         ),
         $item[5][1]
@@ -328,7 +331,7 @@ unescaped_variable: /\s*/ opening_tag '{' /\s*/ variable_name /\s*/ '}' closing_
     Template::Mustache::Token::Template->new(
         items => [
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
-            Template::Mustache::Token::Variable->new( 
+            Template::Mustache::Token::Variable->new(
                 name => $item{variable_name},
                 escape => 0,
             ),
@@ -340,7 +343,7 @@ unescaped_variable_amp: /\s*/ opening_tag '&' /\s*/ variable_name /\s*/ closing_
     Template::Mustache::Token::Template->new(
         items => [
             Template::Mustache::Token::Verbatim->new( content => $item[1] ),
-            Template::Mustache::Token::Variable->new( 
+            Template::Mustache::Token::Variable->new(
                 name => $item{variable_name},
                 escape => 0,
             ),
@@ -543,7 +546,6 @@ sub generate {
             my ($ctx, $value) = lookup($tag, @context) unless $type eq '>';
 
             if ($type eq '{' || $type eq '&' || $type eq '') {
-                $DB::single = 1;
                 # Interpolation Tags
                 # If the value is a code reference, we should treat it
                 # according to Mustache's lambda rules.  Specifically, we
@@ -570,8 +572,7 @@ sub generate {
                 #    and a rendering function are passed to the sub; the return
                 #    value is then automatically rendered.
                 #  * Otherwise, the section is rendered using given value.
-                $DB::single = 1;
-                
+
                 if (ref $value eq 'ARRAY') {
                     @result = map { $build->(@$data, $_) } @$value;
                 } elsif ($value) {

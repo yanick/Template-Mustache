@@ -4,6 +4,7 @@ Revision history for Template-Mustache
   [ API CHANGES ]
 
   [ BUG FIXES ]
+  - weaken reference in partials to break memory cycle. (GH#59)
 
   [ DOCUMENTATION ]
 
