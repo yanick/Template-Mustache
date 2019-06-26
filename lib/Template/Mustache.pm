@@ -546,7 +546,6 @@ sub generate {
             my ($ctx, $value) = lookup($tag, @context) unless $type eq '>';
 
             if ($type eq '{' || $type eq '&' || $type eq '') {
-                $DB::single = 1;
                 # Interpolation Tags
                 # If the value is a code reference, we should treat it
                 # according to Mustache's lambda rules.  Specifically, we
@@ -573,7 +572,6 @@ sub generate {
                 #    and a rendering function are passed to the sub; the return
                 #    value is then automatically rendered.
                 #  * Otherwise, the section is rendered using given value.
-                $DB::single = 1;
 
                 if (ref $value eq 'ARRAY') {
                     @result = map { $build->(@$data, $_) } @$value;
