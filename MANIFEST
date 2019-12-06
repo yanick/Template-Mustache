@@ -35,6 +35,7 @@ t/corpus/partials/sub/list3.mustache
 t/lambdas_receive_render_helper.t
 t/memory-cycle.t
 t/moose-trait.t
+t/numbers.t
 t/parse_errors.t
 t/partials.t
 t/read_data_from_classes.t
