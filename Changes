@@ -4,6 +4,7 @@ Revision history for Template-Mustache
   [ API CHANGES ]
 
   [ BUG FIXES ]
+  - Don't scientific-notation huge numbers. (GH#60)
 
   [ DOCUMENTATION ]
 
