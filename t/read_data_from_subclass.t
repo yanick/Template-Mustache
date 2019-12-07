@@ -6,7 +6,7 @@ use Template::Mustache;
 {
 package t::ReadDataFromSubclass; 
 
-use Test::More;
+use Test2::V0;
 
     {
         package t::ReadDataFromSubclass::Mustache;

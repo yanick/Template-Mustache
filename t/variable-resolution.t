@@ -1,4 +1,6 @@
-use Test::More tests => 3;
+use Test2::V0;
+
+plan tests => 3;
 
 use Template::Mustache;
 

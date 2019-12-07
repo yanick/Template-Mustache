@@ -1,4 +1,4 @@
-use Test::More;
+use Test2::V0;
 
 use Test::Requires {
     Moose => 0,

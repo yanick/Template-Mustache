@@ -3,7 +3,7 @@ use warnings;
 
 use Template::Mustache;
 
-use Test::More;
+use Test2::V0;
 use File::Temp qw/ tempdir /;
 
     {

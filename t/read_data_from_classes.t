@@ -3,7 +3,7 @@ use warnings;
 
 package Foo;
 
-use Test::More;
+use Test2::V0;
 
 use Moo;
 extends 'Template::Mustache';

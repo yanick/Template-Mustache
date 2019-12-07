@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Template::Mustache;
-use Test::More;
+use Test2::V0;
 
     {
         package t::ReadTemplatesFromSubclass::Mustache;

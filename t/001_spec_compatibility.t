@@ -1,5 +1,4 @@
-use Test::More;
-use Test::Most;
+use Test2::V0;
 
 use strict;
 use warnings;
@@ -15,14 +14,13 @@ my $specs_dir = path( 'ext', 'spec', 'specs');
 plan skip_all => "Couldn't find specs; try running `git submodule update --init`"
     unless $specs_dir->is_dir;
 
-my @specs = @ARGV 
+my @specs = @ARGV
     ? ( map { $specs_dir->child( $_ . '.yml' ) } @ARGV )
     : $specs_dir->children( qr/\.yml$/ );
 
 # only wrap in a subtest if there are more than one file involved
 
 if ( @specs == 1 ) {
-    bail_on_fail;
     test_spec( @specs );
 }
 else {
@@ -31,7 +29,7 @@ else {
 
 done_testing;
 
-sub test_spec { 
+sub test_spec {
     my $file = shift;
 
     my $spec = YAML::XS::LoadFile($file);
