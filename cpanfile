@@ -1,6 +1,7 @@
 requires "Carp" => "0";
 requires "Escape::Houdini" => "0";
 requires "List::AllUtils" => "0";
+requires "Math::BigFloat" => "0";
 requires "Moo" => "0";
 requires "MooseX::MungeHas" => "0";
 requires "Parse::RecDescent" => "1.967015";
