@@ -21,10 +21,9 @@ on 'test' => sub {
   requires "File::Temp" => "0";
   requires "IO::Handle" => "0";
   requires "IPC::Open3" => "0";
+  requires "Test2::V0" => "0";
   requires "Test::Exception" => "0";
-  requires "Test::Memory::Cycle" => "0";
   requires "Test::More" => "0";
-  requires "Test::Most" => "0";
   requires "Test::Requires" => "0";
   requires "base" => "0";
 };

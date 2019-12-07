@@ -1,13 +1,17 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1;
+use Test2::V0;
 
-use Test::Memory::Cycle;
+eval "use Test::Memory::Cycle; 1"
+    or skip_all "Test::Memory::Cycle required";
+
+plan tests => 1;
+
 
 use Template::Mustache;
 
 my $mustache = Template::Mustache->new({template => 'Hello, {{planet}}'});
 $mustache->render({planet => 'World'});
 
-memory_cycle_ok $mustache;
+Test::Memory::Cycle::memory_cycle_ok $mustache;

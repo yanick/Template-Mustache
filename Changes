@@ -6,6 +6,9 @@ Revision history for Template-Mustache
   [ BUG FIXES ]
   - Don't scientific-notation huge numbers. (GH#60)
 
+  [ MISC ]
+  - Move tests to Test2::V0.
+
   [ DOCUMENTATION ]
 
   [ ENHANCEMENTS ]

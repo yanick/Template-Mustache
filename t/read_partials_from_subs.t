@@ -3,7 +3,7 @@ use warnings;
 
 use Template::Mustache;
 
-use Test::More;
+use Test2::V0;
 
 my $self = {};
         $self->{template} = '[ {{> list1}}, {{> list2}} ]';

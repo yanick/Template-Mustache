@@ -5,7 +5,7 @@ use Template::Mustache;
 {
 package t::ReadDataFromClasses;
 
-use Test::More;
+use Test2::V0;
 
     sub name       { 'Joe' }
     sub occupation { 'Plumber' }
