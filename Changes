@@ -1,18 +1,11 @@
 Revision history for Template-Mustache
 
-{{$NEXT}}
- [API CHANGES]
-
+1.3.4 2021-10-02
  [BUG FIXES]
  - Fix False [] range "/-\w" in regex. (GH#62, martinec)
 
- [DOCUMENTATION]
-
- [ENHANCEMENTS]
-
- [NEW FEATURES]
-
  [STATISTICS]
+ - code churn: 4 files changed, 107 insertions(+), 96 deletions(-)
 
 1.3.3 2019-12-06
  [BUG FIXES]
