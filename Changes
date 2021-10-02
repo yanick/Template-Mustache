@@ -4,6 +4,7 @@ Revision history for Template-Mustache
  [API CHANGES]
 
  [BUG FIXES]
+ - Fix False [] range "/-\w" in regex. (GH#62, martinec)
 
  [DOCUMENTATION]
 

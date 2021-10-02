@@ -2964,7 +2964,7 @@ sub Parse::RecDescent::Template::Mustache::Parser::partial
         $expectation->is(q{/[\\/-\\w.]+/})->at($text);
         
 
-        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[\/-\w.]+)/)
+        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A(?:[\/\w.-]+)/)
         {
             $text = $lastsep . $text if defined $lastsep;
             $expectation->failed();
