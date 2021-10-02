@@ -9,3 +9,5 @@ Template-Mustache-*
 Makefile
 MANIFEST.bak
 tags
+.buildd
+.build
