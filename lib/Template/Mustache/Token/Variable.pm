@@ -37,6 +37,8 @@ sub render {
         );
     }
 
+    return $$value if ref $value eq 'SCALAR';
+
     eval { $value = escape_html($value) } if $self->escape;
 
     $value = Math::BigFloat->new($value)->bstr if looks_like_number($value);
