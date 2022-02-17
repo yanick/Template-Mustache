@@ -286,7 +286,7 @@ sub with the name of the partial as its argument.
 
 =head1 Interpolation of numbers and HTML entities
 
-By default and as ddictated by its specs, Mustache format numbers
+By default and as dictated by its specs, Mustache format numbers
 into their canonical form.
 
     print Template::Mustache->render("{{.}}", "00.120" ); # prints '0.12'
