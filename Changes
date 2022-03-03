@@ -8,12 +8,18 @@ Revision history for Template-Mustache
  [DOCUMENTATION]
 
  [ENHANCEMENTS]
- - Allow for verbatim text to get around numerical truncating of zeros and
-   html escaping. (GH#63)
 
  [NEW FEATURES]
 
  [STATISTICS]
+
+1.4.0 2022-03-03
+ [ENHANCEMENTS]
+ - Allow for verbatim text to get around numerical truncating of zeros and
+   html escaping. (GH#63)
+
+ [STATISTICS]
+ - code churn: 4 files changed, 73 insertions(+), 28 deletions(-)
 
 1.3.4 2021-10-02
  [BUG FIXES]
