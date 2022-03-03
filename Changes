@@ -8,6 +8,8 @@ Revision history for Template-Mustache
  [DOCUMENTATION]
 
  [ENHANCEMENTS]
+ - Allow for verbatim text to get around numerical truncating of zeros and
+   html escaping. (GH#63)
 
  [NEW FEATURES]
 
